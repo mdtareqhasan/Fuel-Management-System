@@ -62,7 +62,7 @@ Read in this order. Each numbered chapter begins on a new page. The five day pla
 
 ### Included companion files
 
-The implementation kit contains five editable Excalidraw diagrams, their PNG previews, daily update and decision templates, an issue specification template, an agent activity log and a demo evidence checklist. Import each .excalidraw file through Excalidraw's Open menu and redraw it as a learning exercise.
+The original kit shipped five editable Excalidraw diagrams and their PNG previews. Those preview images are not kept in this repository — the diagrams this project actually uses are redrawn as text in `docs/architecture-diagram.md`, and the decisions behind them are recorded in `docs/adr/`. The daily update and decision templates, the issue specification template, the agent activity log and the demo evidence checklist are all reproduced in this repository's `docs/` folder.
 
 ### Reading checkpoints
 
@@ -263,11 +263,11 @@ The idempotency key belongs in the JSON body, has length 1 to 150 and is reused 
 
 ## 08 Design the system before implementing it
 
-![System architecture diagram (chapter 08)](images/image1.png)
+> **Diagram:** the system diagram for this project is `docs/architecture-diagram.md` — truth ownership, the two clocks and the refresh loop, drawn as text.
 
 ### Draw and explain this in Excalidraw
 
-Start with the operator and simulator, then draw the backend boundary. Add the read model, pure decision logic, approval command and monitoring. Label each arrow with data and ownership. Import 01_system_architecture.excalidraw for an editable reference.
+Start with the operator and simulator, then draw the backend boundary. Add the read model, pure decision logic, approval command and monitoring. Label each arrow with data and ownership. The diagram this project uses is redrawn as text in `docs/architecture-diagram.md`.
 
 Use one backend refresh loop for the small simulator world. Browser traffic reads that cached, validated view. A hundred dashboard clients should not create a hundred simulator polling loops. Keep external I/O out of the pure forecasting and allocation functions.
 
@@ -312,7 +312,7 @@ Controllers remain thin. Services implement use cases. Pure functions accept imm
 
 ## 10 Store evidence and command intent
 
-![Stored evidence and command intent diagram (chapter 10)](images/image2.png)
+> **Diagram:** the drawn version of this chapter is `docs/architecture-diagram.md` in this repository, together with `docs/adr/ADR-002-simulator-owns-truth.md`.
 
 Use an application run UUID because the simulator instance id remains 1 and reset can reuse ticks and entity ids. On an observed tick rollback or reset notice, suspend writes, create a new run, retire old recommendations and reconcile. The local reset driver should explicitly start a new app run, which also covers resets at the same tick. \[G pages 5 and 11\]
 
@@ -358,7 +358,7 @@ Clear guards only after a complete valid refresh and reconciliation. A reviewed 
 
 ## 12 Approve and submit allocations exactly once in effect
 
-![Approval and submission sequence diagram (chapter 12)](images/image3.png)
+> **Diagram:** the approval and submission sequence for this project is written up in `docs/adr/ADR-003-operator-approval.md` and `docs/adr/ADR-004-mode-aware-approval.md`.
 
 The approval endpoint validates the recommendation status and snapshot age, refreshes relevant simulator resources, checks the complete proposal, then commits one command per approved line. A unique database constraint on recommendation_id plus line_id makes repeated approval return the existing command.
 
@@ -706,7 +706,7 @@ Capture the injection time, failing data calls, warning shown in the UI, write g
 
 ## 22 Package a reproducible local deployment
 
-![Local deployment diagram (chapter 22)](images/image4.png)
+> **Diagram:** the deployment topology for this project is `compose.yaml` together with `docs/adr/ADR-007-local-compose-deployment.md`. The drawn deployment diagram is due on day four.
 
 Use multi-stage Dockerfiles. Build the backend with Maven Wrapper, then run the jar on a small Java runtime image. Build React with npm ci and serve static output through Nginx, proxying /api to the backend. Pin dependency and image versions; record resolved image digests for the demo.
 

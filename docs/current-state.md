@@ -12,10 +12,11 @@ docker compose up --build -d
 
 Six services, all healthy. The operator console at http://localhost:5173 renders
 the simulated fuel world: 4 stations × 3 fuels, live depot stock, the mode badge,
-the freshness badge, the refresh age, p95 latency and the error rate.
+the freshness badge, the refresh age, p95 latency and the error rate, with fuel
+and region filters drawn from the snapshot itself.
 
 ```bash
-python scripts/verify_day1.py     # 33 checks, all green
+python scripts/verify_day1.py     # 34 checks, all green
 ```
 
 ---
@@ -30,6 +31,7 @@ python scripts/verify_day1.py     # 33 checks, all green
 | API layer | `web` | Complete — `/api/dashboard`, `/api/system-status` |
 | Observability | `observability`, `simulator` | Complete — `HealthRegistry`, `SimulatorMetrics` |
 | Frontend console | `frontend/src` | Complete — read-only operator view |
+| View filters | `frontend/src/filters.ts` | Complete — fuel + region filters, 22 unit tests |
 | Deployment | `compose.yaml`, `infra/` | Complete — 6 services, Prometheus, Grafana |
 | CI | `.github/workflows/ci.yml` | Complete — 4 jobs including a compose smoke test |
 | **Risk engine** | `risk` | **Not started — Day 2** |
@@ -47,8 +49,9 @@ python scripts/verify_day1.py     # 33 checks, all green
 | Suite | Tests | Command |
 |---|---|---|
 | Backend unit | 30 | `cd backend && ./mvnw verify` |
+| Frontend unit | 22 | `cd frontend && npm run test` |
 | Frontend type check | — (build fails on any type error) | `cd frontend && npm run build` |
-| End-to-end | 33 checks | `python scripts/verify_day1.py` |
+| End-to-end | 34 checks | `python scripts/verify_day1.py` |
 
 ---
 
@@ -79,3 +82,13 @@ python scripts/verify_day1.py     # 33 checks, all green
 5. Add `fuel_forecast_fallback_total` and `fuel_anomaly_flags_total` to the metric
    set.
 6. Update this file and `docs/agent-activity-log.md`.
+
+## Where the Day 1 write-ups live
+
+| Document | What it holds |
+|---|---|
+| `docs/day-01-talking-points.md` | The Day 1 update sheet — what to say, with the evidence for each claim |
+| `docs/architecture-diagram.md` | The one system diagram, truth ownership, the two clocks, why one backend |
+| `docs/issue-board.md` | The 25-issue board, the issue cycle, the cut order |
+| `docs/issues/FUEL-009-filters.md` | A worked issue specification, end to end |
+| `docs/evidence/day-01/dashboard-sample.json` | A real snapshot payload, taken from the running stack |

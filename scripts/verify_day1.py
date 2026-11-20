@@ -63,6 +63,15 @@ def sim_control(*args: str) -> tuple[int, str]:
     return result.returncode, result.stdout + result.stderr
 
 
+def run_script(name: str) -> tuple[int, str, str]:
+    """Runs another verification script and returns its exit code, stdout and stderr."""
+    result = subprocess.run(
+        [sys.executable, f"scripts/{name}"],
+        capture_output=True, text=True, timeout=120,
+    )
+    return result.returncode, result.stdout, result.stderr
+
+
 class Report:
     def __init__(self) -> None:
         self.lines: list[str] = []
@@ -236,6 +245,15 @@ def main() -> int:
         for line in metrics_text.splitlines():
             if line.startswith("fuel_database_up ") or line.startswith("fuel_data_age_seconds "):
                 report.note(f"`{line}`")
+
+    report.heading("9. The operator console's filters")
+    status, stdout, stderr = run_script("verify_filters.py")
+    for line in (stdout + stderr).splitlines():
+        if line.strip():
+            report.note(line.strip())
+    report.check("the filter verification script passes",
+                 status == 0,
+                 "scripts/verify_filters.py — 13 checks against the live stack")
 
     report.write(REPORT)
     print(f"{report.passed} passed, {report.failed} failed")

@@ -17,7 +17,9 @@ starts six services and the operator console renders the simulated fuel world.
 | Snapshot validation + atomic publish + mode-aware refresh | Complete |
 | `/api/dashboard`, `/api/system-status`, Actuator + Prometheus | Complete |
 | React + TypeScript console: 4 stations × 3 fuels, mode badge, refresh age | Complete |
+| Fuel and region filters drawn from the snapshot | Complete, 22 unit tests |
 | Docker Compose, multi-stage Dockerfiles, Prometheus, Grafana, CI | Complete |
+| System diagram, issue board, worked issue spec, update sheet | Complete |
 | Risk engine, allocation, approval, command worker | **Not started — days 2 and 3** |
 
 ---
@@ -102,6 +104,7 @@ same change as the feature it measures.
 | Recovery | after the fault clears, the view returns to FRESH and decisions re-enable |
 | Unavailable fault | simulator DOWN, view INVALID, decisions blocked, cached view still served |
 | Metrics | all six custom `fuel_*` metrics present in `/actuator/prometheus` |
+| Filters | the filter bar draws its options from the snapshot; a filtered deep link renders the narrowed view; the API still returns the whole world |
 
 ### The three states, demonstrated live
 
@@ -151,6 +154,7 @@ small, because a label per station would create unbounded time series.
 | No database persistence of snapshots, commands or audit records | Day 3 |
 | Grafana has the datasource but no dashboard JSON yet | Day 4 |
 | No k6 load test | Day 4 |
+| The deployment diagram (the compose topology drawn out) | Day 4 |
 | Detector thresholds (1.35 / 1.15 / 3 ticks) are **proposed, not tuned** | Day 5 measures them |
 
 The thresholds are deliberately called out rather than hidden: they will be
@@ -178,3 +182,15 @@ reported as measured false-flag counts and detection delays on day 5.
 | Forecast looking good on paper and wrong on replay | Day 5 measures forecast error against the simulator's own ground truth, not against our own baseline |
 | Detecting the injection instead of the phenomenon | The detector reads observed demand, never the simulator's `demand_multiplier` |
 | Scope creep into microservices or cloud | ADR 001 and ADR 007; the brief warns against infrastructure complexity |
+
+---
+
+## 8. The Day 1 write-ups
+
+| Document | What it is for |
+|---|---|
+| `docs/day-01-talking-points.md` | The update sheet: the 60-second opening, the ten measured answers, the demo segment, and the seven questions to expect with their answers |
+| `docs/architecture-diagram.md` | The one system diagram, plus truth ownership, the two clocks and why one backend is enough |
+| `docs/issue-board.md` | 25 bounded issues, the issue cycle, and the cut order if the schedule slips |
+| `docs/issues/FUEL-009-filters.md` | One issue specification worked end to end: the example solved by hand, the scope, the design, the checks and the challenged failure case |
+| `docs/evidence/day-01/dashboard-sample.json` | A real snapshot payload captured from the running stack |

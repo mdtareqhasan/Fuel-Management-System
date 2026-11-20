@@ -123,13 +123,15 @@ INVALID with the simulator DOWN → recovery to FRESH.
 
 ## Handover notes
 
-**Where things stand:** a running vertical slice with 33 automated checks. The
-risk engine, allocation, approval and command layers are not started.
+**Where things stand:** a running vertical slice with 34 automated end-to-end
+checks and 52 unit tests. The risk engine, allocation, approval and command
+layers are not started.
 
 **Read first:**
 1. `docs/contract-notes.md` — measured behaviour, not assumptions.
 2. `docs/acceptance-and-invariants.md` — the thirty invariants.
 3. `docs/adr/ADR-008-depot-inventory-is-net.md` — the easiest thing to get wrong.
+4. `docs/architecture-diagram.md` — the one picture of the whole system.
 
 **The three traps to avoid:**
 1. Subtracting pending and in-transit allocations from depot inventory. The
@@ -141,7 +143,10 @@ risk engine, allocation, approval and command layers are not started.
 **Local commands:**
 ```bash
 docker compose up --build -d      # start everything
-python scripts/verify_day1.py     # 33 checks
+python scripts/verify_day1.py     # 34 checks
+python scripts/verify_filters.py  # 13 filter checks
 python scripts/sim_control.py --help
 cd backend && ./mvnw verify       # 30 unit tests
+cd frontend && npm run test       # 22 unit tests
+cd frontend && npm run build      # type check + production build
 ```

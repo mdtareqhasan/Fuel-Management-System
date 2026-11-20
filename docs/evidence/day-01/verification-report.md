@@ -1,10 +1,10 @@
 # Day 01 verification report
 
-Generated: 2026-11-20T11:10:18.045522+00:00
+Generated: 2026-11-20T13:04:34.365577+00:00
 
 Every result below was produced by running the script, not asserted by hand.
 
-**33 passed, 0 failed**
+**34 passed, 0 failed**
 
 ## 1. Stack reachability
 
@@ -95,5 +95,12 @@ Every result below was produced by running the script, not asserted by hand.
 
 ## 8. Live counter values
 
-- `fuel_data_age_seconds 1.339`
+- `fuel_data_age_seconds 1.17`
 - `fuel_database_up 1.0`
+
+## 9. The operator console's filters
+
+- 13 passed, 0 failed
+- report written to docs/evidence/day-01/filter-report.md
+- **PASS** — the filter verification script passes
+  - scripts/verify_filters.py — 13 checks against the live stack

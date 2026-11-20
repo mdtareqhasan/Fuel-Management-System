@@ -42,7 +42,7 @@ jobs:
           retention-days: 7
 
   frontend:
-    name: Frontend build and type check
+    name: Frontend test, build and type check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -58,6 +58,10 @@ jobs:
       # exactly the check this project wants.
       - name: Install
         run: npm ci
+        working-directory: frontend
+
+      - name: Unit tests
+        run: npm run test
         working-directory: frontend
 
       - name: Type check and build

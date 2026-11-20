@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react'
 import { useDashboard } from './useDashboard'
 import {
   FUEL_TYPES,
@@ -14,6 +15,20 @@ import {
   levelClass,
   statusClass,
 } from './format'
+import {
+  ALL,
+  DEFAULT_FILTERS,
+  filterAllocations,
+  filterDepots,
+  filterStations,
+  indexStations,
+  isDefault,
+  parseFilters,
+  regionOptions,
+  toSearchParams,
+  visibleFuels,
+  type Filters,
+} from './filters'
 import './styles.css'
 
 /**
@@ -25,6 +40,49 @@ import './styles.css'
  */
 export default function App() {
   const { dashboard, status, error, loading } = useDashboard()
+  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
+
+  // The filter is a view concern, not a data concern. It narrows what the
+  // operator is looking at; it never changes the snapshot the backend holds.
+  const stations = useMemo(
+    () => (dashboard ? filterStations(dashboard.stations, filters) : []),
+    [dashboard, filters],
+  )
+  const depots = useMemo(
+    () => (dashboard ? filterDepots(dashboard.depots, filters) : []),
+    [dashboard, filters],
+  )
+  const allocations = useMemo(
+    () =>
+      dashboard
+        ? filterAllocations(dashboard.allocations, filters, indexStations(dashboard.stations))
+        : [],
+    [dashboard, filters],
+  )
+
+  // The filter lives in the URL, so a filtered view is deep-linkable and the
+  // operator can share exactly what they are looking at. The region list comes
+  // from the snapshot, so a link naming a region the world does not have falls
+  // back to the unfiltered view instead of rendering nothing.
+  //
+  // The snapshot id changes on every refresh, so the parsed value is compared
+  // with the current one and only replaced when it actually differs. Otherwise
+  // every two-second refresh would build a new filters object and re-render
+  // the whole console for nothing.
+  useEffect(() => {
+    if (!dashboard) return
+    const validRegions = dashboard.regions.map((region) => region.id)
+    const parsed = parseFilters(window.location.search, validRegions)
+    setFilters((current) =>
+      current.fuel === parsed.fuel && current.region === parsed.region ? current : parsed,
+    )
+  }, [dashboard?.metadata.snapshot_id])
+
+  const applyFilters = (next: Filters) => {
+    setFilters(next)
+    const query = toSearchParams(next)
+    window.history.replaceState(null, '', `${window.location.pathname}${query}`)
+  }
 
   if (loading && !dashboard) {
     return <div className="app app-empty">Loading the current world…</div>
@@ -44,10 +102,15 @@ export default function App() {
   return (
     <div className="app">
       <Header dashboard={dashboard} status={status} error={error} />
-      <StationsSection dashboard={dashboard} />
-      <DepotsSection dashboard={dashboard} />
+      <FilterBar dashboard={dashboard} filters={filters} onChange={applyFilters} />
+      <StationsSection
+        stations={stations}
+        total={dashboard.stations.length}
+        fuel={filters.fuel}
+      />
+      <DepotsSection depots={depots} total={dashboard.depots.length} fuel={filters.fuel} />
       <EventsSection dashboard={dashboard} />
-      <AllocationsSection dashboard={dashboard} />
+      <AllocationsSection allocations={allocations} total={dashboard.allocations.length} />
       <Footer dashboard={dashboard} />
     </div>
   )
@@ -151,24 +214,129 @@ function MetaItem({ label, value }: { label: string; value: string }) {
   )
 }
 
-// ------------------------------------------------------------------- stations
+// ------------------------------------------------------------------- filters
 
-function StationsSection({ dashboard }: { dashboard: DashboardResponse }) {
+/**
+ * The filter bar.
+ *
+ * Filtering happens in the browser over the backend's validated view. The
+ * snapshot itself is untouched: the operator narrows what they are looking at,
+ * and the header keeps showing the tick, the freshness and the age of the data
+ * underneath, so a filtered view is never mistaken for a different world.
+ */
+function FilterBar({
+  dashboard,
+  filters,
+  onChange,
+}: {
+  dashboard: DashboardResponse
+  filters: Filters
+  onChange: (next: Filters) => void
+}) {
+  const regions = regionOptions(dashboard.regions)
+
   return (
-    <section className="section">
-      <h2>
-        Stations <span className="count">{dashboard.stations.length}</span>
-      </h2>
-      <div className="grid">
-        {dashboard.stations.map((station) => (
-          <StationCard key={station.id} station={station} />
-        ))}
+    <section className="filter-bar" aria-label="Filter the operator view">
+      <div className="filter-group">
+        <span className="filter-label">Fuel</span>
+        <div className="filter-pills">
+          <FilterPill
+            active={filters.fuel === ALL}
+            label="All fuels"
+            onClick={() => onChange({ ...filters, fuel: ALL })}
+          />
+          {FUEL_TYPES.map((fuel) => (
+            <FilterPill
+              key={fuel}
+              active={filters.fuel === fuel}
+              label={fuel}
+              onClick={() => onChange({ ...filters, fuel })}
+            />
+          ))}
+        </div>
       </div>
+
+      <div className="filter-group">
+        <span className="filter-label">Region</span>
+        <div className="filter-pills">
+          {regions.map((region) => (
+            <FilterPill
+              key={region}
+              active={filters.region === region}
+              label={region === ALL ? 'All regions' : regionName(dashboard, region)}
+              onClick={() => onChange({ ...filters, region })}
+            />
+          ))}
+        </div>
+      </div>
+
+      {!isDefault(filters) && (
+        <button type="button" className="filter-reset" onClick={() => onChange(DEFAULT_FILTERS)}>
+          Reset filters
+        </button>
+      )}
     </section>
   )
 }
 
-function StationCard({ station }: { station: Station }) {
+/** The human name of a region, falling back to its id. */
+function regionName(dashboard: DashboardResponse, regionId: string): string {
+  const region = dashboard.regions.find((candidate) => candidate.id === regionId)
+  return region?.name ?? regionId
+}
+
+function FilterPill({
+  active,
+  label,
+  onClick,
+}: {
+  active: boolean
+  label: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      className={`filter-pill${active ? ' filter-pill-active' : ''}`}
+      aria-pressed={active}
+      onClick={onClick}
+    >
+      {label}
+    </button>
+  )
+}
+
+// ------------------------------------------------------------------- stations
+
+function StationsSection({
+  stations,
+  total,
+  fuel,
+}: {
+  stations: Station[]
+  total: number
+  fuel: Filters['fuel']
+}) {
+  return (
+    <section className="section">
+      <h2>
+        Stations <span className="count">{stations.length}</span>
+        {stations.length !== total && <span className="count-subtle">of {total}</span>}
+      </h2>
+      {stations.length === 0 ? (
+        <p className="empty">No station matches the current filter.</p>
+      ) : (
+        <div className="grid">
+          {stations.map((station) => (
+            <StationCard key={station.id} station={station} fuel={fuel} />
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
+function StationCard({ station, fuel }: { station: Station; fuel: Filters['fuel'] }) {
   return (
     <article className="card">
       <div className="card-head">
@@ -198,13 +366,13 @@ function StationCard({ station }: { station: Station }) {
           </tr>
         </thead>
         <tbody>
-          {FUEL_TYPES.map((fuel) => {
-            const inventory = station.inventory?.[fuel] ?? null
-            const capacity = station.capacity?.[fuel] ?? null
+          {visibleFuels(fuel).map((fuelName) => {
+            const inventory = station.inventory?.[fuelName] ?? null
+            const capacity = station.capacity?.[fuelName] ?? null
             const fraction = fillFraction(inventory, capacity)
             return (
-              <tr key={fuel}>
-                <th scope="row">{fuel}</th>
+              <tr key={fuelName}>
+                <th scope="row">{fuelName}</th>
                 <td>{formatLitres(inventory)}</td>
                 <td>{formatLitres(capacity)}</td>
                 <td>
@@ -232,22 +400,35 @@ function fractionPercent(fraction: number | null): number {
 
 // --------------------------------------------------------------------- depots
 
-function DepotsSection({ dashboard }: { dashboard: DashboardResponse }) {
+function DepotsSection({
+  depots,
+  total,
+  fuel,
+}: {
+  depots: Depot[]
+  total: number
+  fuel: Filters['fuel']
+}) {
   return (
     <section className="section">
       <h2>
-        Depots <span className="count">{dashboard.depots.length}</span>
+        Depots <span className="count">{depots.length}</span>
+        {depots.length !== total && <span className="count-subtle">of {total}</span>}
       </h2>
-      <div className="grid">
-        {dashboard.depots.map((depot) => (
-          <DepotCard key={depot.id} depot={depot} />
-        ))}
-      </div>
+      {depots.length === 0 ? (
+        <p className="empty">No depot matches the current filter.</p>
+      ) : (
+        <div className="grid">
+          {depots.map((depot) => (
+            <DepotCard key={depot.id} depot={depot} fuel={fuel} />
+          ))}
+        </div>
+      )}
     </section>
   )
 }
 
-function DepotCard({ depot }: { depot: Depot }) {
+function DepotCard({ depot, fuel }: { depot: Depot; fuel: Filters['fuel'] }) {
   return (
     <article className="card">
       <div className="card-head">
@@ -270,11 +451,11 @@ function DepotCard({ depot }: { depot: Depot }) {
           </tr>
         </thead>
         <tbody>
-          {FUEL_TYPES.map((fuel) => (
-            <tr key={fuel}>
-              <th scope="row">{fuel}</th>
-              <td>{formatLitres(depot.inventory?.[fuel] ?? null)}</td>
-              <td>{formatLitres(depot.capacity?.[fuel] ?? null)}</td>
+          {visibleFuels(fuel).map((fuelName) => (
+            <tr key={fuelName}>
+              <th scope="row">{fuelName}</th>
+              <td>{formatLitres(depot.inventory?.[fuelName] ?? null)}</td>
+              <td>{formatLitres(depot.capacity?.[fuelName] ?? null)}</td>
             </tr>
           ))}
         </tbody>
@@ -332,16 +513,23 @@ function EventsSection({ dashboard }: { dashboard: DashboardResponse }) {
 
 // ---------------------------------------------------------------- allocations
 
-function AllocationsSection({ dashboard }: { dashboard: DashboardResponse }) {
-  const recent = dashboard.allocations.slice(-8).reverse()
+function AllocationsSection({
+  allocations,
+  total,
+}: {
+  allocations: DashboardResponse['allocations']
+  total: number
+}) {
+  const recent = allocations.slice(-8).reverse()
 
   return (
     <section className="section">
       <h2>
-        Recent shipments <span className="count">{dashboard.allocations.length}</span>
+        Recent shipments <span className="count">{allocations.length}</span>
+        {allocations.length !== total && <span className="count-subtle">of {total}</span>}
       </h2>
       {recent.length === 0 ? (
-        <p className="empty">No shipments yet in this run.</p>
+        <p className="empty">No shipments match the current filter.</p>
       ) : (
         <table className="alloc-table">
           <thead>

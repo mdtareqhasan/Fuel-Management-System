@@ -4,6 +4,8 @@ build/
 dist/
 *.jar
 *.war
+# TypeScript incremental build cache
+*.tsbuildinfo
 
 # Dependencies
 node_modules/
