@@ -1,0 +1,18 @@
+target/
+build/
+.git/
+.github/
+.idea/
+*.iml
+logs/
+*.log
+
+# The repo's own docs and scripts are not needed inside the image.
+docs/
+scripts/
+*.md
+!README.md
+
+# Secrets and local config
+.env
+.env.local

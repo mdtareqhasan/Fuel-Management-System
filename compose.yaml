@@ -1,0 +1,146 @@
+# Local reproducible stack for the Fuel Supply Intelligence & Resilience Platform.
+#
+# Start:  docker compose up --build -d
+# Logs:   docker compose logs -f backend
+# Stop:   docker compose down            (add -v to also drop the database volume)
+#
+# The simulator image is the OFFICIAL one, pinned and unmodified (ADR 028).
+
+name: fuel-platform
+
+services:
+  # ---------------------------------------------------------------- simulator
+  # The official image, unmodified. Judges run their own submission against
+  # this same image, so its source is never edited.
+  simulator-api:
+    image: ${SIMULATOR_IMAGE:-asifmahmoud414/bup-fuel-supply-simulator:1.0.0}
+    container_name: fuel-simulator-api
+    environment:
+      SIMULATION_SPEED: ${SIMULATION_SPEED:-8}
+      TICK_MINUTES: ${TICK_MINUTES:-15}
+      SIMULATOR_START_MODE: ${SIMULATOR_START_MODE:-paused}
+    ports:
+      # Bound to loopback only. The admin API is not for the internet.
+      - "127.0.0.1:${SIMULATOR_PORT:-8000}:8000"
+    healthcheck:
+      # The image is a minimal Python build with no wget or curl, so the probe
+      # uses Python's own urllib. /v1/health is the simulator's own liveness
+      # endpoint and it bypasses fault injection, which is exactly what a
+      # container health check needs.
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/v1/health', timeout=3).status==200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks:
+      - fuel-net
+
+  # ----------------------------------------------------------------- database
+  postgres:
+    image: postgres:16-alpine
+    container_name: fuel-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-fuelplatform}
+      POSTGRES_USER: ${DB_USER:-fuel}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-fuel_local_dev_only}
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
+    volumes:
+      # A named volume, so evidence and test data survive `docker compose down`.
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-fuel} -d ${DB_NAME:-fuelplatform}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - fuel-net
+
+  # ------------------------------------------------------------------ backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fuel-backend
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-fuelplatform}
+      DB_USER: ${DB_USER:-fuel}
+      DB_PASSWORD: ${DB_PASSWORD:-fuel_local_dev_only}
+      SIMULATOR_BASE_URL: http://simulator-api:8000
+      SERVER_PORT: 8080
+      LOG_FILE: /app/logs/fuel-platform.log
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      simulator-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health/readiness || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 45s
+    networks:
+      - fuel-net
+
+  # ----------------------------------------------------------------- frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: fuel-frontend
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-5173}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - fuel-net
+
+  # -------------------------------------------------------------- monitoring
+  # Prometheus is P0: the metrics endpoint is required from day one.
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    container_name: fuel-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=7d
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - fuel-net
+
+  # Grafana is P1: it follows once the status panel works.
+  grafana:
+    image: grafana/grafana:12.0.2
+    container_name: fuel-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin_local_dev_only}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3000}:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - fuel-net
+
+volumes:
+  postgres-data:
+  grafana-data:
+
+networks:
+  fuel-net:
+    driver: bridge

@@ -1,0 +1,128 @@
+: connected
+
+event: simulation.tick
+data: {"tick": 2624, "sim_time": "2026-01-28T08:00:00"}
+
+event: simulation.tick
+data: {"tick": 2625, "sim_time": "2026-01-28T08:15:00"}
+
+event: simulation.tick
+data: {"tick": 2626, "sim_time": "2026-01-28T08:30:00"}
+
+event: simulation.tick
+data: {"tick": 2627, "sim_time": "2026-01-28T08:45:00"}
+
+event: simulation.tick
+data: {"tick": 2628, "sim_time": "2026-01-28T09:00:00"}
+
+event: simulation.tick
+data: {"tick": 2629, "sim_time": "2026-01-28T09:15:00"}
+
+event: simulation.tick
+data: {"tick": 2630, "sim_time": "2026-01-28T09:30:00"}
+
+event: simulation.tick
+data: {"tick": 2631, "sim_time": "2026-01-28T09:45:00"}
+
+event: simulation.tick
+data: {"tick": 2632, "sim_time": "2026-01-28T10:00:00"}
+
+event: simulation.tick
+data: {"tick": 2633, "sim_time": "2026-01-28T10:15:00"}
+
+event: simulation.tick
+data: {"tick": 2634, "sim_time": "2026-01-28T10:30:00"}
+
+event: simulation.tick
+data: {"tick": 2635, "sim_time": "2026-01-28T10:45:00"}
+
+event: simulation.tick
+data: {"tick": 2636, "sim_time": "2026-01-28T11:00:00"}
+
+event: simulation.tick
+data: {"tick": 2637, "sim_time": "2026-01-28T11:15:00"}
+
+event: simulation.tick
+data: {"tick": 2638, "sim_time": "2026-01-28T11:30:00"}
+
+event: simulation.tick
+data: {"tick": 2639, "sim_time": "2026-01-28T11:45:00"}
+
+event: simulation.tick
+data: {"tick": 2640, "sim_time": "2026-01-28T12:00:00"}
+
+event: simulation.tick
+data: {"tick": 2641, "sim_time": "2026-01-28T12:15:00"}
+
+event: simulation.tick
+data: {"tick": 2642, "sim_time": "2026-01-28T12:30:00"}
+
+event: simulation.tick
+data: {"tick": 2643, "sim_time": "2026-01-28T12:45:00"}
+
+event: simulation.tick
+data: {"tick": 2644, "sim_time": "2026-01-28T13:00:00"}
+
+event: simulation.tick
+data: {"tick": 2645, "sim_time": "2026-01-28T13:15:00"}
+
+event: simulation.tick
+data: {"tick": 2646, "sim_time": "2026-01-28T13:30:00"}
+
+event: simulation.tick
+data: {"tick": 2647, "sim_time": "2026-01-28T13:45:00"}
+
+event: simulation.tick
+data: {"tick": 2648, "sim_time": "2026-01-28T14:00:00"}
+
+event: simulation.tick
+data: {"tick": 2649, "sim_time": "2026-01-28T14:15:00"}
+
+event: simulation.tick
+data: {"tick": 2650, "sim_time": "2026-01-28T14:30:00"}
+
+event: simulation.tick
+data: {"tick": 2651, "sim_time": "2026-01-28T14:45:00"}
+
+event: simulation.tick
+data: {"tick": 2652, "sim_time": "2026-01-28T15:00:00"}
+
+event: simulation.tick
+data: {"tick": 2653, "sim_time": "2026-01-28T15:15:00"}
+
+event: simulation.tick
+data: {"tick": 2654, "sim_time": "2026-01-28T15:30:00"}
+
+event: simulation.tick
+data: {"tick": 2655, "sim_time": "2026-01-28T15:45:00"}
+
+event: simulation.tick
+data: {"tick": 2656, "sim_time": "2026-01-28T16:00:00"}
+
+event: simulation.tick
+data: {"tick": 2657, "sim_time": "2026-01-28T16:15:00"}
+
+event: simulation.tick
+data: {"tick": 2658, "sim_time": "2026-01-28T16:30:00"}
+
+event: simulation.tick
+data: {"tick": 2659, "sim_time": "2026-01-28T16:45:00"}
+
+event: simulation.tick
+data: {"tick": 2660, "sim_time": "2026-01-28T17:00:00"}
+
+event: simulation.tick
+data: {"tick": 2661, "sim_time": "2026-01-28T17:15:00"}
+
+event: simulation.tick
+data: {"tick": 2662, "sim_time": "2026-01-28T17:30:00"}
+
+event: simulation.tick
+data: {"tick": 2663, "sim_time": "2026-01-28T17:45:00"}
+
+event: simulation.tick
+data: {"tick": 2664, "sim_time": "2026-01-28T18:00:00"}
+
+event: simulation.tick
+data: {"tick": 2665, "sim_time": "2026-01-28T18:15:00"}
+

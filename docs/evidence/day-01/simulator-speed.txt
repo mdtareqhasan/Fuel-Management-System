@@ -1,0 +1,9 @@
+﻿
+run tick_start tick_end delta_ticks elapsed_s rate_tps sim_minutes sim_hours status_start status_end
+--- ---------- -------- ----------- --------- -------- ----------- --------- ------------ ----------
+  1       2003     2168         165     30.04    5.493        2475     41.25 RUNNING      RUNNING   
+  2       2169     2333         164     30.08    5.451        2460        41 RUNNING      RUNNING   
+  3       2333     2496         163     30.04    5.426        2445     40.75 RUNNING      RUNNING   
+
+
+

@@ -1,0 +1,50 @@
+﻿########## EXACT ERROR BODIES - ALL VALIDATION RULES ##########
+simulator: http://localhost:8000
+
+--- DISPATCH_CAPACITY_EXCEEDED ---
+status=409
+body={"detail":{"code":"DISPATCH_CAPACITY_EXCEEDED","message":"Depot dispatch capacity per tick exceeded"}}
+
+--- NOT_FOUND_UNKNOWN_DEPOT ---
+status=404
+body={"detail":{"code":"NOT_FOUND","message":"Source depot not found"}}
+
+--- NOT_FOUND_UNKNOWN_STATION ---
+status=404
+body={"detail":{"code":"NOT_FOUND","message":"Destination station not found"}}
+
+--- NOT_FOUND_UNKNOWN_ROUTE ---
+status=404
+body={"detail":{"code":"NOT_FOUND","message":"Route not found"}}
+
+--- PYDANTIC_BAD_ENUM ---
+status=422
+body={"detail":[{"type":"literal_error","loc":["body","fuel_type"],"msg":"Input should be 'DIESEL', 'PETROL' or 'OCTANE'","input":"Kerosene","ctx":{"expected":"'DIESEL', 'PETROL' or 'OCTANE'"}}]}
+
+--- PYDANTIC_ZERO_QUANTITY ---
+status=422
+body={"detail":[{"type":"greater_than","loc":["body","quantity"],"msg":"Input should be greater than 0","input":0,"ctx":{"gt":0.0}}]}
+
+--- PYDANTIC_MISSING_FIELD ---
+status=422
+body={"detail":[{"type":"missing","loc":["body","route_id"],"msg":"Field required","input":{"idempotency_key":"probe-err-f2","source_depot_id":"depot-gazipur","destination_station_id":"station-mirpur","fuel_type":"DIESEL","quantity":100}}]}
+
+--- DESTINATION_CAPACITY_EXCEEDED ---
+status=409
+body={"detail":{"code":"DISPATCH_CAPACITY_EXCEEDED","message":"Depot dispatch capacity per tick exceeded"}}
+
+--- INSUFFICIENT_INVENTORY ---
+status=409
+body={"detail":{"code":"ROUTE_CAPACITY_EXCEEDED","message":"Quantity exceeds route max shipment"}}
+
+--- IDEMPOTENCY_KEY_MISMATCH ---
+status=409
+body={"detail":{"code":"IDEMPOTENCY_KEY_MISMATCH","message":"Idempotency key was already used with different parameters."}}
+
+
+########## CANCEL NON-PENDING (body) ##########
+cancel_arrived_allocation status=409
+body={"detail":{"code":"CANNOT_CANCEL","message":"Only pending allocations can be cancelled"}}
+
+cancel_unknown_allocation status=404
+body={"detail":{"code":"ALLOCATION_NOT_FOUND"}}

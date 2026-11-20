@@ -1,0 +1,54 @@
+# Build output
+target/
+build/
+dist/
+*.jar
+*.war
+
+# Dependencies
+node_modules/
+.vendor/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# Editor agent metadata
+.puku/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets and local config -- NEVER commit these
+.env
+.env.local
+*.pem
+*.key
+
+# Test and coverage output
+coverage/
+.surefire-reports/
+*.log
+
+# Evidence that should stay out of the repo (large recordings)
+docs/evidence/**/*.mp4
+docs/evidence/**/*.mov
+
+# Scratch output from ad-hoc probing. The recorded evidence lives in
+# docs/evidence/day-01/, produced by scripts/verify_day1.py.
+dashboard_probe.json
+openapi.json
+metrics*.txt
+keys.txt
+simapi.txt
+probe.txt
+
+# OS temp
+*.tmp
+*.bak
+test_write.txt

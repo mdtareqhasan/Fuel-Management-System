@@ -1,0 +1,26 @@
+﻿########## DISPATCH CAPACITY RESERVATION TEST ##########
+gazipur dispatch_capacity_per_tick = 12000 (shared across ALL fuels)
+
+-- alloc A: DIESEL 7000 to mirpur (route max 7000) --
+status=201
+-- alloc B: PETROL 7000 to mirpur (different fuel, same depot, same tick) --
+status=409 body=
+  -> if 201, dispatch allowance is NOT shared across fuels (contradicts guide)
+
+-- alloc C: DIESEL 6000 more (total 13000 > 12000 dispatch cap) --
+status=409 body=
+
+-- alloc D: DIESEL 5000 to tongi via gazipur-tongi (route max 6500) --
+status=409 body=
+
+
+########## DEPOT INVENTORY AFTER THESE POSTS ##########
+gazipur inventory={"DIESEL":82900.0,"PETROL":70000.0,"OCTANE":45000.0}
+gazipur dispatch_capacity_per_tick=12000.0
+
+########## STATION CAPACITY CHECK ##########
+mirpur DIESEL inventory=0 capacity=15000
+mirpur PETROL inventory=0 capacity=14000
+
+########## LEDGER ##########
+[{"id":4,"idempotency_key":"dc-a","source_depot_id":"depot-gazipur","destination_station_id":"station-mirpur","route_id":"route-gazipur-mirpur","fuel_type":"DIESEL","quantity":7000.0,"created_tick":2689,"departure_tick":null,"expected_arrival_tick":null,"actual_arrival_tick":null,"status":"PENDING","failure_reason":null},{"id":3,"idempotency_key":"probe-cancel-002","source_depot_id":"depot-gazipur","destination_station_id":"station-tongi","route_id":"route-gazipur-tongi","fuel_type":"PETROL","quantity":500.0,"created_tick":2689,"departure_tick":null,"expected_arrival_tick":null,"actual_arrival_tick":null,"status":"CANCELLED","failure_reason":null},{"id":2,"idempotency_key":"probe-extra-001","source_depot_id":"depot-gazipur","destination_station_id":"station-mirpur","route_id":"route-gazipur-mirpur","fuel_type":"DIESEL","quantity":100.0,"created_tick":2689,"departure_tick":null,"expected_arrival_tick":null,"actual_arrival_tick":null,"status":"PENDING","failure_reason":null},{"id":1,"idempotency_key":"probe-key-001","source_depot_id":"depot-gazipur","destination_station_id":"station-mirpur","route_id":"route-gazipur-mirpur","fuel_type":"DIESEL","quantity":3000.0,"created_tick":2,"departure_tick":2,"expected_arrival_tick":4,"actual_arrival_tick":4,"status":"ARRIVED","failure_reason":null}]

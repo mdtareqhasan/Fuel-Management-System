@@ -1,0 +1,58 @@
+﻿########## DEMAND HISTORY ORDERING AND LIMIT ##########
+limit=12 returned_rows=12
+  tick=2688 fuel=OCTANE demand=44.304 served=0.0 unmet=44.304
+  tick=2688 fuel=PETROL demand=68.941 served=0.0 unmet=68.941
+  tick=2688 fuel=DIESEL demand=56.771 served=0.0 unmet=56.771
+  tick=2687 fuel=OCTANE demand=43.162 served=0.0 unmet=43.162
+  tick=2687 fuel=PETROL demand=76.836 served=0.0 unmet=76.836
+  tick=2687 fuel=DIESEL demand=60.323 served=0.0 unmet=60.323
+  tick=2686 fuel=OCTANE demand=37.762 served=0.0 unmet=37.762
+  tick=2686 fuel=PETROL demand=81.381 served=0.0 unmet=81.381
+  tick=2686 fuel=DIESEL demand=63.632 served=0.0 unmet=63.632
+  tick=2685 fuel=OCTANE demand=43.329 served=0.0 unmet=43.329
+  tick=2685 fuel=PETROL demand=77.314 served=0.0 unmet=77.314
+  tick=2685 fuel=DIESEL demand=60.439 served=0.0 unmet=60.439
+ticks_in_returned_order=2688,2688,2688,2687,2687,2687,2686,2686,2686,2685,2685,2685
+is_ascending=False
+is_descending=True
+
+-- limit clamping --
+limit=0    -> status 200
+limit=0 body_head=[{"id":32259,"station_id":"station-mirpur","fuel_type":"OCTANE","tick":2688,"sim_time":"2026-01-29T00:00:00","demand_liters":44.304,"served_liters":0.0,"unmet_liters":44.304}]
+limit=5000 -> status 200
+limit=5000 row_count=2000
+no station_id  -> status 200
+unknown station -> status 200
+
+########## UNKNOWN JSON FIELD ON POST ##########
+extra_field status=201 body={"id":2,"idempotency_key":"probe-extra-001","source_depot_id":"depot-gazipur","destination_station_id":"station-mirpur","route_id":"route-gazipur-mirpur","fuel_type":"DIESEL","quantity":100.0,"created_tick":2689,"departure_tick":null,"expected_arrival_tick":null,"actual_arrival_tick":null,"status":"PENDING","failure_reason":null}
+
+########## UNKNOWN IDS ##########
+GET /v1/depots/depot-nope     -> 404
+GET /v1/stations/station-nope -> 404
+GET /v1/routes/route-nope     -> 404
+GET /v1/routes (list only?)    -> 200
+GET /v1/routes/route-gazipur-mirpur -> 404
+
+########## DEPOT / INSTANCE STATE ##########
+current tick=2689 status=PAUSED tick_minutes=15 seed=12345
+gazipur dispatch_capacity_per_tick=12000.0
+gazipur inventory={"DIESEL":89900.0,"PETROL":70000.0,"OCTANE":45000.0}
+
+########## SUPPLY ARRIVALS ##########
+supply_count=22
+supply_by_status: ARRIVED=22
+not_arrived_count=0
+
+########## CANCEL A PENDING ALLOCATION ##########
+cancel_test create status=201 id=3 state=PENDING
+depot PETROL before cancel=69500.0
+cancel status=200 body={"id":3,"idempotency_key":"probe-cancel-002","source_depot_id":"depot-gazipur","destination_station_id":"station-tongi","route_id":"route-gazipur-tongi","fuel_type":"PETROL","quantity":500.0,"created_tick":2689,"departure_tick":null,"expected_arrival_tick":null,"actual_arrival_tick":null,"status":"CANCELLED","failure_reason":null}
+depot PETROL after cancel=70000.0
+-- cancel again (now not PENDING) --
+cancel_again status=409 body=
+-- replay same key after cancel (is key still occupied?) --
+replay_after_cancel status=201 body={"id":3,"idempotency_key":"probe-cancel-002","source_depot_id":"depot-gazipur","destination_station_id":"station-tongi","route_id":"route-gazipur-tongi","fuel_type":"PETROL","quantity":500.0,"created_tick":2689,"departure_tick":null,"expected_arrival_tick":null,"actual_arrival_tick":null,"status":"CANCELLED","failure_reason":null}
+
+########## FINAL LEDGER ##########
+[{"id":3,"idempotency_key":"probe-cancel-002","source_depot_id":"depot-gazipur","destination_station_id":"station-tongi","route_id":"route-gazipur-tongi","fuel_type":"PETROL","quantity":500.0,"created_tick":2689,"departure_tick":null,"expected_arrival_tick":null,"actual_arrival_tick":null,"status":"CANCELLED","failure_reason":null},{"id":2,"idempotency_key":"probe-extra-001","source_depot_id":"depot-gazipur","destination_station_id":"station-mirpur","route_id":"route-gazipur-mirpur","fuel_type":"DIESEL","quantity":100.0,"created_tick":2689,"departure_tick":null,"expected_arrival_tick":null,"actual_arrival_tick":null,"status":"PENDING","failure_reason":null},{"id":1,"idempotency_key":"probe-key-001","source_depot_id":"depot-gazipur","destination_station_id":"station-mirpur","route_id":"route-gazipur-mirpur","fuel_type":"DIESEL","quantity":3000.0,"created_tick":2,"departure_tick":2,"expected_arrival_tick":4,"actual_arrival_tick":4,"status":"ARRIVED","failure_reason":null}]

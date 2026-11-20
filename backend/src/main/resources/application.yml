@@ -1,0 +1,80 @@
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+spring:
+  application:
+    name: fuel-platform
+  jackson:
+    # One naming rule for the whole API. The simulator speaks snake_case, so the
+    # application's own responses speak it too. Mixing the two in one payload
+    # makes the frontend guess, and a wrong guess is a null field that nobody
+    # notices until it renders as "Unknown".
+    property-naming-strategy: SNAKE_CASE
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/fuelplatform}
+    username: ${DB_USER:fuel}
+    password: ${DB_PASSWORD:fuel_local_dev_only}
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 5000
+  jpa:
+    # Flyway owns the schema. Hibernate must never touch it.
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+  threads:
+    virtual:
+      enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  metrics:
+    distribution:
+      # Publish percentiles so the status panel can read p95 directly from
+      # the same registry that Prometheus scrapes. See ADR 006.
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.95, 0.99
+      slo:
+        http.server.requests: 100ms, 500ms, 1s
+  observations:
+    annotations:
+      enabled: true
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%X{correlationId:-no-correlation}] %logger{36} - %msg%n"
+  level:
+    com.fuelplatform: INFO
+    org.springframework.web: INFO
+  file:
+    name: ${LOG_FILE:logs/fuel-platform.log}
+
+app:
+  simulator:
+    base-url: ${SIMULATOR_BASE_URL:http://localhost:8000}
+    connect-timeout-ms: ${SIMULATOR_CONNECT_TIMEOUT_MS:1000}
+    response-timeout-ms: ${SIMULATOR_RESPONSE_TIMEOUT_MS:2000}
+  freshness:
+    max-age-seconds: ${FRESHNESS_MAX_AGE_SECONDS:10}
+    min-refresh-interval-ms: ${REFRESH_MIN_INTERVAL_MS:500}
+    poll-interval-ms: ${POLL_INTERVAL_MS:2000}
+  projection:
+    horizon-hours: ${PROJECTION_HORIZON_HOURS:8}
