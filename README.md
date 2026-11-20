@@ -40,23 +40,29 @@ The diagram shows PostgreSQL as a health-check dependency only. The Day 1 backen
 
 ![Verified Day 1 system architecture](images/system-architecture.svg)
 
-<details>
-<summary>Operator console screenshots</summary>
+### Operator console screenshots
 
-**Station inventory and system health**
-
-![Fuel station dashboard showing freshness, status, filters, and station inventory](images/dashboard-overview.png)
-
-**Depot inventory and shipment section**
-
-![Fuel depot inventory and recent shipments section](images/dashboard-depots-and-shipments.png)
-
-**Grafana access**
-
-![Grafana login page from the local Compose stack](images/grafana-login.png)
-
-The Grafana screenshot shows the login page; a project-specific operations dashboard is still planned.
-</details>
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <strong>Station inventory and system health</strong><br><br>
+      <img src="images/dashboard-overview.png" alt="Fuel station dashboard with freshness, status, filters, and station inventory" width="100%">
+    </td>
+    <td width="50%" align="center">
+      <strong>Depot inventory and shipment section</strong><br><br>
+      <img src="images/dashboard-depots-and-shipments.png" alt="Fuel depot inventory and recent shipments section" width="100%">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <strong>Grafana access</strong><br><br>
+      <img src="images/grafana-login.png" alt="Grafana login page from the local Compose stack" width="100%">
+    </td>
+    <td width="50%" align="center">
+      <em>Project-specific Grafana operations dashboard is planned.</em>
+    </td>
+  </tr>
+</table>
 
 ## Five-day phased execution plan
 
