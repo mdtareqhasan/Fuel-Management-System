@@ -1,6 +1,6 @@
 # Phase 02 · Day 3 — Persistence & Operator Decisions
 
-**Target:** Saturday, 21 November 2026 · **Status:** Planned.
+**Target:** Sunday, 22 November 2026 · **Status:** Planned.
 
 | Milestone | Focus areas | Intended result |
 |:--|:--|:--|

@@ -1,6 +1,6 @@
 # Phase 04 · Day 5 — Evaluation & Release Rehearsal
 
-**Target:** Monday, 23 November 2026 · **Status:** Planned.
+**Target:** Tuesday, 24 November 2026 · **Status:** Planned.
 
 | Milestone | Focus areas | Intended result |
 |:--|:--|:--|

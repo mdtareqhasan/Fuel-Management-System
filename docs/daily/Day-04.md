@@ -1,6 +1,6 @@
 # Phase 03 · Day 4 — Resilience & Observability
 
-**Target:** Sunday, 22 November 2026 · **Status:** Planned.
+**Target:** Monday, 23 November 2026 · **Status:** Planned.
 
 | Milestone | Focus areas | Intended result |
 |:--|:--|:--|

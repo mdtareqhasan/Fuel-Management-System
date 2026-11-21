@@ -29,23 +29,9 @@ An operator platform built around the **official BUP Fuel Supply Simulator**.
 
 | Latest milestone | Status date | Release target |
 |---|---|---|
-| **Phase 01 · Intelligence & Risk** | **Complete · 21 Nov 2026** | 23 Nov 2026 |
+| **Phase 01 · Intelligence & Risk** | **Complete · 21 Nov 2026** | **24 Nov 2026** |
 
 The application turns simulator snapshots into station and depot risk, anomaly flags, forecasts, and constraint-checked shipment proposals. **Proposals do not dispatch fuel**; operator approval, durable commands, and reconciliation are planned work.
-
-## Phased execution plan
-
-Each phase links to its detailed Markdown update. This table tracks the project roadmap; implementation notes and evidence remain in the linked documents.
-
-| Phase | Milestone | Focus areas | Target date / status |
-|---|---|---|---|
-| [Phase 00 · Day 1](docs/daily/Day-01.md) | Bootstrap & simulator contract | Simulator experiments, typed integration, validated dashboard, Compose, CI, metrics | Thu 19 Nov · **Done** |
-| [Phase 01 · Day 2](docs/daily/Day-02.md) | Intelligence & risk | Forecasts, station/depot projections, anomaly detection, constrained proposals | Fri 20 Nov · **Done** |
-| [Phase 02 · Day 3](docs/daily/Day-03.md) | Persistence & operator decisions | Durable records, human approval, idempotent command processing, shipment tracking | Sat 21 Nov · **Next** |
-| [Phase 03 · Day 4](docs/daily/Day-04.md) | Resilience & observability | Fault recovery, guarded writes, SSE, crisis scenarios, operations evidence | Sun 22 Nov · **Planned** |
-| [Phase 04 · Day 5](docs/daily/Day-05.md) | Evaluation & release rehearsal | Policy comparison, load evaluation, clean startup, documentation, demo rehearsal | Mon 23 Nov · **Planned** |
-
----
 
 ## Overview
 
@@ -79,6 +65,18 @@ The browser talks only to the Spring Boot API. The backend communicates with the
 | **Grafana metrics overview**<br><img src="images/grafana-overview-metrics.png" alt="Grafana metrics overview" width="100%"> | **Grafana sign-in screen**<br><img src="images/grafana-login-screen.png" alt="Grafana login screen" width="100%"> |
 
 The event screenshot shows one simulator scenario; values and event state can change as the simulator runs. Grafana credentials are configurable in `.env` (see `.env.example`).
+
+## Phased execution plan
+
+Each phase links to its detailed Markdown update. The dates below reflect the actual start and completion schedule; implementation notes and evidence remain in the linked documents.
+
+| Phase | Milestone | Focus areas | Target date / status |
+|---|---|---|---|
+| [Phase 00 · Day 1](docs/daily/Day-01.md) | Bootstrap & simulator contract | Simulator experiments, typed integration, validated dashboard, Compose, CI, metrics | Fri 20 Nov · **Done** |
+| [Phase 01 · Day 2](docs/daily/Day-02.md) | Intelligence & risk | Forecasts, station/depot projections, anomaly detection, constrained proposals | Sat 21 Nov · **Done** |
+| [Phase 02 · Day 3](docs/daily/Day-03.md) | Persistence & operator decisions | Durable records, human approval, idempotent command processing, shipment tracking | Sun 22 Nov · **Next** |
+| [Phase 03 · Day 4](docs/daily/Day-04.md) | Resilience & observability | Fault recovery, guarded writes, SSE, crisis scenarios, operations evidence | Mon 23 Nov · **Planned** |
+| [Phase 04 · Day 5](docs/daily/Day-05.md) | Evaluation & release rehearsal | Policy comparison, load evaluation, clean startup, documentation, demo rehearsal | Tue 24 Nov · **Planned** |
 
 ## Project structure
 
