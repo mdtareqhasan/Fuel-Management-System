@@ -1,0 +1,37 @@
+﻿tick=40 sim_time=2026-01-01T10:00:00 tick_minutes=15 horizon_hours=8 quality=FRESH decision_eligible=True
+detector_status=AVAILABLE policy=day2-heuristic-v1
+
+FORECASTS
+station                fuel     method            confidence n    central L/h   stress L/h   ewma MAE   naive MAE 
+-------------------------------------------------------------------------------------------------------------------
+station-coxsbazar      DIESEL   EWMA              GOOD       8    400.41123823719994 500.51404779649994 5.328081609857144 6.031714285714291
+station-coxsbazar      OCTANE   EWMA              GOOD       8    194.18066394559997 242.72582993199995 2.62756262742857 2.9294285714285726
+station-coxsbazar      PETROL   EWMA              GOOD       8    437.96721201799994 547.4590150224999 4.467955126428568 6.153428571428573
+station-karnaphuli     DIESEL   EWMA              GOOD       8    644.4954104995999 805.6192631244999 11.423633328142866 10.789571428571431
+station-karnaphuli     OCTANE   EWMA              GOOD       8    383.0053704372 478.75671304649995 7.890994033000003 6.665999999999999
+station-karnaphuli     PETROL   EWMA              GOOD       8    617.1779913483999 771.4724891854999 8.331611506142858 10.67585714285715
+station-mirpur         DIESEL   EWMA              GOOD       8    881.2745181835999 1101.5931477294998 11.98693954957142 12.09642857142857
+station-mirpur         OCTANE   EWMA              GOOD       8    613.5680620584 766.9600775729999 7.79965912314285 11.979142857142847
+station-mirpur         PETROL   EWMA              GOOD       8    1129.9031363323998 1412.3789204154996 13.457245674714263 9.846142857142866
+station-tongi          DIESEL   EWMA              GOOD       8    1632.0487604987998 2040.0609506234996 18.089057972714304 23.761571428571447
+station-tongi          OCTANE   EWMA              GOOD       8    255.75651087879993 319.6956385984999 2.7058796084285714 2.823285714285714
+station-tongi          PETROL   EWMA              GOOD       8    518.8041781111999 648.5052226389998 4.5471962951428635 5.1678571428571445
+
+STATION RISK
+level     station                fuel     stock     stockout tick  hours    unmet     inbound  flags
+----------------------------------------------------------------------------------------------------
+python : Traceback (most recent call last):
+At line:1 char:91
++ ... uel-Management-System'; python scripts/summarize_risk.py 2>&1 | Out-F ...
++                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last) 
+   ::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "D:\Poridhi Lab\Fuel Management 
+System\Fuel-Management-System\scripts\summarize_risk.py", line 47, in <module>
+    flag_index.setdefault((flag["station_id"], flag["fuel"]), 
+[]).append(flag["label"])
+                                                                         
+~~~~^^^^^^^^^
+KeyError: 'label'

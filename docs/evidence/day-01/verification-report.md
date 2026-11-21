@@ -1,6 +1,6 @@
 # Day 01 verification report
 
-Generated: 2026-11-20T13:04:34.365577+00:00
+Generated: 2026-11-21T08:00:20.207734+00:00
 
 Every result below was produced by running the script, not asserted by hand.
 
@@ -95,7 +95,7 @@ Every result below was produced by running the script, not asserted by hand.
 
 ## 8. Live counter values
 
-- `fuel_data_age_seconds 1.17`
+- `fuel_data_age_seconds 0.142`
 - `fuel_database_up 1.0`
 
 ## 9. The operator console's filters

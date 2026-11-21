@@ -1,0 +1,18 @@
+﻿SHARED DISPATCH LIMIT CHECK
+depot              allowance    proposed     headroom     lines   ok
+---------------------------------------------------------------------------
+depot-gazipur      12000        12000        0            3       yes
+depot-patiya       11000        1435         9565         3       yes
+
+RESULT: every depot is within its shared allowance
+
+ROUTE INTEGRITY CHECK
+  all proposals use a real route with matching endpoints and within max_shipment
+
+ALTERNATIVE CHECK
+  station-tongi|DIESEL: route-gazipur-tongi [DISPATCH_RESERVED_FOR_MORE_URGENT]
+  station-mirpur|PETROL: route-patiya-mirpur [LATER_ARRIVAL]
+  station-mirpur|OCTANE: route-patiya-mirpur [LATER_ARRIVAL]
+  station-mirpur|DIESEL: None [NO_ALTERNATIVE_ROUTE]
+  station-karnaphuli|DIESEL: None [NO_ALTERNATIVE_ROUTE]
+  station-karnaphuli|OCTANE: None [NO_ALTERNATIVE_ROUTE]

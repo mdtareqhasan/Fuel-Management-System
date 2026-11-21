@@ -1,0 +1,36 @@
+﻿CONSOLE: INTELLIGENCE PANEL
+  snapshot a5c932e0  tick 40  sim_time 2026-01-01T10:00:00  quality FRESH
+
+SUMMARY TILES
+  Critical 1 | Warning 7 | Anomaly flags 6 (0 unexplained) | Profile fallback 0 | Horizon 8 h | Detector AVAILABLE
+
+STATION RISK TABLE
+  CRITICAL station-tongi        DIESEL   stock=2970.323     dry@tick=48      (2.0h)  inbound=none                     EWMA/GOOD/n=8
+  WARNING  station-karnaphuli   DIESEL   stock=3825.364     dry@tick=64      (6.0h)  inbound=none                     EWMA/GOOD/n=8
+  WARNING  station-karnaphuli   OCTANE   stock=2421.48      dry@tick=66      (6.5h)  inbound=none                     EWMA/GOOD/n=8
+  WARNING  station-karnaphuli   PETROL   stock=4659.455     dry@tick=71      (7.75h)  inbound=none                     EWMA/GOOD/n=8
+  WARNING  station-mirpur       DIESEL   stock=4369.475     dry@tick=60      (5.0h)  inbound=none                     EWMA/GOOD/n=8
+  WARNING  station-mirpur       OCTANE   stock=1919.506     dry@tick=53      (3.25h)  inbound=none                     EWMA/GOOD/n=8
+  WARNING  station-mirpur       PETROL   stock=3170.2       dry@tick=52      (3.0h)  inbound=none                     EWMA/GOOD/n=8
+  WARNING  station-tongi        PETROL   stock=3416.65      dry@tick=67      (6.75h)  inbound=none                     EWMA/GOOD/n=8
+  WATCH    station-coxsbazar    DIESEL   stock=4823.514     dry@tick=None    (Noneh)  inbound=none                     EWMA/GOOD/n=8
+  WATCH    station-coxsbazar    OCTANE   stock=2882.181     dry@tick=None    (Noneh)  inbound=none                     EWMA/GOOD/n=8
+  WATCH    station-coxsbazar    PETROL   stock=4594.669     dry@tick=None    (Noneh)  inbound=none                     EWMA/GOOD/n=8
+  WATCH    station-tongi        OCTANE   stock=2232.422     dry@tick=None    (Noneh)  inbound=none                     EWMA/GOOD/n=8
+
+RECOMMENDED SHIPMENTS
+  station-tongi        DIESEL       6500 L  depot-gazipur -> route-gazipur-tongi  arrives tick 42
+      alternative route-gazipur-tongi          [DISPATCH_RESERVED_FOR_MORE_URGENT]
+  station-mirpur       PETROL       3809 L  depot-gazipur -> route-gazipur-mirpur  arrives tick 42
+      alternative route-patiya-mirpur          [LATER_ARRIVAL]
+  station-mirpur       OCTANE       1691 L  depot-gazipur -> route-gazipur-mirpur  arrives tick 42
+      alternative route-patiya-mirpur          [LATER_ARRIVAL]
+  station-mirpur       DIESEL       1118 L  depot-patiya -> route-patiya-mirpur  arrives tick 44
+      alternative (none)                       [NO_ALTERNATIVE_ROUTE]
+  station-karnaphuli   DIESEL        241 L  depot-patiya -> route-patiya-karnaphuli  arrives tick 42
+      alternative (none)                       [NO_ALTERNATIVE_ROUTE]
+  station-karnaphuli   OCTANE         76 L  depot-patiya -> route-patiya-karnaphuli  arrives tick 42
+      alternative (none)                       [NO_ALTERNATIVE_ROUTE]
+
+UNMET NEEDS
+  station-tongi        DIESEL   need 7021.969562992799 met 6500.0 [NO_AVAILABLE_ROUTE]

@@ -78,3 +78,84 @@ app:
     poll-interval-ms: ${POLL_INTERVAL_MS:2000}
   projection:
     horizon-hours: ${PROJECTION_HORIZON_HOURS:8}
+
+  # ------------------------------------------------------------------
+  # SIMULATOR PROFILE CONSTANTS — simulator-specific, not business rules.
+  #
+  # These are the numbers the official simulator uses to generate demand.
+  # They are the denominator of every anomaly ratio, so a wrong value makes
+  # the detector flag normal hours as anomalies.
+  #
+  # Every value below was RE-MEASURED against the running simulator on
+  # 2026-11-21, not copied from the PDF. The measurement script is
+  # scripts/measure_hour_factor.py and the output is kept in
+  # docs/evidence/day-02/.
+  #
+  # The measurement caught a transcription error: the guide's highway busy
+  # window is 06-09 (six hours wide), not 07-09. With the narrow window,
+  # hour 6 of every day produced a 2.0 ratio and a permanent false alarm.
+  # ------------------------------------------------------------------
+  simulator-profile:
+    version: measured-2026-11-21
+    profiles:
+      - name: urban_high
+        diesel-daily-liters: 8500
+        petrol-daily-liters: 10500
+        octane-daily-liters: 5600
+        noise-factor: 0.10
+        busy-factor: 1.45
+        off-peak-factor: 0.70
+        busy-hour-ranges:
+          - "07-09"
+          - "16-20"
+      - name: industrial
+        diesel-daily-liters: 14000
+        petrol-daily-liters: 4500
+        octane-daily-liters: 2200
+        noise-factor: 0.08
+        busy-factor: 1.55
+        off-peak-factor: 0.45
+        busy-hour-ranges:
+          - "06-17"
+      - name: highway
+        diesel-daily-liters: 10500
+        petrol-daily-liters: 11000
+        octane-daily-liters: 6200
+        noise-factor: 0.12
+        busy-factor: 1.35
+        off-peak-factor: 0.75
+        busy-hour-ranges:
+          - "06-09"
+          - "16-20"
+      - name: regional
+        diesel-daily-liters: 7200
+        petrol-daily-liters: 7600
+        octane-daily-liters: 3600
+        noise-factor: 0.10
+        busy-factor: 1.25
+        off-peak-factor: 0.65
+        busy-hour-ranges:
+          - "07-20"
+
+  # ------------------------------------------------------------------
+  # FORECAST POLICY — proposed starting values, not tuned parameters.
+  # Day 5 measures whether the EWMA actually beats the naive baseline.
+  # ------------------------------------------------------------------
+  forecast:
+    ewma-alpha: ${FORECAST_EWMA_ALPHA:0.3}
+    window-size: ${FORECAST_WINDOW_SIZE:8}
+    minimum-observations: ${FORECAST_MIN_OBSERVATIONS:4}
+    stress-multiplier: ${FORECAST_STRESS_MULTIPLIER:1.25}
+
+  # ------------------------------------------------------------------
+  # RISK AND ANOMALY POLICY — also proposed, not tuned.
+  # ADR 005 records that the thresholds are guesses until a replay measures
+  # the false-flag count and the detection delay.
+  # ------------------------------------------------------------------
+  risk:
+    horizon-hours: ${RISK_HORIZON_HOURS:8}
+    critical-hours: ${RISK_CRITICAL_HOURS:2}
+    anomaly-consecutive-ticks: ${RISK_ANOMALY_TICKS:3}
+    anomaly-ratio-threshold: ${RISK_ANOMALY_RATIO:1.35}
+    recovery-ratio-threshold: ${RISK_RECOVERY_RATIO:1.15}
+    regional-station-threshold: ${RISK_REGIONAL_STATIONS:2}

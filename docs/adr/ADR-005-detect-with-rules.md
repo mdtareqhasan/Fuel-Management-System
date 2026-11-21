@@ -47,4 +47,52 @@ If the detector throws or lacks data, the risk table continues without flags and
 
 ## Verification
 
-Day 2 delivers the detector unit tests (quiet series → no flag; spiked series → flag). Day 5 delivers the replay measurement: false flags in a quiet 192-tick run, and the number of ticks until R1 and R2 fire after injecting `demand_spike` with multiplier 1.8 on `region-dhaka`.
+Day 2 delivers the detector unit tests (quiet series → no flag; spiked series →
+flag) **and** an early live measurement. Day 5 delivers the full replay
+measurement: false flags in a quiet 192-tick run, and the number of ticks until R1
+and R2 fire after injecting `demand_spike` with multiplier 1.8 on `region-dhaka`.
+
+### The Day 2 early measurement
+
+`scripts/verify_anomaly_detection.py` drives the live simulator and produces:
+
+| Measurement | Result |
+|---|---|
+| False flags in a quiet run | **0** across 4 stations, 72 observations, max ratio 1.11 |
+| R1 detection delay | **2 ticks** after the spike was injected |
+| R2 detection delay | **2 ticks** (2 of 2 region-dhaka stations flagged) |
+
+The script computes the ratios **independently** of the backend and then
+cross-checks the backend's own flags against its result, so this is a
+cross-validation rather than the backend agreeing with itself. The evidence is in
+`docs/evidence/day-02/anomaly-detection-measurement.txt`.
+
+### The profile constants had to be re-measured
+
+The rule is only as good as its denominator, so the profile constants were
+**re-measured against the running simulator** rather than transcribed from the
+PDF. `scripts/measure_hour_factor_clean.py` resets the simulator, steps a full
+day, and refuses to report if any event is still active.
+
+Two findings:
+
+- The guide's highway busy window is **06–09**, six hours wide, not 07–09. With
+  the narrow window, hour 6 produced a ratio of exactly 2.0 and a permanent false
+  alarm on `station-karnaphuli`.
+- 97 of 98 hours match the documented table. The exception is highway hour 5
+  (implied 0.817 against a documented 0.75), which gives a ratio of **1.09**
+  against a threshold of **1.35**. It is a description inaccuracy, not a
+  detection fault — which is exactly why the quiet run produces zero false flags.
+
+The measured constants live in `application.yml` under
+`app.simulator-profile.profiles`, versioned `measured-2026-11-21`.
+
+### A measurement that had to be redone
+
+The first hour-factor measurement was taken while a `demand_spike` event was
+still `ACTIVE` in region-dhaka. It inflated exactly the two region-dhaka stations
+by the spike multiplier and looked like a serious profile mismatch.
+
+`measure_hour_factor_clean.py` exists because of that. It **refuses to report**
+when an event is active. A measurement that silently includes an injected fault
+is worse than no measurement, because it produces confident wrong numbers.

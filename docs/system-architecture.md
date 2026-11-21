@@ -36,7 +36,7 @@ flowchart TB
     simulator[simulator-api service\nOfficial BUP image 1.0.0\ncontainer port 8000\nsource of fuel-world truth]
     postgres[postgres service\nPostgreSQL 16\nDay 1: health probe only; no domain persistence]
     prometheus[prometheus service\nPrometheus v3.5.0\ncontainer port 9090]
-    grafana[grafana service\nGrafana 12.0.2\ncontainer port 3000\nPrometheus datasource provisioned; no project dashboard JSON]
+    grafana[grafana service\nGrafana 12.0.2\ncontainer port 3000\nPrometheus datasource + provisioned overview dashboard]
 
     simulatorAdapter -->|REST GET /v1/instance, /v1/regions, /v1/depots, /v1/stations, /v1/routes, /v1/supply-arrivals, /v1/events, /v1/allocations| simulator
     app -->|JDBC SELECT 1 health probe; no application records| postgres
@@ -55,7 +55,7 @@ flowchart TB
 2. The backend refresh scheduler reads the simulator through the typed adapter. It reads the instance, regions, depots, stations, routes, supply arrivals, events, and allocation ledger. The adapter carries the simulator's stale-data header and normalizes its error response shapes.
 3. The ingestion service validates the responses and publishes a snapshot atomically. A failed or stale read keeps the last valid view available with degraded quality metadata; it does not make the old data eligible for decisions.
 4. The operator's browser loads the React application from the `frontend` service. Nginx forwards `/api/*` requests to the backend. The browser calls `/api/dashboard` and `/api/system-status`; it does not call the simulator.
-5. The backend exposes Micrometer/Actuator metrics at `/actuator/prometheus`. Prometheus scrapes the backend every 10 seconds. Grafana has a provisioned Prometheus datasource, but this repository does not currently include a project-specific dashboard definition.
+5. The backend exposes Micrometer/Actuator metrics at `/actuator/prometheus`. Prometheus scrapes the backend every 10 seconds. Grafana has a provisioned Prometheus datasource and the repository provisions a Fuel Platform Overview dashboard from `infra/grafana/provisioning/dashboards/`.
 
 ## Data ownership and persistence
 

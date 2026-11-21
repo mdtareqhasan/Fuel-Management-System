@@ -70,6 +70,13 @@ These are properties that must hold **always**. Each is enforced by code, a data
 | INV-23 | Before/after values are labelled **estimated impact**, never a probability or a confidence percentage. | Risk + recommendation DTO |
 | INV-24 | Unknown is displayed as **Unknown**, never as zero. | UI + API |
 | INV-25 | The anomaly detector is advisory. It never changes a quantity and never blocks risk output or approval. | ADR 005 |
+| INV-30 | One unmet need produces **exactly one** reason code. A need is never listed twice, and never with two conflicting explanations. | Allocator · `AllocationPlannerTest.oneNeedProducesOneExplanation` |
+| INV-31 | A sub-litre rounding residue is **not** reported as an unmet need. Quantities are rounded to whole litres, and the leftover is not a shortfall. | Allocator · `AllocationPlannerTest.roundingResidueIsNotAnUnmetNeed` |
+| INV-32 | A station at **exactly zero** is empty. The stockout is reported on that tick, not the next one. | Projector · `StationRiskProjectorTest.stockoutTickIsTheFirstEmptyTick` |
+| INV-33 | Fuel arriving **after** the tank empties does not prevent the stockout. Only fuel that lands before it does. | Projector · `StationRiskProjectorTest.lateArrivalDoesNotPreventTheEarlierStockout` |
+| INV-34 | The profile constants are **measured against the running simulator**, versioned in `application.yml`, and a measurement refuses to report while an event is active. | `measure_hour_factor_clean.py` · ADR 005 |
+| INV-35 | A flag carries the tick on which R1 **tripped**, not the last tick above the threshold. A spike that started fifteen ticks ago must not look like it was detected fifteen ticks late. | Detector · `DemandAnomalyDetectorTest.flagReportsTheFiringTickNotTheLastBreach` |
+| INV-36 | R3 clears a flag only after **three consecutive calm ticks**, as the guide specifies. One quiet tick in the middle of a spike is noise. | Detector · `DemandAnomalyDetectorTest.threeCalmTicksClearTheFlag` |
 
 ### Observability and hygiene
 

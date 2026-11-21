@@ -1,0 +1,36 @@
+﻿==============================================================================
+MEASUREMENT 1: false flags in a quiet run
+==============================================================================
+starting at tick 0, tick_minutes=15, ticks_per_day=96
+  station-mirpur         urban_high   n=72    max ratio=1.0972  no flag
+  station-tongi          industrial   n=72    max ratio=1.0792  no flag
+  station-karnaphuli     highway      n=72    max ratio=1.1144  no flag
+  station-coxsbazar      regional     n=72    max ratio=1.0980  no flag
+
+QUIET RUN FALSE FLAGS: 0
+
+==============================================================================
+MEASUREMENT 2: detection delay after an injected demand spike
+==============================================================================
+injected demand_spike multiplier=1.8 on region-dhaka at tick 24
+
+station                region               R1 fired at tick     delay after spike
+-------------------------------------------------------------------------------------
+  station-mirpur         region-dhaka         24                   0 ticks
+  station-tongi          region-dhaka         24                   0 ticks
+  station-karnaphuli     region-chattogram    never                -
+  station-coxsbazar      region-chattogram    never                -
+
+R1 FIRED: 0 ticks after the spike was injected
+R2 FIRED: 0 ticks after the spike was injected (2 stations of region-dhaka flagged)
+
+CROSS-CHECK: the backend's own detector
+  backend tick=40 detector_status=AVAILABLE flags=6
+    REGIONAL station-mirpur         DIESEL   ratio=1.9400   cause=KNOWN_EVENT   at tick 26
+    REGIONAL station-mirpur         PETROL   ratio=1.9600   cause=KNOWN_EVENT   at tick 26
+    REGIONAL station-mirpur         OCTANE   ratio=1.9300   cause=KNOWN_EVENT   at tick 26
+    REGIONAL station-tongi          DIESEL   ratio=1.9000   cause=KNOWN_EVENT   at tick 26
+    REGIONAL station-tongi          PETROL   ratio=1.9300   cause=KNOWN_EVENT   at tick 26
+    REGIONAL station-tongi          OCTANE   ratio=1.9100   cause=KNOWN_EVENT   at tick 26
+
+  backend REGIONAL flags: 6 (independent calculation found 2 spiking stations)

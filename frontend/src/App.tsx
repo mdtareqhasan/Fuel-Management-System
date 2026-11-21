@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useDashboard } from './useDashboard'
+import { useRisk } from './useRisk'
+import { RiskPanel } from './RiskPanel'
 import {
   FUEL_TYPES,
   type DashboardResponse,
@@ -40,7 +42,27 @@ import './styles.css'
  */
 export default function App() {
   const { dashboard, status, error, loading } = useDashboard()
+  const { risk, error: riskError } = useRisk()
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    try {
+      const saved = window.localStorage.getItem('fuel-platform-theme')
+      if (saved === 'dark' || saved === 'light') return saved
+    } catch {
+      // The system preference still works when browser storage is unavailable.
+    }
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+  })
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    document.documentElement.style.colorScheme = theme
+    try {
+      window.localStorage.setItem('fuel-platform-theme', theme)
+    } catch {
+      // Theme remains active for this page even when it cannot be persisted.
+    }
+  }, [theme])
 
   // The filter is a view concern, not a data concern. It narrows what the
   // operator is looking at; it never changes the snapshot the backend holds.
@@ -84,6 +106,10 @@ export default function App() {
     window.history.replaceState(null, '', `${window.location.pathname}${query}`)
   }
 
+  const toggleTheme = () => {
+    setTheme((current) => current === 'dark' ? 'light' : 'dark')
+  }
+
   if (loading && !dashboard) {
     return <div className="app app-empty">Loading the current world…</div>
   }
@@ -101,8 +127,15 @@ export default function App() {
 
   return (
     <div className="app">
-      <Header dashboard={dashboard} status={status} error={error} />
+      <Header
+        dashboard={dashboard}
+        status={status}
+        error={error}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+      />
       <FilterBar dashboard={dashboard} filters={filters} onChange={applyFilters} />
+      <RiskPanel risk={risk} error={riskError} fuel={filters.fuel} />
       <StationsSection
         stations={stations}
         total={dashboard.stations.length}
@@ -122,10 +155,14 @@ function Header({
   dashboard,
   status,
   error,
+  theme,
+  onToggleTheme,
 }: {
   dashboard: DashboardResponse
   status: SystemStatus | null
   error: string | null
+  theme: 'dark' | 'light'
+  onToggleTheme: () => void
 }) {
   const meta = dashboard.metadata
   const stale = meta.quality !== 'FRESH'
@@ -141,19 +178,34 @@ function Header({
           </p>
         </div>
 
-        <div className="badges">
-          {/* The mode badge is the single most important piece of context on the
-              screen. In RUNNING the world moves while you read, which changes what
-              an approval means. */}
-          <span className={`badge ${paused ? 'badge-paused' : 'badge-running'}`}>
-            {paused ? 'PAUSED' : dashboard.simulation_mode}
-          </span>
-          <span className={`badge ${stale ? 'badge-stale' : 'badge-fresh'}`}>
-            {meta.quality}
-          </span>
-          <span className="badge badge-age" title="Wall-clock age of the current view">
-            {formatAge(dashboard.data_age_seconds)}
-          </span>
+        <div className="header-actions">
+          <button
+            type="button"
+            className="theme-toggle"
+            onClick={onToggleTheme}
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          >
+            {theme === 'dark' ? (
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" /></svg>
+            ) : (
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.9 13A8.5 8.5 0 0 1 11 3.1 8.5 8.5 0 1 0 20.9 13Z" /></svg>
+            )}
+            <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+          </button>
+          <div className="badges">
+            {/* The mode badge is the single most important piece of context on
+                the screen. In RUNNING the world moves while you read. */}
+            <span className={`badge ${paused ? 'badge-paused' : 'badge-running'}`}>
+              {paused ? 'PAUSED' : dashboard.simulation_mode}
+            </span>
+            <span className={`badge ${stale ? 'badge-stale' : 'badge-fresh'}`}>
+              {meta.quality}
+            </span>
+            <span className="badge badge-age" title="Wall-clock age of the current view">
+              {formatAge(dashboard.data_age_seconds)}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -531,6 +583,7 @@ function AllocationsSection({
       {recent.length === 0 ? (
         <p className="empty">No shipments match the current filter.</p>
       ) : (
+        <div className="table-scroll">
         <table className="alloc-table">
           <thead>
             <tr>
@@ -565,6 +618,7 @@ function AllocationsSection({
             ))}
           </tbody>
         </table>
+        </div>
       )}
     </section>
   )

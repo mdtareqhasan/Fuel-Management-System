@@ -1,0 +1,116 @@
+﻿Resetting the simulator so no event is active...
+  tick=0 tick_minutes=15 ticks_per_day=96
+Stepping 96 ticks to cover a full day...
+  events on the world: 0, active: 0
+
+IMPLIED HOUR FACTOR vs DOCUMENTED
+profile      hour   n     median       documented   match
+--------------------------------------------------------------
+highway      0      12    0.7744       0.75         yes
+highway      1      12    0.7763       0.75         yes
+highway      2      12    0.7510       0.75         yes
+highway      3      12    0.7348       0.75         yes
+highway      4      12    0.7275       0.75         yes
+highway      5      12    0.8172       0.75         NO
+highway      6      12    1.3658       1.35         yes
+highway      7      12    1.3091       1.35         yes
+highway      8      12    1.3047       1.35         yes
+highway      9      12    1.3001       1.35         yes
+highway      10     12    0.7066       0.75         yes
+highway      11     12    0.7408       0.75         yes
+highway      12     12    0.7160       0.75         yes
+highway      13     12    0.7761       0.75         yes
+highway      14     12    0.7704       0.75         yes
+highway      15     12    0.7913       0.75         yes
+highway      16     12    1.2835       1.35         yes
+highway      17     12    1.4573       1.35         yes
+highway      18     12    1.3207       1.35         yes
+highway      19     12    1.3888       1.35         yes
+highway      20     12    1.3877       1.35         yes
+highway      21     12    0.7672       0.75         yes
+highway      22     12    0.7556       0.75         yes
+highway      23     12    0.7622       0.75         yes
+industrial   0      12    0.4419       0.45         yes
+industrial   1      12    0.4457       0.45         yes
+industrial   2      12    0.4496       0.45         yes
+industrial   3      12    0.4558       0.45         yes
+industrial   4      12    0.4444       0.45         yes
+industrial   5      12    0.4737       0.45         yes
+industrial   6      12    1.5434       1.55         yes
+industrial   7      12    1.5572       1.55         yes
+industrial   8      12    1.5184       1.55         yes
+industrial   9      12    1.5655       1.55         yes
+industrial   10     12    1.5386       1.55         yes
+industrial   11     12    1.6319       1.55         yes
+industrial   12     12    1.5449       1.55         yes
+industrial   13     12    1.5356       1.55         yes
+industrial   14     12    1.5789       1.55         yes
+industrial   15     12    1.5647       1.55         yes
+industrial   16     12    1.5429       1.55         yes
+industrial   17     12    1.5959       1.55         yes
+industrial   18     12    0.4551       0.45         yes
+industrial   19     12    0.4605       0.45         yes
+industrial   20     12    0.4628       0.45         yes
+industrial   21     12    0.4610       0.45         yes
+industrial   22     12    0.4513       0.45         yes
+industrial   23     12    0.4632       0.45         yes
+regional     0      12    0.6648       0.65         yes
+regional     1      12    0.6116       0.65         yes
+regional     2      12    0.6456       0.65         yes
+regional     3      12    0.6604       0.65         yes
+regional     4      12    0.6496       0.65         yes
+regional     5      12    0.6669       0.65         yes
+regional     6      12    0.6768       0.65         yes
+regional     7      12    1.2409       1.25         yes
+regional     8      12    1.2616       1.25         yes
+regional     9      12    1.2560       1.25         yes
+regional     10     12    1.2724       1.25         yes
+regional     11     12    1.2420       1.25         yes
+regional     12     12    1.2886       1.25         yes
+regional     13     12    1.2613       1.25         yes
+regional     14     12    1.2014       1.25         yes
+regional     15     12    1.3103       1.25         yes
+regional     16     12    1.2543       1.25         yes
+regional     17     12    1.2420       1.25         yes
+regional     18     12    1.2777       1.25         yes
+regional     19     12    1.1821       1.25         yes
+regional     20     12    1.3182       1.25         yes
+regional     21     12    0.6616       0.65         yes
+regional     22     12    0.6573       0.65         yes
+regional     23     12    0.6449       0.65         yes
+urban_high   0      12    0.7161       0.70         yes
+urban_high   1      12    0.6915       0.70         yes
+urban_high   2      12    0.6899       0.70         yes
+urban_high   3      12    0.7157       0.70         yes
+urban_high   4      12    0.7203       0.70         yes
+urban_high   5      12    0.6999       0.70         yes
+urban_high   6      12    0.7105       0.70         yes
+urban_high   7      12    1.4344       1.45         yes
+urban_high   8      12    1.4568       1.45         yes
+urban_high   9      12    1.4674       1.45         yes
+urban_high   10     12    0.7116       0.70         yes
+urban_high   11     12    0.6866       0.70         yes
+urban_high   12     12    0.6938       0.70         yes
+urban_high   13     12    0.6966       0.70         yes
+urban_high   14     12    0.7082       0.70         yes
+urban_high   15     12    0.7110       0.70         yes
+urban_high   16     12    1.4607       1.45         yes
+urban_high   17     12    1.4274       1.45         yes
+urban_high   18     12    1.5524       1.45         yes
+urban_high   19     12    1.4881       1.45         yes
+urban_high   20     12    1.4583       1.45         yes
+urban_high   21     12    0.6771       0.70         yes
+urban_high   22     12    0.6840       0.70         yes
+urban_high   23     12    0.6738       0.70         yes
+
+MISMATCHES (median implied vs documented):
+  highway hour 5: implied median 0.8172 vs documented 0.75
+      the detector would compute a ratio of 1.0896 for this hour
+
+A mismatch matters only if it pushes the ratio over the anomaly
+threshold of 1.35. A ratio below that produces no flag, so the
+mismatch is a description inaccuracy rather than a detection fault.
+
+WORST HOUR RATIO: 1.0896 at highway hour 5
+ANOMALY THRESHOLD: 1.35
+VERDICT: no hour reaches the threshold, so no hour can raise a false flag.

@@ -2,9 +2,9 @@
 
 # Fuel Supply Intelligence
 
-### A decision-support platform for a simulated fuel supply network
+### Explainable risk analysis and supply recommendations for a simulated fuel network
 
-Monitor stations and depots, understand data quality, and build toward safer, explainable supply decisions.
+An operator platform built around the official BUP Fuel Supply Simulator.
 
 **Spring Boot · Java 21 · React · TypeScript · PostgreSQL · Docker Compose · Prometheus · Grafana**
 
@@ -14,73 +14,96 @@ Monitor stations and depots, understand data quality, and build toward safer, ex
 
 ## Project status
 
-| Current milestone | Release target | Current focus |
+| Latest milestone | Status date | Release target |
 |:--|:--|:--|
-| **Phase 00 complete — Day 1 foundation** | **23 Nov 2026** | Simulator integration, validated read-only dashboard, and observability |
+| **Phase 01 · Intelligence & Risk** | **Complete · 21 Nov 2026** | 23 Nov 2026 |
 
-> **What works now:** the application reads and validates the official simulator's world and displays it in an operator console. Forecasting, risk recommendations, operator approval, and dispatch workflow are planned phases; they are not presented as implemented features.
+The app now turns simulator snapshots into station/depot risk, anomaly flags, forecasts, and constrained shipment proposals. **Proposals do not dispatch fuel:** operator approval, durable commands, and reconciliation are the next phase.
 
-## At a glance
+## What the system does
 
-The official BUP Fuel Supply Simulator owns the simulated world: station and depot inventory, demand, simulation time, events, and shipment state. This project adds a Spring Boot integration layer, a React operator console, and monitoring around that world.
+- Reads the official simulator's stations, depots, routes, demand history, events, and shipment ledger.
+- Validates and caches a complete snapshot, keeping the last valid view visible with a warning if reads become stale or fail.
+- Forecasts demand with EWMA, a naive short-history baseline, and a clearly-labelled profile fallback.
+- Projects station stockout timing and depot supply risk, accounting for inbound shipments and simulator tick duration.
+- Detects demand anomalies with explainable rules and reports why a flag is known or unexplained.
+- Produces constrained shipment proposals with alternatives and unmet-need reasons. It does not write to the simulator.
+- Exposes health and metrics to Prometheus; Grafana is provisioned with a Fuel Platform overview dashboard.
 
-```mermaid
-flowchart LR
-  operator[Operator] -->|Browser · localhost:5173| ui[React + Nginx]
-  ui -->|REST · /api/dashboard\n/api/system-status| backend[Spring Boot · localhost:8080]
-  backend -->|REST reads · simulator-api:8000| sim[Official BUP Simulator]
-  prom[Prometheus] -->|scrapes /actuator/prometheus| backend
-  grafana[Grafana] -->|queries metrics| prom
-  backend -. health probe only .-> db[(PostgreSQL)]
-```
+> **Source of truth:** the simulator owns fuel inventory, demand, simulation time, events, and shipment status. The application holds validated observations and analysis, not a second fuel world.
 
-The diagram shows PostgreSQL as a health-check dependency only. The Day 1 backend does not persist application snapshots, recommendations, or audit records there. Grafana has a Prometheus datasource configured; a project-specific Grafana dashboard is planned.
+## Architecture
 
-### Visual tour
+![Current system architecture after the Day 2 implementation](images/system-architecture-day2.svg)
 
-![Verified Day 1 system architecture](images/system-architecture.svg)
+The backend reads simulator data through REST. The browser reads the backend through Nginx and never calls the simulator directly. PostgreSQL is running and health-checked, but durable application records are still planned.
 
-### Operator console screenshots
+## Screenshots
+
+### Day 1 · Live simulator dashboard
 
 <table>
   <tr>
-    <td width="50%" align="center">
-      <strong>Station inventory and system health</strong><br><br>
-      <img src="images/dashboard-overview.png" alt="Fuel station dashboard with freshness, status, filters, and station inventory" width="100%">
-    </td>
-    <td width="50%" align="center">
-      <strong>Depot inventory and shipment section</strong><br><br>
-      <img src="images/dashboard-depots-and-shipments.png" alt="Fuel depot inventory and recent shipments section" width="100%">
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" align="center">
-      <strong>Grafana access</strong><br><br>
-      <img src="images/grafana-login.png" alt="Grafana login page from the local Compose stack" width="100%">
-    </td>
-    <td width="50%" align="center">
-      <em>Project-specific Grafana operations dashboard is planned.</em>
-    </td>
+    <td width="50%" align="center"><strong>Station inventory and service health</strong><br><br><img src="images/day-01-station-dashboard.png" alt="Day 1 station inventory dashboard" width="100%"></td>
+    <td width="50%" align="center"><strong>Depot inventory and shipments</strong><br><br><img src="images/day-01-depot-dashboard.png" alt="Day 1 depot inventory and shipment dashboard" width="100%"></td>
   </tr>
 </table>
 
-## Five-day phased execution plan
+### Day 2 · Risk, anomaly detection, and recommendations
 
-The table follows the phase / milestone / focus / target-date layout. Each day links to its own Markdown page with the planned work, evidence, and current status.
+<table>
+  <tr>
+    <td width="50%" align="center"><strong>Intelligence summary and demand anomalies</strong><br><br><img src="images/day-02-anomaly-summary.png" alt="Risk summary tiles and detected demand anomalies" width="100%"></td>
+    <td width="50%" align="center"><strong>Station stockout risk</strong><br><br><img src="images/day-02-station-risk.png" alt="Station risk table with stockout timing and forecast basis" width="100%"></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><strong>Depot risk and recommended shipments</strong><br><br><img src="images/day-02-depot-risk-recommendations.png" alt="Depot risk and constrained shipment proposals" width="100%"></td>
+    <td width="50%" align="center"><strong>Proposal alternatives and unmet needs</strong><br><br><img src="images/day-02-proposal-alternatives.png" alt="Shipment proposal alternatives and unmet-need reasons" width="100%"></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><strong>Filtered network inventory and active event</strong><br><br><img src="images/day-02-stations-depots-events.png" alt="Station and depot inventory during a demand-spike scenario" width="100%"></td>
+  </tr>
+</table>
+
+The Day 2 images include a controlled `demand_spike` scenario; their values are example run output, not a permanent baseline.
+
+### Grafana · Provisioned operations dashboard
+
+<table>
+  <tr>
+    <td width="50%" align="center"><strong>Service health, request rate, and p95 latency</strong><br><br><img src="images/grafana-overview-health.png" alt="Grafana dashboard health and latency panels" width="100%"></td>
+    <td width="50%" align="center"><strong>Error, simulator, data-quality, and intelligence metrics</strong><br><br><img src="images/grafana-overview-metrics.png" alt="Grafana dashboard metrics panels" width="100%"></td>
+  </tr>
+</table>
+
+The [Grafana login screenshot](images/grafana-login-screen.png) is retained as a setup reference; the two screenshots above show the provisioned dashboard.
+
+## Phased execution plan
+
+Each phase links to its own Markdown update. Completed work is marked **Done**; future work is clearly labelled.
 
 | Phase | Milestone | Focus areas | Target date |
 |:--|:--|:--|:--|
-| [Phase 00 · Day 1](docs/daily/Day-01.md) | Bootstrap & simulator contract | Repository foundation, measured simulator behavior, typed integration, validated read-only dashboard, Prometheus, Compose, CI | Thu 19 Nov — **Done** |
-| [Phase 01 · Day 2](docs/daily/Day-02.md) | Intelligence & risk | Demand history, forecasting, station/depot projection, anomaly detection, feasible recommendations and alternatives | Fri 20 Nov — **Planned** |
-| [Phase 02 · Day 3](docs/daily/Day-03.md) | Persistence & operator decisions | Database migrations, recommendation review, mode-aware approval, idempotent command processing, shipment tracking | Sat 21 Nov — **Planned** |
-| [Phase 03 · Day 4](docs/daily/Day-04.md) | Resilience & observability | Fault recovery, guarded writes, SSE with REST fallback, crisis scenarios, Grafana panels, deployment evidence | Sun 22 Nov — **Planned** |
-| [Phase 04 · Day 5](docs/daily/Day-05.md) | Evaluation & release rehearsal | Baseline comparison, load testing, clean startup, documentation freeze, demo rehearsal | Mon 23 Nov — **Planned** |
+| [Phase 00 · Day 1](docs/daily/Day-01.md) | Bootstrap & simulator contract | Simulator experiments, typed integration, validated dashboard, Compose, CI, metrics | Thu 19 Nov · **Done** |
+| [Phase 01 · Day 2](docs/daily/Day-02.md) | Intelligence & risk | Forecasts, station/depot projections, anomaly detection, constrained proposals | Fri 20 Nov · **Done** |
+| [Phase 02 · Day 3](docs/daily/Day-03.md) | Persistence & operator decisions | Durable records, human approval, idempotent command processing, shipment tracking | Sat 21 Nov · **Next** |
+| [Phase 03 · Day 4](docs/daily/Day-04.md) | Resilience & observability | Fault recovery, guarded writes, SSE, crisis scenarios, operations evidence | Sun 22 Nov · **Planned** |
+| [Phase 04 · Day 5](docs/daily/Day-05.md) | Evaluation & release rehearsal | Policy comparison, load evaluation, clean startup, demo rehearsal | Mon 23 Nov · **Planned** |
 
-> Dates follow the project guide. The repository's progress notes are dated 20 Nov 2026; update the phase statuses as work progresses.
+## Day 2 · What was implemented and measured
+
+- Demand observations are read with a bounded limit, split by fuel, deduplicated, and ordered oldest-first before forecasting.
+- Forecast methods are labelled: EWMA for sufficient history, naive for short history, and documented profile fallback for cold starts.
+- Station projections include inbound shipment timing; depot projections include supply/replenishment needs.
+- Rule-based anomaly detection covers station spikes, regional spikes, clearing behavior, and known-event attribution.
+- Allocation planning reserves shared depot dispatch capacity, source stock, route limits, and destination headroom before planning the next proposal.
+- Recommendations include alternatives and explicit unmet-need reasons. No allocation POST is issued by this analysis flow.
+
+**Measured results:** 97 of 98 profile hours matched the documented factors; a quiet run produced 0 false anomaly flags; R1 and R2 detected an injected spike in 2 ticks; proposed lines passed shared depot-capacity and route-integrity checks. Thresholds remain proposed and are not claimed as tuned.
 
 ## Quick start
 
-Requirements: Docker Desktop with Compose, Git, and Python 3 for the verification scripts. Create `.env` from the example only if you do not already have a local environment file, then start the stack:
+Requirements: Docker Desktop with Compose, Git, and Python 3. In PowerShell, create `.env` only if you do not already have one, then start the stack:
 
 ```powershell
 if (!(Test-Path .env)) { Copy-Item .env.example .env }
@@ -88,118 +111,100 @@ docker compose up --build -d
 docker compose ps
 ```
 
-Open the local services:
-
-| Service | URL | Purpose |
+| Service | URL | What to inspect |
 |:--|:--|:--|
-| Operator console | [http://localhost:5173](http://localhost:5173) | React dashboard |
-| Dashboard API | [http://localhost:8080/api/dashboard](http://localhost:8080/api/dashboard) | Latest validated simulator snapshot |
-| System status | [http://localhost:8080/api/system-status](http://localhost:8080/api/system-status) | Component health, data freshness, p95, and error rate |
-| Prometheus metrics | [http://localhost:8080/actuator/prometheus](http://localhost:8080/actuator/prometheus) | Backend metrics endpoint |
-| Prometheus UI | [http://localhost:9090](http://localhost:9090) | Scraped metric queries |
-| Grafana | [http://localhost:3000](http://localhost:3000) | Metrics exploration; local defaults are in `.env.example` |
-| Simulator API | [http://localhost:8000/v1/instance](http://localhost:8000/v1/instance) | Simulator instance and clock state |
+| Operator console | [localhost:5173](http://localhost:5173) | Inventory, freshness, risk, proposals |
+| Dashboard API | [localhost:8080/api/dashboard](http://localhost:8080/api/dashboard) | Validated simulator snapshot |
+| Risk API | [localhost:8080/api/risk](http://localhost:8080/api/risk) | Forecast, risk, anomalies, proposals |
+| System status | [localhost:8080/api/system-status](http://localhost:8080/api/system-status) | Backend, data, and latency status |
+| Prometheus metrics | [localhost:8080/actuator/prometheus](http://localhost:8080/actuator/prometheus) | Raw backend metrics |
+| Prometheus UI | [localhost:9090](http://localhost:9090) | Scrape targets and metric queries |
+| Grafana | [localhost:3000](http://localhost:3000) | Dashboards → Fuel Platform → Fuel Platform Overview |
+| Simulator | [localhost:8000/v1/instance](http://localhost:8000/v1/instance) | Simulator mode and tick clock |
 
-The Compose file binds services to localhost. Check `.env.example` for ports and local credentials; change default development credentials before sharing a machine or deployment.
+Grafana local credentials are configured in `.env.example`; use the values in your `.env` if overridden.
 
-## How the system works
+## How data moves
 
-1. **Simulator owns operational truth.** The backend reads the official simulator through its REST API; the browser never connects to it directly.
-2. **Backend refreshes and validates.** A scheduled refresh reads simulator resources, checks required fields and publishes a complete snapshot atomically.
-3. **The UI reads the backend view.** React polls `/api/dashboard` and `/api/system-status` through the frontend Nginx proxy.
-4. **Failures stay visible.** If a read fails or is marked stale, the last valid snapshot can remain on screen with its age and warning. Ineligible data is not treated as decision-ready.
-5. **Prometheus collects metrics.** It scrapes `/actuator/prometheus` every 10 seconds. Grafana is configured to use Prometheus as its datasource.
+1. Docker Compose starts the simulator, PostgreSQL, backend, frontend, Prometheus, and Grafana.
+2. The backend reads simulator REST resources, validates them, then publishes one complete snapshot.
+3. The React console polls backend dashboard, status, and risk APIs through Nginx.
+4. Prometheus scrapes `/actuator/prometheus` every 10 seconds; Grafana queries Prometheus.
+5. A proposal is analysis output only. The planned approval/command flow will be responsible for any future simulator write.
 
-### Two clocks, two meanings
+### Two clocks
 
-| Clock | What it measures | Used for |
-|:--|:--|:--|
-| Simulation tick | Fuel-world time; default is 15 simulated minutes per tick | Demand, inventory changes, transit, and supply events |
-| Wall clock | Real elapsed seconds | Refresh age, timeouts, and service latency |
+| Clock | Meaning |
+|:--|:--|
+| Simulation tick | Fuel-world time; default 15 simulated minutes per tick. Drives demand, transit, and supply events. |
+| Wall clock | Real time. Drives request timeouts, polling, and snapshot age. |
 
-A paused simulator can stay on the same tick while remaining reachable. Freshness is therefore based on the wall-clock age of a successful validated read, not merely on whether the tick changed.
+A paused simulator may stay on one tick while its API remains healthy. Data freshness is measured from the last successful validated read using wall-clock time.
 
-## Project structure
+## Verification and evidence
 
-```text
-backend/                 Spring Boot API and simulator integration
-  src/main/java/com/fuelplatform/
-    simulator/           Typed simulator adapter, DTOs, error parsing, metrics
-    ingestion/           Refresh scheduling, validation, snapshot publication
-    domain/              WorldSnapshot, simulation mode, data quality
-    web/                 Dashboard and system-status endpoints
-    observability/       Health registry and custom metrics
-frontend/                React + TypeScript operator console
-infra/                    Prometheus and Grafana provisioning
-scripts/                  Simulator controls and verification scripts
-docs/
-  daily/                  Per-day phase plans and progress links
-  adr/                    Architecture Decision Records
-  evidence/day-01/        Simulator experiments and verification evidence
-```
-
-## Verification
-
-Run the checks that match your environment:
+The repository's Day 2 update reports **83 backend tests passed**. The frontend has **22 unit tests**. Day 1's saved live-stack report records **34 checks**. Day 2 also records independent simulator measurements for anomaly detection and allocation constraints.
 
 ```powershell
-# Backend unit tests
+# Backend tests
 Set-Location backend
 .\mvnw.cmd verify
 Set-Location ..
 
-# Frontend tests and production build
+# Frontend unit tests and production build
 Set-Location frontend
 npm ci
 npm run test
 npm run build
 Set-Location ..
 
-# End-to-end checks against the running Compose stack
+# Live-stack / simulator checks (use a disposable simulator run)
 python scripts/verify_day1.py
 python scripts/verify_filters.py
+python scripts/verify_anomaly_detection.py
+python scripts/verify_dispatch_limit.py
 ```
 
-The saved Day 1 reports are in [`docs/evidence/day-01/`](docs/evidence/day-01/). They record checks performed against the running stack; rerun them after changing the implementation.
+Evidence: [`docs/evidence/day-01/`](docs/evidence/day-01/) and [`docs/evidence/day-02/`](docs/evidence/day-02/).
 
-## Simulator controls
+## Repository map
 
-The helper script is for local simulator experiments and demonstrations:
-
-```powershell
-python scripts/sim_control.py instance
-python scripts/sim_control.py step 5
-python scripts/sim_control.py run
-python scripts/sim_control.py pause
-python scripts/sim_control.py inject-fault stale_data 15
-python scripts/sim_control.py inject-fault unavailable 30
-python scripts/sim_control.py clear-faults
+```text
+backend/src/main/java/com/fuelplatform/
+  simulator/       Typed simulator client, DTOs, errors, metrics
+  ingestion/       Refresh, validation, snapshot publication
+  domain/          WorldSnapshot, mode, quality
+  risk/            Demand history, forecasts, station/depot risk, anomaly rules
+  allocation/      Feasible proposals, constraints, alternatives
+  web/             Dashboard, status, and risk APIs
+  observability/    Health registry and application metrics
+frontend/src/       React console, filters, and risk panels
+infra/              Compose monitoring configuration for Prometheus/Grafana
+images/             Architecture, dashboard, and Grafana screenshots
+docs/daily/          Day-by-day implementation notes
+docs/evidence/       Recorded verification and measurement outputs
+docs/adr/            Architecture Decision Records
+scripts/             Simulator control and verification helpers
 ```
 
-Use a disposable simulator run for experiments that change world state. Record the seed, tick, and injected event/fault when saving evidence.
+## Documentation
 
-## Documentation & evidence
-
-| Resource | Description |
+| Document | Description |
 |:--|:--|
-| [System architecture](docs/system-architecture.md) | Current service topology and implemented versus planned components |
-| [Architecture notes](docs/architecture-diagram.md) | Truth ownership, the two clocks, and modular-monolith decisions |
-| [Current state](docs/current-state.md) | Implemented modules, known gaps, and next tasks |
-| [Day 1 update](docs/day-01-update.md) | Detailed progress report and measured simulator findings |
-| [Day 1 talking points](docs/day-01-talking-points.md) | Concise update narrative with evidence references |
-| [Contract notes](docs/contract-notes.md) | Measured simulator API behavior |
-| [Acceptance criteria & invariants](docs/acceptance-and-invariants.md) | Product acceptance stories and engineering rules |
-| [Architecture decisions](docs/adr/) | ADRs explaining key design choices |
-| [Issue board](docs/issue-board.md) | Planned implementation issues and cut order |
-| [Agent activity log](docs/agent-activity-log.md) | Work and decisions recorded by session |
-| [Implementation guide](Fuel%20Management%20System%20md%20file/Fuel_Management_Implementation_Guide_v2.md) | Full five-day engineering guide |
+| [Day 1 update](docs/day-01-update.md) | Simulator contract findings and first working vertical slice |
+| [Day 2 update](docs/daily/Day-02.md) | Forecast, risk, anomaly, and allocation implementation with evidence |
+| [Current state](docs/current-state.md) | Implemented modules and immediate next steps |
+| [System architecture](docs/system-architecture.md) | Current services and implemented/planned boundaries |
+| [Measured simulator contract](docs/contract-notes.md) | API behavior established by experiments |
+| [Acceptance criteria and invariants](docs/acceptance-and-invariants.md) | Safety rules and acceptance stories |
+| [Architecture decisions](docs/adr/) | Design decisions and trade-offs |
+| [Issue board](docs/issue-board.md) | Work breakdown and cut order |
+| [Full implementation guide](Fuel%20Management%20System%20md%20file/Fuel_Management_Implementation_Guide_v2.md) | Five-day build guide |
 
-## Current scope and next steps
+## Next phase
 
-**Implemented in the Day 1 foundation:** simulator reads, typed adapter, snapshot validation, cached degraded view, dashboard and status APIs, read-only React console, metrics endpoint, Compose deployment, and CI workflow.
+Day 3 adds durable decision records, operator approval, a server-side freshness guard, and idempotent command processing. Until that path is implemented, the dashboard's recommendations remain proposals and do not dispatch fuel.
 
-**Planned next:** forecasting and risk, anomaly detection, constrained recommendations, persistence, operator approval, shipment command lifecycle, SSE refresh, Grafana dashboards, load evaluation, and final demo rehearsal. See the [phase plan](#five-day-phased-execution-plan) for per-day details.
+## Attribution
 
-## License & simulator attribution
-
-The project integrates with the official `asifmahmoud414/bup-fuel-supply-simulator:1.0.0` image without modifying it. The simulator is a dependency; its operational state remains authoritative.
+This project uses the official `asifmahmoud414/bup-fuel-supply-simulator:1.0.0` image without modifying it. The simulator remains authoritative for operational fuel-world state.
