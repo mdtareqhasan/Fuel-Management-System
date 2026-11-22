@@ -87,19 +87,6 @@ Every number below was measured against the running stack. Nothing here is a tra
 | Anomaly detector check | **0 false flags** in a quiet run; injected R1/R2 anomalies detected within **2 ticks** | [Day 2 measurements](docs/daily/Day-02.md) |
 | Shared dispatch limit | Held across every fuel and destination at a depot | [Day 2 measurements](docs/daily/Day-02.md) |
 
-### The four Day 3 acceptance claims, proven live
-
-Each of these is asserted by the end-to-end verifier against the real simulator, the real backend, and the real database.
-
-| Claim | How it is proven | Measured result |
-|---|---|---|
-| A proposal performs **no** simulator write | Allocation count before and after `POST /api/proposals` | 0 before, 0 after |
-| A duplicate approval creates **no** second shipment | Same proposal approved twice, then the allocation list is compared | HTTP 409 `ALREADY_APPROVED` · 6 before, 6 after |
-| The approved quantity never exceeds the reviewed quantity | Over-request refused, reduced request accepted, every line re-checked | HTTP 422 `QUANTITY_EXCEEDS_REVIEWED` · no line shipped more than reviewed |
-| A lost response is reconciled without a duplicate | Simulator write delayed past the app's read timeout, then reconciled by idempotency key | `status=UNKNOWN attempts=1` · 1 shipment before, 1 after |
-
-Risk thresholds remain **proposed, not tuned**. A dedicated k6/load benchmark has not been recorded yet. See [Day 3 evidence](docs/evidence/day-03/README.md) and [Day 2 measurements](docs/daily/Day-02.md) for details.
-
 ## Architecture
 
 ![Fuel Supply Intelligence system architecture](images/system-architecture.svg)
