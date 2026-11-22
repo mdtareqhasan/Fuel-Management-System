@@ -1,6 +1,6 @@
 # System architecture — the one diagram
 
-**Date:** 2026-11-20 (Day 1) · **Status:** accepted, the deployment diagram is drawn on Day 4
+**Date:** 2026-11-22 · **Status:** checked against the implemented decision and command flow
 
 This is the diagram I draw first and explain aloud without notes. It answers three
 questions in one picture: **who owns the truth**, **which clock is running**, and

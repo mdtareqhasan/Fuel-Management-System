@@ -1,0 +1,225 @@
+﻿==============================================================================
+TABLES
+==============================================================================
+      table_name       
+-----------------------
+ audit_events
+ commands
+ flyway_schema_history
+ proposal_lines
+ proposals
+ snapshots
+(6 rows)
+
+==============================================================================
+COLUMNS
+==============================================================================
+                            ?column?                            
+----------------------------------------------------------------
+ audit_events.id uuid
+ audit_events.run_id text
+ audit_events.occurred_at timestamp with time zone
+ audit_events.actor text
+ audit_events.action text
+ audit_events.entity_type text
+ audit_events.entity_id text
+ audit_events.outcome text
+ audit_events.correlation_id text
+ audit_events.details jsonb
+ commands.id uuid
+ commands.run_id text
+ commands.proposal_id uuid
+ commands.proposal_line_id uuid
+ commands.idempotency_key text
+ commands.request_body jsonb
+ commands.status text
+ commands.simulator_allocation_id bigint
+ commands.simulator_status text
+ commands.attempts integer
+ commands.last_error text
+ commands.created_at timestamp with time zone
+ commands.updated_at timestamp with time zone
+ commands.resolved_at timestamp with time zone
+ flyway_schema_history.installed_rank integer
+ flyway_schema_history.version character varying
+ flyway_schema_history.description character varying
+ flyway_schema_history.type character varying
+ flyway_schema_history.script character varying
+ flyway_schema_history.checksum integer
+ flyway_schema_history.installed_by character varying
+ flyway_schema_history.installed_on timestamp without time zone
+ flyway_schema_history.execution_time integer
+ flyway_schema_history.success boolean
+ proposal_lines.id uuid
+ proposal_lines.proposal_id uuid
+ proposal_lines.line_id text
+ proposal_lines.station_id text
+ proposal_lines.fuel_type text
+ proposal_lines.source_depot_id text
+ proposal_lines.route_id text
+ proposal_lines.reviewed_quantity double precision
+ proposal_lines.final_quantity double precision
+ proposal_lines.estimated_arrival_tick bigint
+ proposal_lines.cover_before_hours double precision
+ proposal_lines.cover_after_hours double precision
+ proposal_lines.reasons text
+ proposal_lines.constraints text
+ proposal_lines.alternatives jsonb
+ proposal_lines.status text
+ proposal_lines.created_at timestamp with time zone
+ proposals.id uuid
+ proposals.run_id text
+ proposals.snapshot_id uuid
+ proposals.policy_version text
+ proposals.proposed_at_tick bigint
+ proposals.mode text
+ proposals.status text
+ proposals.created_at timestamp with time zone
+ proposals.reviewed_quantity double precision
+ snapshots.id uuid
+ snapshots.run_id text
+ snapshots.simulator_tick bigint
+ snapshots.tick_start bigint
+ snapshots.tick_end bigint
+ snapshots.sim_time text
+ snapshots.observed_at timestamp with time zone
+ snapshots.quality text
+ snapshots.decision_eligible boolean
+ snapshots.warnings text
+ snapshots.payload jsonb
+(71 rows)
+
+==============================================================================
+CONSTRAINTS
+==============================================================================
+                                                                                                                   ?column?                                                                                                                   
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ audit_events | audit_events_pkey | PRIMARY KEY (id)
+ commands | chk_command_status | CHECK ((status = ANY (ARRAY['APPROVED'::text, 'SENDING'::text, 'SENT'::text, 'UNKNOWN'::text, 'REJECTED'::text, 'FAILED'::text, 'CANCELLED'::text])))
+ commands | commands_pkey | PRIMARY KEY (id)
+ commands | commands_proposal_id_fkey | FOREIGN KEY (proposal_id) REFERENCES proposals(id)
+ commands | commands_proposal_line_id_fkey | FOREIGN KEY (proposal_line_id) REFERENCES proposal_lines(id)
+ commands | uq_command_key | UNIQUE (idempotency_key)
+ commands | uq_command_line | UNIQUE (proposal_line_id)
+ flyway_schema_history | flyway_schema_history_pk | PRIMARY KEY (installed_rank)
+ proposal_lines | chk_final_not_above_reviewed | CHECK (((final_quantity IS NULL) OR (final_quantity <= reviewed_quantity)))
+ proposal_lines | chk_final_not_negative | CHECK (((final_quantity IS NULL) OR (final_quantity >= (0)::double precision)))
+ proposal_lines | chk_line_status | CHECK ((status = ANY (ARRAY['PENDING'::text, 'APPROVED_AS_REVIEWED'::text, 'APPROVED_REDUCED'::text, 'CHANGED'::text, 'BLOCKED'::text])))
+ proposal_lines | proposal_lines_pkey | PRIMARY KEY (id)
+ proposal_lines | proposal_lines_proposal_id_fkey | FOREIGN KEY (proposal_id) REFERENCES proposals(id) ON DELETE CASCADE
+ proposal_lines | uq_proposal_line | UNIQUE (proposal_id, line_id)
+ proposals | chk_proposal_status | CHECK ((status = ANY (ARRAY['PENDING_REVIEW'::text, 'APPROVED'::text, 'APPROVED_WITH_REDUCTION'::text, 'PARTIALLY_CHANGED'::text, 'CHANGED'::text, 'BLOCKED'::text, 'EXPIRED'::text, 'CANCELLED'::text])))
+ proposals | proposals_pkey | PRIMARY KEY (id)
+ proposals | proposals_snapshot_id_fkey | FOREIGN KEY (snapshot_id) REFERENCES snapshots(id)
+ snapshots | snapshots_pkey | PRIMARY KEY (id)
+(18 rows)
+
+==============================================================================
+INDEXES
+==============================================================================
+                      ?column?                       
+-----------------------------------------------------
+ audit_events | audit_events_pkey
+ audit_events | idx_audit_entity
+ audit_events | idx_audit_run_time
+ commands | commands_pkey
+ commands | idx_commands_run_status
+ commands | idx_commands_status
+ commands | uq_command_key
+ commands | uq_command_line
+ flyway_schema_history | flyway_schema_history_pk
+ flyway_schema_history | flyway_schema_history_s_idx
+ proposal_lines | idx_proposal_lines_proposal
+ proposal_lines | idx_proposal_lines_station
+ proposal_lines | proposal_lines_pkey
+ proposal_lines | uq_proposal_line
+ proposals | idx_proposals_run_status
+ proposals | idx_proposals_snapshot
+ proposals | proposals_pkey
+ snapshots | idx_snapshots_run_tick
+ snapshots | snapshots_pkey
+(19 rows)
+
+==============================================================================
+ROW COUNTS
+==============================================================================
+       ?column?       
+----------------------
+ snapshots      | 31
+ proposals      | 32
+ proposal_lines | 187
+ commands       | 89
+ audit_events   | 154
+(5 rows)
+
+==============================================================================
+COMMAND STATUSES
+==============================================================================
+  status  | count 
+----------+-------
+ REJECTED |    11
+ SENT     |    78
+(2 rows)
+
+==============================================================================
+PROPOSAL STATUSES
+==============================================================================
+         status          | count 
+-------------------------+-------
+ APPROVED                |    14
+ APPROVED_WITH_REDUCTION |     1
+ CHANGED                 |     7
+ PENDING_REVIEW          |    10
+(4 rows)
+
+==============================================================================
+AUDIT ACTIONS
+==============================================================================
+       action       |          outcome          | count 
+--------------------+---------------------------+-------
+ APPROVAL           | APPROVED                  |    14
+ APPROVAL           | APPROVED_WITH_REDUCTION   |     1
+ APPROVAL           | CHANGED                   |     7
+ APPROVAL_REJECTED  | ALREADY_APPROVED          |     1
+ APPROVAL_REJECTED  | QUANTITY_EXCEEDS_REVIEWED |     1
+ COMMAND_RECONCILED | SENT                      |     6
+ COMMAND_REJECTED   | REJECTED                  |    11
+ COMMAND_SENT       | SENT                      |    72
+ COMMAND_UNKNOWN    | UNKNOWN                   |     9
+ PROPOSAL_CREATED   | CREATED                   |    32
+(10 rows)
+
+==============================================================================
+COMMAND STATUS VS SIMULATOR STATUS
+==============================================================================
+           ?column?           
+------------------------------
+ REJECTED -> simulator (none)
+ REJECTED -> simulator (none)
+ REJECTED -> simulator (none)
+ REJECTED -> simulator (none)
+ REJECTED -> simulator (none)
+ REJECTED -> simulator (none)
+ REJECTED -> simulator (none)
+ REJECTED -> simulator (none)
+ REJECTED -> simulator (none)
+ REJECTED -> simulator (none)
+ REJECTED -> simulator (none)
+ SENT -> simulator ARRIVED
+ SENT -> simulator PENDING
+ SENT -> simulator PENDING
+ SENT -> simulator ARRIVED
+ SENT -> simulator PENDING
+ SENT -> simulator PENDING
+ SENT -> simulator PENDING
+ SENT -> simulator PENDING
+ SENT -> simulator ARRIVED
+(20 rows)
+
+==============================================================================
+MIGRATION HISTORY
+==============================================================================
+ installed_rank | version |          description           | success 
+----------------+---------+--------------------------------+---------
+              1 | 1       | day3 persistence and decisions | t
+(1 row)

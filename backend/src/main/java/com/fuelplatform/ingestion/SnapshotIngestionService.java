@@ -48,9 +48,6 @@ public class SnapshotIngestionService {
 
     private static final Logger log = LoggerFactory.getLogger(SnapshotIngestionService.class);
 
-    /** Bound on how many demand rows are fetched per station per refresh. */
-    private static final int DEMAND_HISTORY_LIMIT = 200;
-
     private final SimulatorClient simulatorClient;
     private final SnapshotValidator validator = new SnapshotValidator();
     private final Clock clock;
@@ -64,7 +61,6 @@ public class SnapshotIngestionService {
 
     private final Counter staleResponses;
     private final Counter rejectedPayloads;
-    private final Gauge dataAgeSeconds;
     private final AtomicReference<Double> measuredTicksPerSecond = new AtomicReference<>(0.0);
     private final AtomicReference<Long> lastTickSeen = new AtomicReference<>(0L);
     private final AtomicReference<Instant> lastTickAt = new AtomicReference<>(Instant.now());
@@ -83,7 +79,7 @@ public class SnapshotIngestionService {
         this.rejectedPayloads = Counter.builder("fuel_rejected_payloads_total")
                 .description("Payloads rejected by snapshot validation")
                 .register(meterRegistry);
-        this.dataAgeSeconds = Gauge.builder("fuel_data_age_seconds", this, SnapshotIngestionService::currentAgeSeconds)
+        Gauge.builder("fuel_data_age_seconds", this, SnapshotIngestionService::currentAgeSeconds)
                 .description("Wall-clock age of the current validated view")
                 .register(meterRegistry);
         Gauge.builder("fuel_sim_ticks_per_second", measuredTicksPerSecond, AtomicReference::get)

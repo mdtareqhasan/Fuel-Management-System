@@ -1,6 +1,5 @@
 package com.fuelplatform.ingestion;
 
-import com.fuelplatform.config.FreshnessProperties;
 import com.fuelplatform.domain.SimulationMode;
 import com.fuelplatform.domain.WorldSnapshot;
 import org.slf4j.Logger;
@@ -37,7 +36,6 @@ public class RefreshScheduler {
     private static final Logger log = LoggerFactory.getLogger(RefreshScheduler.class);
 
     private final SnapshotIngestionService ingestionService;
-    private final FreshnessProperties freshness;
 
     /** Set when a refresh is requested while another is running. */
     private volatile boolean refreshPending;
@@ -46,9 +44,8 @@ public class RefreshScheduler {
     private final java.util.concurrent.atomic.AtomicBoolean refreshing =
             new java.util.concurrent.atomic.AtomicBoolean(false);
 
-    public RefreshScheduler(SnapshotIngestionService ingestionService, FreshnessProperties freshness) {
+    public RefreshScheduler(SnapshotIngestionService ingestionService) {
         this.ingestionService = ingestionService;
-        this.freshness = freshness;
     }
 
     /**

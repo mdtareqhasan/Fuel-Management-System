@@ -1,84 +1,83 @@
 # System Architecture
 
-**Status:** Day 1 implementation, checked against the repository on 2026-11-20.
-
-This document describes what is present in the code and Compose configuration today. Dashed components are planned work, not active application flows.
+**Status:** checked against the implementation on 22 November 2026.
 
 ## Architecture diagram
 
 ```mermaid
 flowchart TB
-  operator[Operator]
+  operator[Operator / browser]
 
   subgraph compose[Docker Compose: fuel-platform / fuel-net]
-    subgraph ui[frontend service · Nginx + React + TypeScript · container port 80]
-      frontend[Static operator console\nRead-only dashboard]
-      nginx[Nginx same-origin proxy\n/api/* and /actuator/*]
-      frontend --- nginx
+    subgraph frontend[frontend service · Nginx + React + TypeScript]
+      ui[Operator console<br/>dashboard · routes · risk · proposal review · shipment ledger]
     end
 
-    subgraph app[backend service · Spring Boot · container port 8080]
-      web[web\n/api/dashboard\n/api/system-status]
-      ingestion[ingestion\nrefresh scheduler · validation · cached snapshot]
-      simulatorAdapter[simulator\ntyped REST adapter · error parsing · metrics]
-      domain[domain\nWorldSnapshot · SimulationMode · DataQuality]
-      observability[observability\nhealth registry · Micrometer metrics]
-      planned[Planned: risk, forecasting, anomaly detection,\nrecommendation, approval, command and audit modules]
+    subgraph backend[backend service · Spring Boot]
+      web[web<br/>dashboard · risk · status · proposals · shipments]
+      ingestion[ingestion<br/>refresh · validation · snapshot persistence]
+      simulatorClient[simulator<br/>typed REST client · metrics]
+      risk[risk + allocation<br/>forecast · anomaly · constrained proposals]
+      decisions[decision + command + audit<br/>approval · idempotency · reconciliation]
       web --> ingestion
-      ingestion --> simulatorAdapter
-      ingestion --> domain
-      web --> domain
-      simulatorAdapter --> observability
-      ingestion --> observability
-      planned -. not implemented .-> domain
+      web --> risk
+      web --> decisions
+      ingestion --> simulatorClient
+      ingestion --> risk
+      decisions --> simulatorClient
     end
 
-    simulator[simulator-api service\nOfficial BUP image 1.0.0\ncontainer port 8000\nsource of fuel-world truth]
-    postgres[postgres service\nPostgreSQL 16\nDay 1: health probe only; no domain persistence]
-    prometheus[prometheus service\nPrometheus v3.5.0\ncontainer port 9090]
-    grafana[grafana service\nGrafana 12.0.2\ncontainer port 3000\nPrometheus datasource + provisioned overview dashboard]
+    simulator[simulator-api<br/>Official BUP simulator<br/>source of operational truth]
+    postgres[(postgres<br/>PostgreSQL 16<br/>snapshots · proposals · commands · audit)]
+    prometheus[prometheus<br/>Prometheus 3.5.0]
+    grafana[grafana<br/>Grafana 12.0.2<br/>provisioned overview]
 
-    simulatorAdapter -->|REST GET /v1/instance, /v1/regions, /v1/depots, /v1/stations, /v1/routes, /v1/supply-arrivals, /v1/events, /v1/allocations| simulator
-    app -->|JDBC SELECT 1 health probe; no application records| postgres
-    prometheus -->|Scrape every 10s: GET /actuator/prometheus| app
-    grafana -->|Prometheus datasource: query http://prometheus:9090| prometheus
+    simulatorClient -->|REST GET: read network state| simulator
+    simulatorClient -->|REST POST: approved shipment commands only| simulator
+    ingestion -->|JDBC: persist validated snapshots| postgres
+    decisions -->|JDBC: persist proposals, commands, audit| postgres
+    prometheus -->|scrape /actuator/prometheus every 10s| backend
+    grafana -->|Prometheus datasource queries| prometheus
   end
 
-  operator -->|HTTP localhost:5173| frontend
-  nginx -->|REST proxy: GET /api/dashboard and /api/system-status| web
-  nginx -. optional local metrics proxy .->|GET /actuator/*| observability
+  operator -->|HTTP localhost:5173| ui
+  ui -->|same-origin REST /api/*| web
 ```
 
-## Implemented data flow
+## Main data flow
 
-1. Docker Compose starts six services: `simulator-api`, `postgres`, `backend`, `frontend`, `prometheus`, and `grafana`.
-2. The backend refresh scheduler reads the simulator through the typed adapter. It reads the instance, regions, depots, stations, routes, supply arrivals, events, and allocation ledger. The adapter carries the simulator's stale-data header and normalizes its error response shapes.
-3. The ingestion service validates the responses and publishes a snapshot atomically. A failed or stale read keeps the last valid view available with degraded quality metadata; it does not make the old data eligible for decisions.
-4. The operator's browser loads the React application from the `frontend` service. Nginx forwards `/api/*` requests to the backend. The browser calls `/api/dashboard` and `/api/system-status`; it does not call the simulator.
-5. The backend exposes Micrometer/Actuator metrics at `/actuator/prometheus`. Prometheus scrapes the backend every 10 seconds. Grafana has a provisioned Prometheus datasource and the repository provisions a Fuel Platform Overview dashboard from `infra/grafana/provisioning/dashboards/`.
+1. Docker Compose starts the official simulator, PostgreSQL, Spring Boot backend, React/Nginx frontend, Prometheus, and Grafana.
+2. The backend reads simulator instance, regions, depots, stations, routes, demand history, supply arrivals, events, and shipment state. It validates the response and publishes a consistent snapshot.
+3. Validated snapshots are persisted for audit and review context. The simulator remains the authority for current inventory, demand, events, and shipment state.
+4. The risk and allocation modules calculate forecasts, anomalies, station/depot risks, and constrained shipment proposals. The frontend displays the full route list from the snapshot.
+5. An operator reviews a proposal. The backend revalidates it, persists the decision and each exact idempotent command before sending an approved request to the simulator. Reconciliation links uncertain outcomes back to simulator shipment records.
+6. Prometheus scrapes backend metrics. Grafana reads those metrics through its provisioned Prometheus datasource and dashboard.
+
+The browser communicates only with the backend through the frontend's same-origin Nginx proxy. It never calls the simulator directly. Shipment creation can reach the simulator only through the backend approval and command path.
 
 ## Data ownership and persistence
 
-The official simulator image, `asifmahmoud414/bup-fuel-supply-simulator:1.0.0`, owns operational fuel inventory, demand, simulation time, events, and shipment state. The backend's `WorldSnapshot` is a validated observation of the simulator, not a second source of operational truth. No browser-to-simulator connection is configured.
+The simulator is the source of truth for operational fuel inventory, demand, simulation time, events, and shipment status. PostgreSQL stores the platform's validated snapshots, proposals, approval decisions, command request bodies and idempotency keys, reconciliation results, and audit events. Those records explain the application actions; they do not replace simulator state.
 
-PostgreSQL 16 runs in Compose and the backend has datasource configuration and a scheduled `SELECT 1` reachability probe. However, the current backend has no domain entities, repositories, or application-table migrations. Therefore this diagram shows only the health probe to PostgreSQL; it does not claim snapshots, commands, or audit records are persisted. Durable application persistence is planned work.
+## Simulator ticks and wall-clock time
 
-## The two clocks
+- **Simulator time:** Compose defaults to 15 simulated minutes per tick. Ticks advance fuel consumption, route transit, and simulator events.
+- **Wall-clock time:** real time on the host. The backend uses it for request timing, refresh age, freshness limits, and review expiry.
 
-- **Simulation clock:** `tick` and `sim_time` come from the simulator. Compose defaults to `TICK_MINUTES=15`, so one tick represents 15 simulated minutes. This clock governs fuel consumption, shipment transit, and supply events.
-- **Wall clock:** the computer's ordinary seconds. The backend uses it for request timeouts, polling, and the age of the last successful validated snapshot. Freshness is not inferred from tick movement: a paused simulator can remain on the same tick while its API is healthy.
+A paused simulator can keep the same tick while its API and the application remain healthy. Freshness is measured from the last successful validated read using wall-clock age, not by expecting the tick to advance.
 
-## Planned modules
+## Implemented and planned work
 
-The dashed `planned` node marks work not implemented in the current backend: station/depot risk and forecasting, anomaly detection, constrained recommendations, operator approval, shipment command processing, audit persistence, and an SSE event listener. The simulator adapter contains a low-level allocation client method, but there is no application approval/command flow that invokes it, so the diagram does not show shipment dispatch as an implemented feature.
+Implemented modules include `web`, `ingestion`, `simulator`, `domain`, `risk`, `allocation`, `decision`, `command`, `audit`, and `observability`. The current decision flow includes proposal review, server-side approval checks, persistent idempotent commands, shipment reconciliation, and an audit trail. The frontend includes an explicit route inventory, the decision panel, and shipment ledger.
+
+Resilience improvements and SSE-based event refresh remain planned work. Their absence does not prevent the current REST polling and approval flow.
 
 ## Repository references
 
-- Compose services, ports, and internal URLs: [`compose.yaml`](../compose.yaml)
+- Compose services and ports: [`compose.yaml`](../compose.yaml)
 - Backend packages: [`backend/src/main/java/com/fuelplatform/`](../backend/src/main/java/com/fuelplatform/)
-- Frontend polling and API calls: [`frontend/src/useDashboard.ts`](../frontend/src/useDashboard.ts)
-- Nginx API proxy: [`frontend/nginx.conf`](../frontend/nginx.conf)
-- Prometheus scrape target: [`infra/prometheus/prometheus.yml`](../infra/prometheus/prometheus.yml)
-- Grafana datasource and dashboard provider: [`infra/grafana/provisioning/`](../infra/grafana/provisioning/)
-- Day 1 module status: [`docs/current-state.md`](current-state.md)
-- Architecture decisions: [`docs/adr/`](adr/)
+- Frontend console: [`frontend/src/App.tsx`](../frontend/src/App.tsx)
+- Decision UI: [`frontend/src/DecisionPanel.tsx`](../frontend/src/DecisionPanel.tsx)
+- Prometheus scrape config: [`infra/prometheus/prometheus.yml`](../infra/prometheus/prometheus.yml)
+- Grafana provisioning: [`infra/grafana/provisioning/`](../infra/grafana/provisioning/)
+- Day 3 implementation and evidence: [`docs/daily/Day-03.md`](daily/Day-03.md)

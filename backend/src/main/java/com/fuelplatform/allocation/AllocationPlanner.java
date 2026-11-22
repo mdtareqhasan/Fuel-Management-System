@@ -595,33 +595,6 @@ public final class AllocationPlanner {
                 : primary.coverBeforeHours() + quantity / forecast.centralLitersPerHour();
     }
 
-    private AllocationProposal.Alternative buildAlternative(
-            Depot depot, Route route, double quantity, Long arrivalTick,
-            double dispatchRemaining, int routeIndex) {
-
-        String reasonCode;
-        String reason;
-        if (routeIndex > 0) {
-            reasonCode = AllocationProposal.Alternative.LATER_ARRIVAL;
-            reason = "this route arrives later than the chosen one";
-        } else if (dispatchRemaining <= 0) {
-            reasonCode = AllocationProposal.Alternative.DISPATCH_RESERVED_FOR_MORE_URGENT;
-            reason = "the shared dispatch allowance is reserved for a more urgent need";
-        } else {
-            reasonCode = AllocationProposal.Alternative.LOWER_SOURCE_COVER;
-            reason = "this depot would have less cover left after the shipment";
-        }
-
-        return new AllocationProposal.Alternative(
-                route.id(),
-                depot.id(),
-                quantity,
-                arrivalTick,
-                null,
-                reasonCode,
-                reason);
-    }
-
     /** The projected cover after the shipment arrives. */
     private static Double coverAfter(
             StationRisk risk, double quantity, Map<String, DemandForecast> forecasts, Policy policy) {

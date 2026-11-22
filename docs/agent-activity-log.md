@@ -212,37 +212,107 @@ not the same as a check that reads the system's actual output.
 
 ---
 
+## 2026-11-22 — Day 3, persistence and operator decisions
+
+### Session 8 — the durable record
+
+**Goal:** make a decision survive the process, and make it impossible to write the same shipment twice.
+
+**Actions:**
+- Wrote `V1__day3_persistence_and_decisions.sql`: `snapshots`, `proposals`, `proposal_lines`, `commands`, `audit_events`.
+- Built the `decision` package: `Proposal`, `ProposalLine`, `ProposalFactory`, `ProposalService`, `ProposalRepository`, `SnapshotRepository`, `Revalidator`, `FreshnessPolicy`, `ApprovalService`, `ApprovalResult`, `DecisionScheduler`.
+- Built the `command` package: `Command`, `CommandRepository`, `CommandWorker`, `ShipmentTracker`.
+- Built the `audit` package: `AuditRepository`.
+- Exposed `/api/proposals`, `/api/proposals/{id}`, `/api/proposals/{id}/approve`, `/api/shipments`, `/api/shipments/reconcile`.
+- Built the frontend decision surface: `DecisionPanel.tsx`, `useDecisions.ts`, `decisionTypes.ts`.
+- 121 backend tests, up from 83. 31 frontend tests, up from 22.
+
+**Decisions during implementation:**
+- The repositories are plain JDBC, not JPA entities. The records are immutable and the SQL is explicit, so the constraints are visible in the code rather than hidden in an ORM mapping. A half-built JPA entity approach was abandoned mid-day.
+- `run_id` is `TEXT`, not `UUID`. The domain carries it as an opaque string, and storing it as a UUID put a conversion at every repository boundary for no benefit. The schema and the repositories were changed together after a `ClassCastException`.
+- The dispatch allowance is re-reserved at approval time by `Revalidator.DispatchBudget`, shared across every line and every fuel/destination, including fuel already dispatched at the current tick. Without this, a six-line proposal produced six shipments the simulator refused with `DISPATCH_CAPACITY_EXCEEDED`.
+
+**Evidence:** `docs/evidence/day-03/`.
+
+---
+
+### Session 9 — the UI was not showing, and it was not the code
+
+**Goal:** answer "the UI shows nothing" with a cause, not a guess.
+
+**Findings:**
+- The `fuel-frontend` image was 23 hours old and had never been rebuilt with the Day 3 UI. The backend had been rebuilt; the frontend had not. `docker compose build frontend` followed by `docker compose up -d frontend` fixed it.
+- The route inventory table was missing from the dashboard for the same reason — it had been written on Day 3 but was never in the built bundle.
+- The routes were live the whole time. `/api/proposals`, `/api/shipments` and `/api/risk` returned 200 through the frontend proxy; `/api/dashboard` and `/api/system-status` did too. The 404s in the first route probe were my own wrong guesses at route names, not missing endpoints.
+
+**A real layout bug, found by looking at the rendered page:**
+- The Day 3 tables used the CSS class `grid`, which already existed as a **CSS grid container** for the card layouts in `App.tsx` and `RiskPanel.tsx`. The Day 3 rules redefined it as a table, so the `<table>` rendered as a grid: headers bunched left, cells pushed far right. The class was renamed to `.decision-table`, and `scripts/verify_frontend_day3_css.py` now guards both halves — the table rules are present *and* `.grid` is still `display: grid`.
+
+---
+
+### Session 10 — the audit bug that hid the truth
+
+**Goal:** get the Day 3 verifier from 16/17 to 17/17.
+
+**The failure:** the lost-response check reported `status=APPROVED attempts=0 last_error=None`. The command should have been `UNKNOWN`. The backend log showed why:
+
+```
+ERROR: invalid input syntax for type json
+  Where: JSON data, line 1: ...SEL","error":"I/O error on POST
+  request for "http...
+  at com.fuelplatform.audit.AuditRepository.record(AuditRepository.java:54)
+  at com.fuelplatform.command.CommandWorker.send(CommandWorker.java:158)
+```
+
+**Root cause:** the simulator's transport error message contains a double-quoted URL. The audit details were built by string concatenation, so that message produced invalid JSON. The insert failed — and because the audit insert shared a transaction with the command's status update, the failure rolled the status update back too. The command stayed `APPROVED` when the truth was `UNKNOWN`.
+
+That is the worst possible failure for this system. `UNKNOWN` means *the shipment may exist*; `APPROVED` means *not sent yet*. An operator reading `APPROVED` would approve again, and the second approval would create a second shipment — exactly the duplicate the idempotency key exists to prevent.
+
+**Two fixes:**
+1. The audit details are now a `Map` serialised by Jackson. Jackson cannot produce invalid JSON, so the class of bug is closed rather than patched. `AuditRepositoryTest` reproduces the exact message.
+2. `AuditRepository.record` now runs with `Propagation.REQUIRES_NEW`. The audit write commits independently of the decision it describes. This also fixed a quieter bug: every **refused** approval had been rolling its own `APPROVAL_REJECTED` record back with the exception, so the trail showed only the successes. An audit that records only successes is not an audit.
+
+**Result:** the verifier now records `status=UNKNOWN attempts=1` with the quoted URL preserved intact, and reconciling produces no second shipment. **17/17.**
+
+**Evidence:** `docs/evidence/day-03/backend-log-during-verifier.txt`,
+`docs/evidence/day-03/end-to-end-verification.txt`.
+
+---
+
 ## Handover notes
 
-**Where things stand:** a running vertical slice with 34 automated end-to-end
-checks and 52 unit tests, plus the full Day 2 intelligence layer with 83 backend
-tests. The approval and command layers are not started.
+**Where things stand:** a running vertical slice with 34 automated Day 1 end-to-end checks, the full Day 2 intelligence layer, and the complete Day 3 decision loop — **17/17 Day 3 end-to-end checks, 126 backend tests, 31 frontend tests**, a clean production build, and a documented schema.
 
 **Read first:**
 1. `docs/contract-notes.md` — measured behaviour, not assumptions.
-2. `docs/acceptance-and-invariants.md` — the thirty-four invariants.
+2. `docs/acceptance-and-invariants.md` — the invariants, INV-37 to INV-46 are the Day 3 rules.
 3. `docs/adr/ADR-008-depot-inventory-is-net.md` — the easiest thing to get wrong.
-4. `docs/architecture-diagram.md` — the one picture of the whole system.
-5. `docs/daily/Day-02.md` — what Day 2 built and why.
+4. `docs/adr/ADR-009-decision-record-and-shipment-ledger.md` — why the audit write is its own transaction.
+5. `docs/architecture-diagram.md` — the one picture of the whole system.
+6. `docs/daily/Day-03.md` — what Day 3 built and what it broke.
 
-**The four traps to avoid:**
-1. Subtracting pending and in-transit allocations from depot inventory. The
-   simulator already did it. See ADR 008.
+**The five traps to avoid:**
+1. Subtracting pending and in-transit allocations from depot inventory. The simulator already did it. See ADR 008.
 2. Trusting HTTP 200. Check `X-Simulator-Stale` on every `/v1/*` GET.
-3. Computing an EWMA over demand rows in the order the API returned them. The API
-   returns newest first; the forecast needs oldest first. See INV-20.
-4. Trusting a transcribed constant. The profile constants were measured, and the
-   measurement caught a transcription error in the guide. See ADR 005.
+3. Computing an EWMA over demand rows in the order the API returned them. The API returns newest first; the forecast needs oldest first. See INV-20.
+4. Trusting a transcribed constant. The profile constants were measured, and the measurement caught a transcription error in the guide. See ADR 005.
+5. Building JSON by string concatenation from a simulator message. It contains a double-quoted URL, and the resulting invalid JSON will roll back whatever it shares a transaction with. See ADR 009.
 
 **Local commands:**
 ```bash
 docker compose up --build -d      # start everything
+docker compose build frontend     # REQUIRED after a frontend change
+docker compose up -d frontend     # ...or the old bundle keeps being served
 python scripts/verify_day1.py     # 34 checks
 python scripts/verify_filters.py  # 13 filter checks
 python scripts/verify_anomaly_detection.py   # the Day 2 detector measurement
 python scripts/verify_dispatch_limit.py      # the Day 2 allocation invariant
+python scripts/verify_day3_end_to_end.py     # 17 Day 3 checks (mutates the stack)
+python scripts/verify_frontend_day3_ui.py    # 12 UI strings in the served bundle
+python scripts/verify_frontend_day3_css.py   # the table rules and the card grid
+python scripts/inspect_day3_schema.py        # the schema as the database holds it
 python scripts/sim_control.py --help
-cd backend && ./mvnw verify       # 80 unit tests
-cd frontend && npm run test       # 22 unit tests
+cd backend && ./mvnw verify       # 126 unit tests
+cd frontend && npm run test       # 31 unit tests
 cd frontend && npm run build      # type check + production build
 ```

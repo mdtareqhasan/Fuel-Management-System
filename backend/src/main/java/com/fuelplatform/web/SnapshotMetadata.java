@@ -2,7 +2,6 @@ package com.fuelplatform.web;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Response metadata carried alongside every read.

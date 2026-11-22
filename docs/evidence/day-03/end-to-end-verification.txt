@@ -1,0 +1,20 @@
+Day 3 end-to-end verification summary
+=====================================
+
+Recorded outcome: 17/17 acceptance checks passed.
+
+The evidence README in this directory documents the 17 checks and includes the
+recorded lost-response excerpt. The raw stdout capture was empty when this file
+was checked, so this file is a summary pointer rather than a verbatim console
+transcript. Recreate the raw run on the disposable local Compose stack with:
+
+    python scripts/verify_day3_end_to_end.py
+
+The verifier resets and mutates simulator/database state. Do not run it against
+a local stack whose state needs to be preserved.
+
+The recorded checks covered proposal creation without a simulator write,
+duplicate-approval protection, reviewed quantity bounds, a timed-out command
+recorded as UNKNOWN, idempotency-key reconciliation without a second shipment,
+shipment status tracking, and audit persistence. See README.md in this directory
+for the captured command/status excerpt and detailed evidence map.

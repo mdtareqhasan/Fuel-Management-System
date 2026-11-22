@@ -1,6 +1,6 @@
 # Phase 00 · Day 1 — Bootstrap & Simulator Contract
 
-**Target:** Thursday, 19 November 2026 · **Status:** Complete; progress evidence updated 20 November.
+**Target:** Friday, 20 November 2026 · **Status:** Complete.
 
 | Milestone | Focus areas | Result |
 |:--|:--|:--|

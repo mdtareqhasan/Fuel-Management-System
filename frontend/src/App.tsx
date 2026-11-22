@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useDashboard } from './useDashboard'
 import { useRisk } from './useRisk'
+import { useDecisions } from './useDecisions'
 import { RiskPanel } from './RiskPanel'
+import { DecisionPanel } from './DecisionPanel'
 import {
   FUEL_TYPES,
   type DashboardResponse,
@@ -43,6 +45,14 @@ import './styles.css'
 export default function App() {
   const { dashboard, status, error, loading } = useDashboard()
   const { risk, error: riskError } = useRisk()
+  const {
+    proposals,
+    shipments,
+    approving,
+    approve,
+    reconcile,
+    error: decisionError,
+  } = useDecisions()
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     try {
@@ -136,12 +146,21 @@ export default function App() {
       />
       <FilterBar dashboard={dashboard} filters={filters} onChange={applyFilters} />
       <RiskPanel risk={risk} error={riskError} fuel={filters.fuel} />
+      <DecisionPanel
+        proposals={proposals}
+        shipments={shipments}
+        approving={approving}
+        approve={approve}
+        reconcile={reconcile}
+        error={decisionError}
+      />
       <StationsSection
         stations={stations}
         total={dashboard.stations.length}
         fuel={filters.fuel}
       />
       <DepotsSection depots={depots} total={dashboard.depots.length} fuel={filters.fuel} />
+      <RoutesSection dashboard={dashboard} />
       <EventsSection dashboard={dashboard} />
       <AllocationsSection allocations={allocations} total={dashboard.allocations.length} />
       <Footer dashboard={dashboard} />
@@ -521,6 +540,54 @@ function DepotCard({ depot, fuel }: { depot: Depot; fuel: Filters['fuel'] }) {
   )
 }
 
+// --------------------------------------------------------------------- routes
+
+function RoutesSection({ dashboard }: { dashboard: DashboardResponse }) {
+  const depots = new Map(dashboard.depots.map((depot) => [depot.id, depot.name]))
+  const stations = new Map(dashboard.stations.map((station) => [station.id, station.name]))
+
+  return (
+    <section className="section">
+      <h2>
+        Routes <span className="count">{dashboard.routes.length}</span>
+      </h2>
+      {dashboard.routes.length === 0 ? (
+        <p className="empty">No routes are present in the current simulator snapshot.</p>
+      ) : (
+        <div className="table-scroll">
+          <table className="risk-table route-table">
+            <thead>
+              <tr>
+                <th scope="col">Route</th>
+                <th scope="col">From depot</th>
+                <th scope="col">To station</th>
+                <th scope="col">Transit</th>
+                <th scope="col">Max shipment</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dashboard.routes.map((route) => (
+                <tr key={route.id}>
+                  <td className="mono">{route.id}</td>
+                  <td>{depots.get(route.source_depot_id) ?? route.source_depot_id}</td>
+                  <td>{stations.get(route.destination_station_id) ?? route.destination_station_id}</td>
+                  <td>{route.transit_ticks === null ? 'Unknown' : `${route.transit_ticks} ticks`}</td>
+                  <td>{formatLitres(route.max_shipment)}</td>
+                  <td>
+                    <span className={`status ${statusClass(route.status)}`}>{route.status}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <p className="section-note">Route list comes directly from the simulator snapshot.</p>
+    </section>
+  )
+}
+
 // --------------------------------------------------------------------- events
 
 function EventsSection({ dashboard }: { dashboard: DashboardResponse }) {
@@ -600,7 +667,10 @@ function AllocationsSection({
               <tr key={allocation.id}>
                 <td>{allocation.id}</td>
                 <td>
-                  {allocation.source_depot_id} → {allocation.destination_station_id}
+                  <span className="mono">{allocation.route_id}</span>
+                  <span className="cell-sub">
+                    {allocation.source_depot_id} → {allocation.destination_station_id}
+                  </span>
                 </td>
                 <td>{allocation.fuel_type}</td>
                 <td>{formatLitres(allocation.quantity)}</td>
@@ -640,7 +710,7 @@ function Footer({ dashboard }: { dashboard: DashboardResponse }) {
         Decision eligible: {meta.decision_eligible ? 'yes' : 'no'}
       </span>
       <span className="footer-note">
-        Read-only view. Allocations require an operator approval on the server.
+        Shipment allocations require operator approval on the server.
       </span>
     </footer>
   )

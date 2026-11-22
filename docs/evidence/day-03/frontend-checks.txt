@@ -1,0 +1,25 @@
+﻿bundle: /assets/index-CCmhqFR7.js  (182,851 bytes)
+
+[OK  ] the simulator route inventory section         (Routes)
+[OK  ] the route shipment-capacity column            (Max shipment)
+[OK  ] the decision section heading                  (Decisions)
+[OK  ] the pending review list                       (Waiting for review)
+[OK  ] the ledger section                            (Shipment ledger)
+[OK  ] the review dialog's upper-bound label         (Maximum to ship)
+[OK  ] the unknown-outcome wording                   (Outcome unknown)
+[OK  ] the changed-proposal wording                  (Re-review required)
+[OK  ] the reduced-approval wording                  (Approved with a reduction)
+[OK  ] the simulator status column                   (simulator_status)
+[OK  ] the application command status column         (command_status)
+[OK  ] the per-line quantity column                  (Approve up to)
+
+all 12 Day 3 UI strings are present in the served bundle
+css asset: http://localhost:5173/assets/index-Eq5v1d4E.css  bytes=17001
+
+  PASS  decision-table rule present
+  PASS  decision-table th/td rule present
+  PASS  decision-table hover rule present
+  PASS  .grid is still display:grid (card layout)
+  PASS  no .grid th/.grid td table rules
+
+RESULT: all checks passed

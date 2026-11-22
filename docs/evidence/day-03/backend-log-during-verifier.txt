@@ -1,0 +1,152 @@
+﻿fuel-backend  | 
+fuel-backend  |   .   ____          _            __ _ _
+fuel-backend  |  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+fuel-backend  | ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+fuel-backend  |  \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+fuel-backend  |   '  |____| .__|_| |_|_| |_\__, | / / / /
+fuel-backend  |  =========|_|==============|___/=/_/_/_/
+fuel-backend  | 
+fuel-backend  |  :: Spring Boot ::                (v3.5.7)
+fuel-backend  | 
+fuel-backend  | 2026-11-22T09:03:10.225Z INFO  [no-correlation] c.f.FuelPlatformApplication - Starting FuelPlatformApplication v0.1.0-SNAPSHOT using Java 25.0.5.1 with PID 1 (/app/app.jar started by fuel in /app)
+fuel-backend  | 2026-11-22T09:03:10.235Z INFO  [no-correlation] c.f.FuelPlatformApplication - No active profile set, falling back to 1 default profile: "default"
+fuel-backend  | 2026-11-22T09:03:14.691Z INFO  [no-correlation] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+fuel-backend  | 2026-11-22T09:03:14.769Z INFO  [no-correlation] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 41 ms. Found 0 JPA repository interfaces.
+fuel-backend  | 2026-11-22T09:03:17.284Z INFO  [no-correlation] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+fuel-backend  | 2026-11-22T09:03:17.330Z INFO  [no-correlation] o.a.catalina.core.StandardService - Starting service [Tomcat]
+fuel-backend  | 2026-11-22T09:03:17.331Z INFO  [no-correlation] o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.48]
+fuel-backend  | 2026-11-22T09:03:17.413Z INFO  [no-correlation] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+fuel-backend  | 2026-11-22T09:03:17.414Z INFO  [no-correlation] o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 6989 ms
+fuel-backend  | 2026-11-22T09:03:19.229Z INFO  [no-correlation] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+fuel-backend  | 2026-11-22T09:03:19.923Z INFO  [no-correlation] com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@3ce7490a
+fuel-backend  | 2026-11-22T09:03:19.929Z INFO  [no-correlation] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+fuel-backend  | 2026-11-22T09:03:20.009Z INFO  [no-correlation] org.flywaydb.core.FlywayExecutor - Database: jdbc:postgresql://postgres:5432/fuelplatform (PostgreSQL 16.14)
+fuel-backend  | 2026-11-22T09:03:20.202Z INFO  [no-correlation] o.f.core.internal.command.DbValidate - Successfully validated 1 migration (execution time 00:00.095s)
+fuel-backend  | 2026-11-22T09:03:20.252Z INFO  [no-correlation] o.f.core.internal.command.DbMigrate - Current version of schema "public": 1
+fuel-backend  | 2026-11-22T09:03:20.265Z INFO  [no-correlation] o.f.core.internal.command.DbMigrate - Schema "public" is up to date. No migration necessary.
+fuel-backend  | 2026-11-22T09:03:20.619Z INFO  [no-correlation] o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+fuel-backend  | 2026-11-22T09:03:20.817Z INFO  [no-correlation] org.hibernate.Version - HHH000412: Hibernate ORM core version 6.6.33.Final
+fuel-backend  | 2026-11-22T09:03:20.949Z INFO  [no-correlation] o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+fuel-backend  | 2026-11-22T09:03:22.432Z INFO  [no-correlation] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+fuel-backend  | 2026-11-22T09:03:22.722Z INFO  [no-correlation] o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+fuel-backend  | 	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+fuel-backend  | 	Database driver: undefined/unknown
+fuel-backend  | 	Database version: 16.14
+fuel-backend  | 	Autocommit mode: undefined/unknown
+fuel-backend  | 	Isolation level: undefined/unknown
+fuel-backend  | 	Minimum pool size: undefined/unknown
+fuel-backend  | 	Maximum pool size: undefined/unknown
+fuel-backend  | 2026-11-22T09:03:23.607Z INFO  [no-correlation] o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+fuel-backend  | 2026-11-22T09:03:23.627Z INFO  [no-correlation] o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+fuel-backend  | 2026-11-22T09:03:27.759Z INFO  [no-correlation] o.s.b.a.e.web.EndpointLinksResolver - Exposing 4 endpoints beneath base path '/actuator'
+fuel-backend  | 2026-11-22T09:03:27.997Z INFO  [no-correlation] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/'
+fuel-backend  | 2026-11-22T09:03:28.047Z INFO  [no-correlation] c.f.FuelPlatformApplication - Started FuelPlatformApplication in 19.671 seconds (process running for 21.763)
+fuel-backend  | 2026-11-22T09:03:32.385Z INFO  [no-correlation] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+fuel-backend  | 2026-11-22T09:03:32.387Z INFO  [no-correlation] o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+fuel-backend  | 2026-11-22T09:03:32.391Z INFO  [no-correlation] o.s.web.servlet.DispatcherServlet - Completed initialization in 4 ms
+fuel-backend  | 2026-11-22T09:03:38.539Z INFO  [no-correlation] c.f.decision.DecisionScheduler - created proposal eb4929a2-f974-421c-9745-b78988b85bd8 with 4 lines at tick 75
+fuel-backend  | 2026-11-22T09:11:54.020Z INFO  [no-correlation] c.f.decision.DecisionScheduler - created proposal 79bc0846-e744-43ee-87e5-8faebd7b98f7 with 6 lines at tick 71
+fuel-backend  | 2026-11-22T09:12:01.004Z WARN  [no-correlation] c.f.i.SnapshotIngestionService - refresh degraded, keeping last valid snapshot: Fault[TRANSPORT_ERROR http=0] I/O error on GET request for "http://simulator-api:8000/v1/instance": Request cancelled
+fuel-backend  | 2026-11-22T09:12:01.216Z ERROR [no-correlation] o.a.c.c.C.[.[.[.[dispatcherServlet] - Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO audit_events
+fuel-backend  |     (id, run_id, occurred_at, actor, action, entity_type, entity_id,
+fuel-backend  |      outcome, correlation_id, details)
+fuel-backend  | VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb)
+fuel-backend  | ]; ERROR: invalid input syntax for type json
+fuel-backend  |   Detail: Token "http" is invalid.
+fuel-backend  |   Where: JSON data, line 1: ...SEL","error":"I/O error on POST request for "http...] with root cause
+fuel-backend  | org.postgresql.util.PSQLException: ERROR: invalid input syntax for type json
+fuel-backend  |   Detail: Token "http" is invalid.
+fuel-backend  |   Where: JSON data, line 1: ...SEL","error":"I/O error on POST request for "http...
+fuel-backend  | 	at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2736)
+fuel-backend  | 	at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2421)
+fuel-backend  | 	at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:372)
+fuel-backend  | 	at org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:525)
+fuel-backend  | 	at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:435)
+fuel-backend  | 	at org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:196)
+fuel-backend  | 	at org.postgresql.jdbc.PgPreparedStatement.executeUpdate(PgPreparedStatement.java:157)
+fuel-backend  | 	at com.zaxxer.hikari.pool.ProxyPreparedStatement.executeUpdate(ProxyPreparedStatement.java:61)
+fuel-backend  | 	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeUpdate(HikariProxyPreparedStatement.java)
+fuel-backend  | 	at org.springframework.jdbc.core.JdbcTemplate.lambda$update$2(JdbcTemplate.java:977)
+fuel-backend  | 	at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:658)
+fuel-backend  | 	at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:972)
+fuel-backend  | 	at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:1016)
+fuel-backend  | 	at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:1026)
+fuel-backend  | 	at com.fuelplatform.audit.AuditRepository.record(AuditRepository.java:54)
+fuel-backend  | 	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source)
+fuel-backend  | 	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+fuel-backend  | 	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:360)
+fuel-backend  | 	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196)
+fuel-backend  | 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+fuel-backend  | 	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:138)
+fuel-backend  | 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+fuel-backend  | 	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:728)
+fuel-backend  | 	at com.fuelplatform.audit.AuditRepository$$SpringCGLIB$$0.record(<generated>)
+fuel-backend  | 	at com.fuelplatform.command.CommandWorker.send(CommandWorker.java:158)
+fuel-backend  | 	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source)
+fuel-backend  | 	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+fuel-backend  | 	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:360)
+fuel-backend  | 	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196)
+fuel-backend  | 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+fuel-backend  | 	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:380)
+fuel-backend  | 	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+fuel-backend  | 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+fuel-backend  | 	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:728)
+fuel-backend  | 	at com.fuelplatform.command.CommandWorker$$SpringCGLIB$$0.send(<generated>)
+fuel-backend  | 	at com.fuelplatform.web.DecisionController.approve(DecisionController.java:131)
+fuel-backend  | 	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source)
+fuel-backend  | 	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+fuel-backend  | 	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:258)
+fuel-backend  | 	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:191)
+fuel-backend  | 	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+fuel-backend  | 	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:991)
+fuel-backend  | 	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:896)
+fuel-backend  | 	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+fuel-backend  | 	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+fuel-backend  | 	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+fuel-backend  | 	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+fuel-backend  | 	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914)
+fuel-backend  | 	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590)
+fuel-backend  | 	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+fuel-backend  | 	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+fuel-backend  | 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)
+fuel-backend  | 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:138)
+fuel-backend  | 	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+fuel-backend  | 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:162)
+fuel-backend  | 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:138)
+fuel-backend  | 	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+fuel-backend  | 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+fuel-backend  | 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:162)
+fuel-backend  | 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:138)
+fuel-backend  | 	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+fuel-backend  | 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+fuel-backend  | 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:162)
+fuel-backend  | 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:138)
+fuel-backend  | 	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:110)
+fuel-backend  | 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+fuel-backend  | 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:162)
+fuel-backend  | 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:138)
+fuel-backend  | 	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+fuel-backend  | 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+fuel-backend  | 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:162)
+fuel-backend  | 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:138)
+fuel-backend  | 	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:165)
+fuel-backend  | 	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:88)
+fuel-backend  | 	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:482)
+fuel-backend  | 	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:113)
+fuel-backend  | 	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:83)
+fuel-backend  | 	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:72)
+fuel-backend  | 	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:342)
+fuel-backend  | 	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:399)
+fuel-backend  | 	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+fuel-backend  | 	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+fuel-backend  | 	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1774)
+fuel-backend  | 	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+fuel-backend  | 	at java.base/java.lang.VirtualThread.run(Unknown Source)
+fuel-backend  | 2026-11-22T09:12:05.036Z WARN  [no-correlation] c.f.decision.DecisionScheduler - could not send command 315f8e00-b9d0-480b-a682-9dc78a05d187: PreparedStatementCallback; SQL [INSERT INTO audit_events
+fuel-backend  |     (id, run_id, occurred_at, actor, action, entity_type, entity_id,
+fuel-backend  |      outcome, correlation_id, details)
+fuel-backend  | VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb)
+fuel-backend  | ]; ERROR: invalid input syntax for type json
+fuel-backend  |   Detail: Token "http" is invalid.
+fuel-backend  |   Where: JSON data, line 1: ...SEL","error":"I/O error on POST request for "http...
+fuel-backend  | 2026-11-22T09:12:09.179Z INFO  [no-correlation] c.f.decision.DecisionScheduler - created proposal 5ab8861d-9978-46cc-add7-3dc489ceba82 with 7 lines at tick 71

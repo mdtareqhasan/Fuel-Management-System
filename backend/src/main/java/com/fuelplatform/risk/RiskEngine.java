@@ -3,7 +3,6 @@ package com.fuelplatform.risk;
 import com.fuelplatform.allocation.AllocationPlan;
 import com.fuelplatform.allocation.AllocationPlanner;
 import com.fuelplatform.allocation.AllocationProposal;
-import com.fuelplatform.config.ForecastProperties;
 import com.fuelplatform.config.RiskProperties;
 import com.fuelplatform.config.SimulatorProfileProperties;
 import com.fuelplatform.domain.WorldSnapshot;
@@ -46,7 +45,6 @@ public class RiskEngine {
     private final DepotRiskProjector depotProjector;
     private final AllocationPlanner planner;
 
-    private final ForecastProperties forecastProperties;
     private final RiskProperties riskProperties;
 
     private final Counter anomalyCounter;
@@ -65,7 +63,6 @@ public class RiskEngine {
             StationRiskProjector stationProjector,
             DepotRiskProjector depotProjector,
             AllocationPlanner planner,
-            ForecastProperties forecastProperties,
             RiskProperties riskProperties,
             SimulatorProfileProperties profileProperties,
             MeterRegistry meterRegistry) {
@@ -76,7 +73,6 @@ public class RiskEngine {
         this.stationProjector = stationProjector;
         this.depotProjector = depotProjector;
         this.planner = planner;
-        this.forecastProperties = forecastProperties;
         this.riskProperties = riskProperties;
 
         this.anomalyCounter = Counter.builder("fuel_anomaly_flags_total")

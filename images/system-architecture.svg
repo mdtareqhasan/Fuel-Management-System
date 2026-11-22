@@ -29,16 +29,16 @@
   <!-- Backend -->
   <rect x="200" y="300" width="300" height="140" rx="10" fill="#E1F5EE" stroke="#1D9E75" stroke-width="2"/>
   <text x="350" y="328" text-anchor="middle" font-size="14" font-weight="700" fill="#085041">Spring Boot Backend</text>
-  <text x="350" y="350" text-anchor="middle" font-size="12" fill="#085041">API · snapshot ingestion</text>
-  <text x="350" y="368" text-anchor="middle" font-size="12" fill="#085041">simulator adapter · metrics</text>
+  <text x="350" y="350" text-anchor="middle" font-size="12" fill="#085041">dashboard · risk · proposal APIs</text>
+  <text x="350" y="368" text-anchor="middle" font-size="12" fill="#085041">approval · commands · audit</text>
   <text x="350" y="396" text-anchor="middle" font-size="11" font-weight="700" fill="#0F6E56">Implemented</text>
-  <text x="350" y="414" text-anchor="middle" font-size="10.5" fill="#6B7280">/api/risk: implemented</text>
+  <text x="350" y="414" text-anchor="middle" font-size="10.5" fill="#6B7280">snapshot + decision persistence</text>
 
   <!-- Planned modules -->
-  <rect x="200" y="500" width="200" height="80" rx="10" fill="#F3F4F6" stroke="#6B7280" stroke-width="2" stroke-dasharray="6 4"/>
-  <text x="300" y="524" text-anchor="middle" font-size="13" font-weight="700" fill="#374151">Partly implemented</text>
-  <text x="300" y="544" text-anchor="middle" font-size="10.5" fill="#4B5563">risk + allocation: implemented</text>
-  <text x="300" y="561" text-anchor="middle" font-size="10.5" fill="#4B5563">approval · command · audit · SSE: planned</text>
+  <rect x="200" y="500" width="200" height="80" rx="10" fill="#E1F5EE" stroke="#1D9E75" stroke-width="2"/>
+  <text x="300" y="524" text-anchor="middle" font-size="13" font-weight="700" fill="#085041">Implemented modules</text>
+  <text x="300" y="544" text-anchor="middle" font-size="10.5" fill="#085041">risk · allocation · decision</text>
+  <text x="300" y="561" text-anchor="middle" font-size="10.5" fill="#085041">command · audit · persistence</text>
 
   <!-- Simulator -->
   <rect x="230" y="640" width="240" height="80" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="3"/>
@@ -60,8 +60,8 @@
   <!-- Postgres -->
   <rect x="720" y="385" width="320" height="70" rx="10" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
   <text x="880" y="411" text-anchor="middle" font-size="14" font-weight="700" fill="#78350F">PostgreSQL</text>
-  <text x="880" y="431" text-anchor="middle" font-size="12" fill="#78350F">Health probe only</text>
-  <text x="880" y="446" text-anchor="middle" font-size="11" fill="#78350F">Domain persistence: planned</text>
+  <text x="880" y="431" text-anchor="middle" font-size="12" fill="#78350F">Snapshots · proposals · commands</text>
+  <text x="880" y="446" text-anchor="middle" font-size="11" fill="#78350F">Audit events · implemented</text>
 
   <!-- Solid arrows -->
   <line x1="350" y1="86" x2="350" y2="148" stroke="#374151" stroke-width="1.6" marker-end="url(#a)"/>
@@ -78,18 +78,18 @@
   <text x="610" y="316" text-anchor="middle" font-size="11" fill="#374151">scrape /actuator/prometheus</text>
 
   <line x1="500" y1="420" x2="718" y2="420" stroke="#374151" stroke-width="1.6" marker-end="url(#a)"/>
-  <text x="610" y="411" text-anchor="middle" font-size="11" fill="#374151">JDBC health probe</text>
+  <text x="610" y="411" text-anchor="middle" font-size="11" fill="#374151">JDBC application records</text>
 
   <line x1="880" y1="230" x2="880" y2="288" stroke="#374151" stroke-width="1.6" marker-end="url(#a)"/>
   <text x="892" y="264" font-size="11" fill="#374151">query metrics</text>
 
-  <!-- Planned arrows -->
-  <line x1="300" y1="440" x2="300" y2="498" stroke="#6B7280" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#g)"/>
-  <text x="288" y="474" text-anchor="end" font-size="11" fill="#6B7280">planned</text>
+  <!-- Implemented decision and command flow -->
+  <line x1="300" y1="440" x2="300" y2="498" stroke="#374151" stroke-width="1.6" marker-end="url(#a)"/>
+  <text x="288" y="474" text-anchor="end" font-size="11" fill="#374151">decision flow</text>
 
-  <line x1="300" y1="580" x2="300" y2="638" stroke="#6B7280" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#g)"/>
-  <text x="288" y="604" text-anchor="end" font-size="11" fill="#6B7280">POST shipment</text>
-  <text x="288" y="619" text-anchor="end" font-size="11" fill="#6B7280">only after human approval</text>
+  <line x1="300" y1="580" x2="300" y2="638" stroke="#374151" stroke-width="1.6" marker-end="url(#a)"/>
+  <text x="288" y="604" text-anchor="end" font-size="11" fill="#374151">POST shipment</text>
+  <text x="288" y="619" text-anchor="end" font-size="11" fill="#374151">after server approval</text>
 
   <!-- Legend -->
   <rect x="48" y="765" width="22" height="14" rx="3" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/>

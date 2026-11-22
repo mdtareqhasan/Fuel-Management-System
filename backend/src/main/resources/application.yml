@@ -159,3 +159,21 @@ app:
     anomaly-ratio-threshold: ${RISK_ANOMALY_RATIO:1.35}
     recovery-ratio-threshold: ${RISK_RECOVERY_RATIO:1.15}
     regional-station-threshold: ${RISK_REGIONAL_STATIONS:2}
+
+  # ------------------------------------------------------------------
+  # APPROVAL POLICY — ADR 004.
+  #
+  # The wall-clock freshness limit is the one rule that behaves identically in
+  # both modes: a decision cannot be made against a world the operator cannot
+  # see. Ten seconds is short enough that the screen still describes the
+  # current world.
+  #
+  # The proposal expiry only applies in RUNNING mode. At the measured rate of
+  # ~5.46 ticks/sec and 15 simulated minutes per tick, ~82 simulated minutes
+  # pass per wall second, so a 120 second review spans ~2.7 simulated days.
+  # ------------------------------------------------------------------
+  decision:
+    wall-clock-freshness-seconds: ${DECISION_FRESHNESS_SECONDS:10}
+    running-proposal-expiry-seconds: ${DECISION_EXPIRY_SECONDS:120}
+    paused-max-tick-lag: ${DECISION_PAUSED_TICK_LAG:1}
+    max-approved-quantity-liters: ${DECISION_MAX_QUANTITY:50000}

@@ -257,7 +257,6 @@ class AllocationPlannerTest {
     @Test
     @DisplayName("INV-22: a station with one route gets NO_ALTERNATIVE_ROUTE, not a fabricated one")
     void singleRouteStationHasNoAlternative() {
-        Depot depot = gazipur();
         Station coxsbazar = new Station("station-coxsbazar", "Cox's Bazar", "region-chattogram",
                 "OPEN", "regional", 1.0,
                 Map.of("DIESEL", 12000.0, "PETROL", 12000.0, "OCTANE", 7000.0),

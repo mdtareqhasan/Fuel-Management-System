@@ -1,6 +1,5 @@
 package com.fuelplatform.risk;
 
-import com.fuelplatform.config.SimulatorProfileProperties;
 import com.fuelplatform.simulator.SimulatorClient;
 import com.fuelplatform.simulator.SimulatorClient.Result;
 import com.fuelplatform.simulator.dto.SimulatorDtos.DemandObservation;

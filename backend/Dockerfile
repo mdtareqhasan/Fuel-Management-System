@@ -3,7 +3,7 @@
 # so the committed wrapper version is what produces the shipped artefact.
 # Stage 2 runs on a small JRE image.
 
-FROM eclipse-temurin:21-jdk-alpine AS build
+FROM eclipse-temurin:25-jdk-alpine AS build
 WORKDIR /build
 
 # Dependencies first: this layer is cached and only re-runs when the pom changes.
@@ -14,7 +14,7 @@ RUN ./mvnw -B -q dependency:go-offline
 COPY src/ src/
 RUN ./mvnw -B -q package -DskipTests
 
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
 
 # Run as a non-root user. The container needs no write access to the app files.

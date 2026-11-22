@@ -51,13 +51,28 @@ These are properties that must hold **always**. Each is enforced by code, a data
 | INV-9 | No allocation reaches the simulator without a server-enforced operator approval. | ADR 003 |
 | INV-10 | The idempotency key and the exact request body are persisted **before** any POST. | Command transaction |
 | INV-11 | A retry reuses **the same key and the same body**. The quantity is never changed while a key is reused. | Command worker |
-| INV-12 | One proposal line produces at most one command. | DB unique constraint `(recommendation_id, line_id)` |
-| INV-13 | The approved quantity may be **equal to or lower than** the reviewed quantity. Never higher. | ADR 004 |
+| INV-12 | One proposal line produces at most one command. | DB unique constraint `uq_command_line (proposal_line_id)` |
+| INV-13 | The approved quantity may be **equal to or lower than** the reviewed quantity. Never higher. | ADR 004 · DB check `chk_final_not_above_reviewed` |
 | INV-14 | A timeout after a POST means **UNKNOWN**, not rejected. It is reconciled by matching the idempotency key. | Command worker |
 | INV-15 | A write is never attempted from stale, invalid or circuit-open data. | Server-side guard |
 | INV-16 | Depot inventory is used **as returned** (already net of reservations). It is never subtracted again. | ADR 008 |
 | INV-17 | Dispatch allowance is reserved **per depot, shared across all fuels and destinations**, before planning the next line. | ADR 008 · allocation working copy |
 | INV-18 | Station headroom **does** reserve pending and in-transit inbound fuel, because that fuel will land. | ADR 008 · allocator |
+
+### Persistence and the decision record (Day 3)
+
+| ID | Invariant | Enforced by |
+|---|---|---|
+| INV-37 | A proposal is created **without any simulator write**. Creating it reads the world; it never mutates it. | `ProposalService` · end-to-end check "creating a proposal performs NO simulator write" |
+| INV-38 | The reviewed quantity and the final quantity are **separate columns**. The final may only fall. | `proposal_lines.reviewed_quantity` / `final_quantity` · DB check `chk_final_not_above_reviewed` |
+| INV-39 | One idempotency key may be used for **one** shipment only. | DB unique constraint `uq_command_key (idempotency_key)` |
+| INV-40 | Approving the same proposal twice is **refused** with `ALREADY_APPROVED`, and no second shipment is created. | `ApprovalService` · DB constraint · end-to-end check |
+| INV-41 | The application command status and the simulator shipment status are **separate columns**. A command that was sent stays `SENT` while the shipment moves `PENDING → IN_TRANSIT → ARRIVED`. | `commands.status` / `commands.simulator_status` · `ShipmentTracker` |
+| INV-42 | An uncertain outcome is **UNKNOWN**, and is reconciled by matching the idempotency key against `GET /v1/allocations` — never by sending again. | `CommandWorker.reconcile` · end-to-end check "reconciling does not create a second shipment" |
+| INV-43 | The audit trail records **refused** decisions as well as accepted ones. An audit that only shows successes is not an audit. | `AuditRepository.record` with `REQUIRES_NEW` propagation |
+| INV-44 | Audit details are **always valid JSON**. A simulator error message containing a quote must not corrupt the record — or, worse, roll back the command status it describes. | `AuditRepository.details` + Jackson serialisation · `AuditRepositoryTest` |
+| INV-45 | The depot's dispatch allowance is **re-reserved at approval time**, shared across every line and every fuel/destination, including fuel already dispatched at the current tick. | `Revalidator.DispatchBudget` · `RevalidatorTest` |
+| INV-46 | A proposal that cannot be revalidated against a fresh world sends **nothing**. The operator is told which line changed and why. | `Revalidator` · `ApprovalService` · UI wording "Re-review required" |
 
 ### Decision quality
 
