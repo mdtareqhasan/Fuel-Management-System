@@ -1,10 +1,16 @@
 # Phase 02 · Day 3 — Persistence & Operator Decisions
 
-**Target:** Sunday, 22 November 2026 · **Status:** Complete and verified — 17/17 live end-to-end checks, 126 backend tests, 31 frontend tests, clean production build.
+**Target:** Sunday, 22 November 2026 · **Status:** Complete and verified — 20/20 live end-to-end checks, 126 backend tests, 31 frontend tests, clean production build.
 
 | Milestone | Focus areas | Intended result |
 |:--|:--|:--|
 | Persistence & operator decisions | Durable records, recommendation review, safe approval, command reconciliation | Operator can review and approve a proposal once, then follow its shipment lifecycle |
+
+## Executive summary
+
+Day 3 connected the advisory planning flow to a durable, operator-controlled decision process. The application records snapshots, proposals, proposal lines, shipment commands, and audit events in PostgreSQL. A proposal does not dispatch fuel: an operator must review and approve it, and approval revalidates the proposal against a fresh simulator read before sending.
+
+The command worker saves the idempotency key and exact request body before sending. If the simulator may have accepted a request but the response is lost, the command is marked `UNKNOWN` and reconciled by key instead of being submitted again. The end-to-end verifier confirmed this behavior along with duplicate-approval refusal, reviewed-quantity limits, shipment tracking, and audit records: **20/20 checks passed**. The backend suite passed **126 tests**, the frontend suite passed **31 tests**, and the frontend production build completed cleanly.
 
 ## Delivered
 
@@ -56,7 +62,7 @@ All of it is in [`docs/evidence/day-03/`](../evidence/day-03/), and every number
 
 | Evidence | What it shows |
 |---|---|
-| [`end-to-end-verification.txt`](../evidence/day-03/end-to-end-verification.txt) | **17/17 checks passed.** Proposal creation performs no simulator write · duplicate approval refused with `ALREADY_APPROVED` and no second allocation · a quantity above the reviewed one refused with HTTP 422 · a reduced quantity accepted · a timed-out write observed as `UNKNOWN` before reconciliation · reconciling creates no second shipment · the shipment reaches a terminal state · the audit trail records the decisions. |
+| [`end-to-end-verification.txt`](../evidence/day-03/end-to-end-verification.txt) | **20/20 checks passed.** Proposal creation performs no simulator write · duplicate approval refused with `ALREADY_APPROVED` and no second allocation · a quantity above the reviewed one refused with HTTP 422 · a reduced quantity accepted · a timed-out write observed as `UNKNOWN` before reconciliation · reconciling creates no second shipment · the shipment reaches a terminal state · the audit trail records the decisions. |
 | [`backend-tests.txt`](../evidence/day-03/backend-tests.txt) | `mvn test` — **126 tests passed**, 0 failures, 0 errors. |
 | [`frontend-tests.txt`](../evidence/day-03/frontend-tests.txt) | `npm test` — **31 tests passed**; `npm run build` — clean. |
 | [`frontend-checks.txt`](../evidence/day-03/frontend-checks.txt) | All **12 Day 3 UI strings** present in the served bundle, and the `.decision-table` CSS rules present with `.grid` still a grid container. |

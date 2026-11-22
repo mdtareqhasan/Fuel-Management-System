@@ -97,6 +97,122 @@ def pending_proposal():
     return None
 
 
+def simulator_status():
+    """The simulator's own mode and tick."""
+    _, instance, _ = get(f"{SIM}/v1/instance")
+    return (instance or {}).get("status"), (instance or {}).get("tick")
+
+
+def pause_simulator():
+    """Puts the simulator into PAUSED mode.
+
+    The approval path is mode-aware by design (ADR 004). In RUNNING mode the
+    world advances ~5.46 ticks/sec while a simulator request takes ~2 s, so
+    the world moves ~11 ticks during a single request cycle. A proposal made
+    against that world is stale before an operator can approve it, and the
+    approval is refused with PROPOSAL_CHANGED before the rule under test is
+    ever reached.
+
+    PAUSED mode is the reviewable mode: the tick only moves when the operator
+    steps it, so a proposal stays valid for the length of a review.
+    """
+    status, _, _ = get(f"{SIM}/v1/instance")
+    mode, _ = simulator_status()
+    if mode == "PAUSED":
+        return True
+
+    post(f"{SIM}/admin/pause")
+    time.sleep(1)
+    mode, tick = simulator_status()
+    print(f"simulator mode: {mode} (tick {tick})")
+    return mode == "PAUSED"
+
+
+def resume_simulator():
+    """Puts the simulator back into RUNNING mode."""
+    post(f"{SIM}/admin/run")
+    time.sleep(1)
+    mode, tick = simulator_status()
+    print(f"simulator mode: {mode} (tick {tick})")
+    return mode == "RUNNING"
+
+
+def current_tick():
+    """The simulator's current tick."""
+    _, instance, _ = get(f"{SIM}/v1/instance")
+    return (instance or {}).get("tick")
+
+
+def backend_tick():
+    """The tick the backend's cached snapshot is at."""
+    _, risk, _ = get(f"{BACKEND}/api/risk")
+    return (risk or {}).get("tick")
+
+
+def wait_for_backend_to_catch_up(timeout=60):
+    """Waits until the backend's snapshot is at the simulator's tick.
+
+    The approval path revalidates against the backend's CACHED snapshot, and
+    the dispatch budget is computed from that snapshot's tick. If the backend
+    has not refreshed yet, it still sees the old tick — where the previous
+    approval already spent the depot's allowance — and every line comes back
+    CHANGED for the wrong reason.
+    """
+    target = current_tick()
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if backend_tick() == target:
+            return True
+        time.sleep(1)
+    return False
+
+
+def fresh_pending_proposal():
+    """Returns a pending proposal that is still valid for the current world.
+
+    Two things have to be true for a stage to be able to approve a proposal:
+
+    1. The proposal is **current**. The approval path checks freshness FIRST
+       and rejects a stale proposal with PROPOSAL_CHANGED before it ever
+       looks at the quantity. A stage that wants to exercise the quantity
+       rules has to pick a current proposal, or it measures the freshness
+       guard instead of the rule under test.
+
+    2. The depot's **dispatch allowance** is still available. The allowance
+       is consumed at POST time and resets each tick. The first approval in
+       this run ships the whole network ceiling, so the next stage has to
+       move to a new tick before it can ship anything.
+
+    So this steps the tick, waits for the backend to refresh onto it, and
+    then returns the proposal for that tick.
+    """
+    post(f"{SIM}/admin/step")
+    wait_for_backend_to_catch_up()
+
+    _, proposals, _ = get(f"{BACKEND}/api/proposals")
+    tick = current_tick()
+    for proposal in proposals:
+        if proposal["status"] == "PENDING_REVIEW" and proposal.get("proposed_at_tick") == tick:
+            return proposal
+
+    # The scheduler may not have run yet. Ask for one directly.
+    status, fresh, raw = post(f"{BACKEND}/api/proposals")
+    if status == 201:
+        return fresh
+
+    # 409 means the scheduler already has one pending. Take that one.
+    _, proposals, _ = get(f"{BACKEND}/api/proposals")
+    tick = current_tick()
+    for proposal in proposals:
+        if proposal["status"] == "PENDING_REVIEW" and proposal.get("proposed_at_tick") == tick:
+            return proposal
+    for proposal in proposals:
+        if proposal["status"] == "PENDING_REVIEW":
+            return proposal
+
+    return None
+
+
 def proposal_on_a_fresh_tick():
     """Returns a proposal for a world with a fresh dispatch allowance.
 
@@ -199,6 +315,19 @@ check(
 # ------------------------------------------------- create the proposal
 
 section("2. CREATE THE PROPOSAL — no simulator write happens here")
+
+# The review stages that follow need a world that holds still.
+#
+# The approval path is mode-aware by design (ADR 004). In RUNNING mode the
+# world advances ~5.46 ticks/sec and a simulator request takes ~2 s, so the
+# world moves ~11 ticks during one request cycle. A proposal made against
+# that world is stale before the operator can approve it, and the approval is
+# refused with PROPOSAL_CHANGED before the rule under test is reached.
+#
+# PAUSED mode is the reviewable mode. The tick only moves when the operator
+# steps it, so a proposal stays valid for the length of a review.
+pause_simulator()
+print()
 
 before = len(simulator_allocations())
 
@@ -312,12 +441,13 @@ check(
 
 section("4. QUANTITY ABOVE THE REVIEWED ONE — must be refused")
 
-# A fresh proposal is needed because the first one is settled.
-_, proposals, _ = get(f"{BACKEND}/api/proposals")
-pending = [p for p in proposals if p["status"] == "PENDING_REVIEW"]
+# A fresh proposal is needed because the first one is settled. It also has to
+# be CURRENT: the approval path checks freshness before the quantity, so a
+# stale proposal would be refused with PROPOSAL_CHANGED and this stage would
+# measure the wrong rule.
+second_proposal = fresh_pending_proposal()
 
-if pending:
-    second_proposal = pending[0]
+if second_proposal:
     line_id = second_proposal["lines"][0]["line_id"]
     reviewed = second_proposal["lines"][0]["reviewed_quantity"]
     too_much = reviewed + 1
@@ -341,22 +471,12 @@ else:
 
 section("5. A REDUCED QUANTITY — approved below the reviewed amount")
 
-_, proposals, _ = get(f"{BACKEND}/api/proposals")
-pending = [p for p in proposals if p["status"] == "PENDING_REVIEW"]
+third = fresh_pending_proposal()
 
-# The previous approval spent this tick's dispatch allowance, so step one tick
-# to get a fresh one before approving again.
-if not pending:
-    third = proposal_on_a_fresh_tick()
-    if third:
-        pending = [third]
-
-if pending:
-    third = pending[0]
+if third:
     line_id = third["lines"][0]["line_id"]
     reviewed = third["lines"][0]["reviewed_quantity"]
     reduced = max(1, int(reviewed * 0.5))
-
     status, body, raw = post(
         f"{BACKEND}/api/proposals/{third['id']}/approve",
         {"actor": "day3-verifier", "quantities": {line_id: reduced}},
@@ -392,38 +512,44 @@ section("5b. THE LOST RESPONSE — a shipment the application never heard back a
 # The simulator's latency fault delays the response past the application's
 # 2 second read timeout. The POST still reaches the simulator, so the shipment
 # may exist even though the application records an UNKNOWN outcome.
-_, proposals, _ = get(f"{BACKEND}/api/proposals")
-pending = [p for p in proposals if p["status"] == "PENDING_REVIEW"]
-
 # The scheduler only creates a proposal when none is pending, so the run above
-# may have consumed them all. Step a tick for a fresh dispatch allowance and
-# ask for a fresh one.
-if not pending:
-    fresh = proposal_on_a_fresh_tick()
-    if fresh:
-        pending = [fresh]
+# may have consumed them all. The proposal also has to be current, because the
+# approval path checks freshness before anything else.
+lost_proposal = fresh_pending_proposal()
 
-if pending:
-    lost_proposal = pending[0]
+if lost_proposal:
     lost_line = lost_proposal["lines"][0]
     lost_key = f"proposal-{lost_proposal['id']}-{lost_line['line_id']}"
 
     # The latency must exceed the application's read timeout.
+    #
+    # The window is deliberately wide. Under a latency fault every simulator
+    # request takes delay_ms + the simulator's own baseline (~2 s), and the
+    # approval path makes several reads before it writes. With a 20 s window
+    # the fault expired mid-approval and the write came back normally, so
+    # the check measured nothing. The delay is also set well above the
+    # application's 2 s read timeout so the write is genuinely lost.
     status, fault, raw = post(
         f"{SIM}/admin/faults",
-        {"type": "latency", "duration_seconds": 20, "parameters": {"delay_ms": 4000}},
+        {"type": "latency", "duration_seconds": 120, "parameters": {"delay_ms": 8000}},
     )
     print(f"latency fault injected -> HTTP {status}: {raw[:160]}")
 
     # The approval itself will now hit the timeout. It has to record the
     # command as UNKNOWN, not as REJECTED.
+    #
+    # The quantity is the line's own reviewed quantity. A hardcoded number
+    # would be rejected with QUANTITY_EXCEEDS_REVIEWED whenever the line
+    # happens to be smaller than it, and this stage would measure the
+    # quantity rule instead of the lost response.
+    lost_quantity = lost_line["reviewed_quantity"]
     try:
         status, body, raw = post(
             f"{BACKEND}/api/proposals/{lost_proposal['id']}/approve",
-            {"actor": "day3-verifier", "quantities": {lost_line["line_id"]: 1000}},
+            {"actor": "day3-verifier", "quantities": {lost_line["line_id"]: lost_quantity}},
             timeout=90,
         )
-        print(f"approval under latency -> HTTP {status}")
+        print(f"approval under latency -> HTTP {status} (asked for {lost_quantity} L)")
     except Exception as error:
         print(f"approval under latency raised: {error}")
 

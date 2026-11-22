@@ -2,7 +2,7 @@
 
 # ⛽ Fuel Supply Intelligence
 
-### Explainable risk analysis and supply recommendations for a simulated fuel network
+### Explainable risk analysis, operator-approved decisions, and resilient supply coordination for a simulated fuel network
 
 An operator platform built around the **official BUP Fuel Supply Simulator**.
 
@@ -16,8 +16,10 @@ An operator platform built around the **official BUP Fuel Supply Simulator**.
 
 <p>
   <a href="#project-status">Project status</a> ·
-  <a href="#phased-execution-plan">Execution plan</a> ·
+  <a href="#verification-snapshot">Verification</a> ·
+  <a href="#capabilities">Capabilities</a> ·
   <a href="#architecture">Architecture</a> ·
+  <a href="#phased-execution-plan">Execution plan</a> ·
   <a href="#run-locally">Run locally</a>
 </p>
 
@@ -31,7 +33,9 @@ An operator platform built around the **official BUP Fuel Supply Simulator**.
 |---|---|---|
 | **Phase 02 · Persistence & Operator Decisions** | **Complete · 22 Nov 2026** | **24 Nov 2026** |
 
-The application turns simulator snapshots into station and depot risk, anomaly flags, forecasts, and constraint-checked shipment proposals. Operators can review proposals and approve them through a persisted, idempotent command flow; reconciliation tracks the simulator's shipment state.
+The application turns simulator snapshots into station and depot risk, anomaly flags, forecasts, and constraint-checked shipment proposals. Operators review proposals and approve them through a persisted, idempotent command flow; reconciliation tracks the simulator's shipment state. Phase 02 adds five PostgreSQL tables for snapshots, proposals, proposal lines, commands, and audit events, with database constraints protecting reviewed quantities and duplicate commands.
+
+**The result in one line:** the platform forecasts demand 8 hours ahead, scores every station and fuel for shortage risk with the signals that drove the score, and passed **20/20** live decision-path checks, **126** backend tests, **31** frontend tests, and a clean production build — while requiring recorded human approval before a shipment reaches the simulator.
 
 ## Overview
 
@@ -45,6 +49,7 @@ The platform is an operator console over a simulated fuel network. The simulator
 | Constraint-checked shipment proposals with alternatives and unmet-need reasons | Implemented; proposals are advisory |
 | Prometheus metrics and provisioned Grafana overview | Implemented |
 | Operator proposal review, approval, idempotent shipment commands, reconciliation, and audit records | Implemented |
+| Durable decision record in PostgreSQL (snapshots, proposals, lines, commands, audit events) | Implemented; five tables with database-enforced constraints |
 
 **Source of truth:** station inventory, depot inventory, demand, and shipment state come from the simulator. PostgreSQL stores application observations and decision/command/audit records; it does not replace the simulator as the authority for operational fuel state.
 
@@ -66,22 +71,48 @@ Version values reflect the repository's dependency manifests and Compose configu
 
 ## Verification snapshot
 
-| Check | Recorded result |
-|---|---|
-| Backend clean compile and tests | `mvn clean verify` — **126 passed**, 0 failures |
-| Frontend tests | `npm run test` — **31 passed** |
-| Frontend production build | `npm run build` — **passed** |
-| Day 3 live decision flow | **17/17 acceptance checks passed**; proposal creation, duplicate approval, quantity bounds, unknown-outcome reconciliation, shipment tracking, and audit trail |
-| Demand-profile measurement | **97/98** documented hourly factors matched in the measured run |
-| Anomaly detector check | **0 false flags** in a quiet run; injected R1/R2 anomalies detected within **2 ticks** |
+Every number below was measured against the running stack. Nothing here is a transcription.
 
-Risk thresholds remain proposed and are not claimed as tuned. A dedicated k6/load benchmark has not been recorded yet. See [Day 3 evidence](docs/evidence/day-03/README.md) and [Day 2 measurements](docs/daily/Day-02.md) for details.
+| Check | Recorded result | Evidence |
+|---|---|---|
+| Backend clean build and tests | `mvn clean test` — **126 passed**, 0 failures, 0 errors, 0 skipped · `BUILD SUCCESS` | [backend-tests.txt](docs/evidence/day-03/backend-tests.txt) |
+| Frontend tests | `npm run test` — **31 passed** (22 filters, 9 decision types) | [frontend-tests.txt](docs/evidence/day-03/frontend-tests.txt) |
+| Frontend production build | `npm run build` — **passed**, clean type check and bundle | [frontend-tests.txt](docs/evidence/day-03/frontend-tests.txt) |
+| Day 3 live decision flow | **20/20 acceptance checks passed** | [end-to-end-verification.txt](docs/evidence/day-03/end-to-end-verification.txt) |
+| Day 3 UI strings in the served bundle | **12/12 present** | [frontend-checks.txt](docs/evidence/day-03/frontend-checks.txt) |
+| Day 3 CSS rules in the served bundle | 5/5 present, `.grid` card layout intact | [frontend-checks.txt](docs/evidence/day-03/frontend-checks.txt) |
+| Schema as the database holds it | 5 tables, `uq_command_line`, `uq_command_key`, `chk_final_not_above_reviewed` | [schema-and-ledger.txt](docs/evidence/day-03/schema-and-ledger.txt) |
+| Day 1 simulator contract | **34/34 end-to-end checks passed** | [Day 1 evidence](docs/evidence/day-01/) |
+| Demand-profile measurement | **97/98** documented hourly factors matched in the measured run | [Day 2 measurements](docs/daily/Day-02.md) |
+| Anomaly detector check | **0 false flags** in a quiet run; injected R1/R2 anomalies detected within **2 ticks** | [Day 2 measurements](docs/daily/Day-02.md) |
+| Shared dispatch limit | Held across every fuel and destination at a depot | [Day 2 measurements](docs/daily/Day-02.md) |
+
+### The four Day 3 acceptance claims, proven live
+
+Each of these is asserted by the end-to-end verifier against the real simulator, the real backend, and the real database.
+
+| Claim | How it is proven | Measured result |
+|---|---|---|
+| A proposal performs **no** simulator write | Allocation count before and after `POST /api/proposals` | 0 before, 0 after |
+| A duplicate approval creates **no** second shipment | Same proposal approved twice, then the allocation list is compared | HTTP 409 `ALREADY_APPROVED` · 6 before, 6 after |
+| The approved quantity never exceeds the reviewed quantity | Over-request refused, reduced request accepted, every line re-checked | HTTP 422 `QUANTITY_EXCEEDS_REVIEWED` · no line shipped more than reviewed |
+| A lost response is reconciled without a duplicate | Simulator write delayed past the app's read timeout, then reconciled by idempotency key | `status=UNKNOWN attempts=1` · 1 shipment before, 1 after |
+
+Risk thresholds remain **proposed, not tuned**. A dedicated k6/load benchmark has not been recorded yet. See [Day 3 evidence](docs/evidence/day-03/README.md) and [Day 2 measurements](docs/daily/Day-02.md) for details.
 
 ## Architecture
 
 ![Fuel Supply Intelligence system architecture](images/system-architecture.svg)
 
 The browser talks only to the Spring Boot API. The backend communicates with the simulator over its REST API. Prometheus scrapes backend metrics, and Grafana reads those metrics from Prometheus. All services run locally through Docker Compose.
+
+```
+browser ──▶ Spring Boot API ──▶ official simulator  (REST)
+                │
+                ├──▶ PostgreSQL   snapshots · proposals · commands · audit
+                │
+                └──▶ /actuator/prometheus ──▶ Prometheus ──▶ Grafana
+```
 
 ## Screenshots
 
@@ -91,7 +122,7 @@ The browser talks only to the Spring Boot API. The backend communicates with the
 | **Depot inventory and shipment view**<br><img src="images/depot-inventory-console.png" alt="Depot inventory console" width="100%"> | **Station stockout risk**<br><img src="images/station-stockout-risk.png" alt="Station stockout risk table" width="100%"> |
 | **Network inventory and active-event view**<br><img src="images/network-inventory-active-event.png" alt="Network inventory and active event" width="100%"> | **Depot risk and recommendations**<br><img src="images/depot-risk-recommendations.png" alt="Depot risk and recommendations" width="100%"> |
 | **Proposal alternatives and unmet needs**<br><img src="images/proposal-alternatives-unmet-needs.png" alt="Proposal alternatives and unmet needs" width="100%"> | **Grafana service health**<br><img src="images/grafana-overview-health.png" alt="Grafana health overview" width="100%"> |
-| **Grafana metrics overview**<br><img src="images/grafana-overview-metrics.png" alt="Grafana metrics overview" width="100%"> | **Grafana sign-in screen**<br><img src="images/grafana-login-screen.png" alt="Grafana login screen" width="100%"> |
+| **Grafana metrics overview**<br><img src="images/grafana-overview-metrics.png" alt="Grafana metrics overview" width="100%"> | **Grafana sign-in screen**<br><img src="images/grafana-login-screen.png" alt="Grafana sign-in screen" width="100%"> |
 
 The event screenshot shows one simulator scenario; values and event state can change as the simulator runs. Grafana credentials are configurable in `.env` (see `.env.example`).
 
@@ -113,6 +144,64 @@ The screenshots show the Day 3 application tables in the local `fuelplatform` da
 |---|---|
 | **Schema and tables**<br><img src="images/postgres-schema-overview.png" alt="PostgreSQL public schema listing snapshots, proposals, proposal lines, commands, audit events, and Flyway history" width="100%"> | **Validated snapshots**<br><img src="images/postgres-snapshots.png" alt="Persisted simulator snapshot records with run IDs and ticks" width="100%"> |
 | **Proposal lines**<br><img src="images/postgres-proposal-lines.png" alt="Persisted proposal lines with station, fuel, source depot, and proposal IDs" width="100%"> | **Audit events**<br><img src="images/postgres-audit-events.png" alt="Persisted proposal, approval, and command audit events" width="100%"> |
+
+## The decision path
+
+This is the flow the whole platform exists to make safe. Each step names the rule it enforces.
+
+```
+simulator snapshot
+      │
+      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. VALIDATE      the payload, the freshness, and the stale header│
+│ 2. FORECAST      demand per (station, fuel), oldest tick first │
+│ 3. PROJECT       hours to stockout, and the signals behind them │
+│ 4. ALLOCATE      feasible lines, a shared dispatch budget,      │
+│                  alternatives with reasons, unmet needs          │
+└─────────────────────────────────────────────────────────────────┘
+      │
+      ▼
+  PROPOSAL  ── no simulator write happens here, ever
+      │
+      ▼  operator reviews, and may lower any quantity
+┌─────────────────────────────────────────────────────────────────┐
+│ 5. REVALIDATE    against a FRESH world, per line                │
+│                  · quantity may fall, never rise                │
+│                  · a changed line sends nothing and says why    │
+│                  · the depot's shared budget is re-reserved     │
+│ 6. PERSIST       the idempotency key and the EXACT body,       │
+│                  BEFORE any POST                                │
+│ 7. SEND          one POST, one key, one body                   │
+│                  · a timeout is UNKNOWN, never REJECTED         │
+│ 8. RECONCILE     match the key against GET /v1/allocations     │
+│                  · never send again                             │
+│ 9. AUDIT         every decision, including the refused ones    │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Rules the database enforces
+
+These are structural, not procedural. A second command for one proposal line **cannot be stored**, and a final quantity above the reviewed quantity **cannot be stored**.
+
+| Constraint | What it makes impossible |
+|---|---|
+| `uq_command_line (proposal_line_id)` | One proposal line producing two commands |
+| `uq_command_key (idempotency_key)` | One idempotency key producing two shipments |
+| `chk_final_not_above_reviewed` | A shipped quantity above what the operator reviewed |
+| `chk_command_status` | A command status outside the known vocabulary |
+| `chk_line_status` | A line status outside the known vocabulary |
+
+### The two clocks
+
+| Clock | Controls | Examples |
+|---|---|---|
+| **Simulation tick** | The fuel world | Tick conversion, route transit, supply arrivals, stockout horizons |
+| **Wall clock** | The software | Request timeouts, cache age, circuit breakers, fault expiry, proposal expiry |
+
+A paused simulator can sit on one tick for ten minutes while its API is perfectly reachable. **That is not stale.** Staleness is measured against the last successful *validated* REST refresh, tracked separately from the tick.
+
+At the configured `SIMULATION_SPEED=8`, `TICK_MINUTES=15`, this machine sustains **5.46 ticks/sec** — roughly **82 simulated minutes per wall second**. A 30-second review spans about **41 simulated hours**. That is why the tick-lag rule cannot be the only control, and why a proposal is an envelope rather than a frozen order.
 
 ## Phased execution plan
 
@@ -142,15 +231,18 @@ Fuel-Management-System/
 │   │   ├── observability/    # Health state and operational metrics
 │   │   ├── risk/             # Demand forecast, anomaly, and supply-risk logic
 │   │   ├── simulator/        # Simulator HTTP client, DTOs, and metrics
-│   │   └── web/              # Dashboard, risk, and system-status REST endpoints
+│   │   └── web/              # Dashboard, risk, decision, and system-status REST endpoints
+│   └── src/main/resources/db/migration/   # Flyway migrations
 │   └── src/test/             # Backend unit and integration tests
 ├── frontend/
 │   └── src/
 │       ├── App.tsx           # Operator console composition
 │       ├── DecisionPanel.tsx # Proposal approval and shipment ledger
 │       ├── RiskPanel.tsx     # Risk and proposal views
+│       ├── decisionTypes.ts  # Decision API types and status vocabulary
 │       ├── filters.ts        # Fuel and region filtering
 │       ├── useDashboard.ts   # Dashboard API/state hook
+│       ├── useDecisions.ts   # Proposal, approval, and ledger API/state hook
 │       └── useRisk.ts        # Risk API/state hook
 ├── infra/
 │   ├── grafana/provisioning/ # Prometheus data source and dashboard setup
@@ -159,12 +251,14 @@ Fuel-Management-System/
 ├── scripts/                  # Local simulator and behavior verification helpers
 ├── docs/
 │   ├── adr/                  # Architecture decision records
+│   ├── daily/                # Day-by-day implementation notes and evidence
 │   ├── evidence/             # Captured measurements and verification evidence
 │   ├── issues/               # Feature and implementation specifications
-│   ├── system-architecture.md
-│   ├── architecture-diagram.md
 │   ├── acceptance-and-invariants.md
-│   └── current-state.md
+│   ├── agent-activity-log.md
+│   ├── contract-notes.md
+│   ├── current-state.md
+│   └── system-architecture.md
 ├── compose.yaml              # Local multi-service deployment
 └── .env.example              # Example local configuration
 ```
@@ -191,23 +285,34 @@ Open the services:
 
 Stop the services with `docker compose down`. Add `-v` only when you intend to remove named volumes as well.
 
+> **After any frontend change**, run `docker compose build frontend` before `docker compose up -d frontend`. The container serves a built bundle, so without the rebuild it keeps serving the previous one.
+
 ## How the data flows
 
 1. The official simulator maintains the simulated fuel network and its state.
-2. The backend periodically reads simulator data, validates and persists snapshots, and exposes the operator API. Main routes include `/api/dashboard`, `/api/risk`, `/api/system-status`, `/api/proposals`, and `/api/shipments`.
+2. The backend periodically reads simulator data, validates and persists snapshots, and exposes the operator API. Main routes: `/api/dashboard`, `/api/risk`, `/api/system-status`, `/api/proposals`, `/api/shipments`.
 3. The React frontend reads the backend API and renders inventory, freshness, risk, anomalies, and advisory proposals. It does not call the simulator directly.
 4. Prometheus collects backend metrics from `/actuator/prometheus`; Grafana queries Prometheus for its provisioned overview.
 
 Shipment proposals are decision support until an operator approves them. The backend revalidates each approval, persists command intent and its idempotency key before sending the request, then reconciles the result against simulator state. PostgreSQL stores snapshots, proposals, commands, and audit events; the simulator remains authoritative for fuel and shipment state.
 
-## Simulator time and real time
+## Simulator contract facts
 
-These are separate clocks:
+These were **measured**, not read from documentation. They are the ones that change how the code must be written.
 
-- **Simulator tick:** one tick advances the simulated fuel world by 15 simulated minutes, according to the Compose configuration. A tick can happen faster or slower than one real second; configured simulator speed is a target, not a guaranteed tick rate.
-- **Wall clock:** real elapsed time on the computer running the application. The dashboard uses this to describe how recently the backend last completed a successful read.
+1. Depot inventory is already net of pending and in-transit shipments; do not subtract them again.
+2. Dispatch allowance is shared per depot across fuels and destinations, and it is consumed at POST time.
+3. `X-Simulator-Stale: true` can accompany HTTP 200; inspect the header and freshness data.
+4. Demand history is newest-first; sort oldest-first before forecasting.
+5. Forecast `demand_liters`, not `served_liters`.
+6. A shared history limit applies across fuels; split the returned rows by fuel after fetching.
+7. `/v1/health` bypasses fault injection; reachability is not data freshness.
+8. Simulator errors have multiple response shapes; normalize them in the adapter.
+9. Configured simulator speed is not a guaranteed tick rate.
+10. Simulation ticks measure fuel-world time; wall-clock age measures application data freshness.
+11. A transport error message contains a double-quoted URL. Any JSON built by string concatenation from a simulator message will be invalid — serialise a map instead.
 
-When the simulator is paused, its tick and simulated time can stay still while the backend remains healthy and continues to serve its last valid snapshot. A successful HTTP response alone does not guarantee fresh simulator data; the backend also checks simulator freshness metadata.
+The full measurements are in [contract notes](docs/contract-notes.md).
 
 ## Build and verification
 
@@ -215,7 +320,7 @@ Run these from the repository root when working on the corresponding component:
 
 ```powershell
 Set-Location backend
-.\mvnw.cmd verify
+.\mvnw.cmd clean verify
 ```
 
 ```powershell
@@ -225,15 +330,26 @@ npm run test
 npm run build
 ```
 
-The scripts in `scripts/` can exercise simulator behavior and allocation invariants. Some interact with simulator state, so run them against a disposable local simulator instance. CI configuration is in `.github/workflows/`.
+The scripts in `scripts/` exercise simulator behaviour and allocation invariants. Some of them **mutate** the live simulator and database, so run them against a disposable local stack rather than a demo state you want to keep.
+
+```powershell
+python scripts/verify_day1.py                   # 34 simulator-contract checks
+python scripts/verify_day3_end_to_end.py        # 20 Day 3 decision-path checks (mutates the stack)
+python scripts/verify_frontend_day3_ui.py       # 12 Day 3 UI strings in the served bundle
+python scripts/verify_frontend_day3_css.py      # the table rules and the card grid
+python scripts/inspect_day3_schema.py           # the schema as the database holds it
+```
+
+CI configuration is in `.github/workflows/`.
 
 ## Documentation
 
 - [System architecture](docs/system-architecture.md) — component diagram, communication paths, and ownership boundaries
-- [Architecture notes](docs/architecture-diagram.md) — design context and simulator behavior
-- [Acceptance criteria and invariants](docs/acceptance-and-invariants.md) — important operational rules
+- [Architecture notes](docs/architecture-diagram.md) — design context and simulator behaviour
+- [Acceptance criteria and invariants](docs/acceptance-and-invariants.md) — the operational rules, INV-1 to INV-46
 - [Contract notes](docs/contract-notes.md) — integration details and API observations
 - [Current state](docs/current-state.md) — implementation status and verification notes
+- [Agent activity log](docs/agent-activity-log.md) — what was built, what broke, and why
 - [Architecture decisions](docs/adr/) — recorded design decisions
 - [Issue board](docs/issue-board.md) — tracked work and specifications
 
