@@ -1,0 +1,7 @@
+﻿NAME                 SERVICE         STATUS                    PORTS
+fuel-backend         backend         Up 15 minutes (healthy)   127.0.0.1:8080->8080/tcp
+fuel-frontend        frontend        Up 43 minutes (healthy)   127.0.0.1:5173->80/tcp
+fuel-grafana         grafana         Up 2 hours                127.0.0.1:3000->3000/tcp
+fuel-postgres        postgres        Up 2 hours (healthy)      127.0.0.1:5434->5432/tcp
+fuel-prometheus      prometheus      Up About an hour          127.0.0.1:9090->9090/tcp
+fuel-simulator-api   simulator-api   Up 2 hours (healthy)      127.0.0.1:8000->8000/tcp

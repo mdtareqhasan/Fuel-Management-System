@@ -1,0 +1,13 @@
+Day 4 backend regression run after route-disruption overlay and SSE refresh coalescing
+Captured: 2026-11-23 03:29:58 UTC
+Command: `docker build -f Dockerfile.test -t fuel-platform-backend-tests .`
+The test Dockerfile runs `./mvnw -B clean test` (JDK 25, Maven Wrapper 3.9.11).
+
+Tests run: 154, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+Total time: 34.931 s
+
+The run compiled 75 main source files and 18 test source files. It includes
+RouteEventOverlayTest and RefreshSchedulerTest. The local host Maven run could
+not resolve artifacts because host network access was denied, so the test suite
+was run in the Docker build environment instead.

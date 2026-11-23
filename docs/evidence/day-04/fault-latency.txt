@@ -1,0 +1,66 @@
+﻿==============================================================================
+FAULT: latency for 25s
+==============================================================================
+[   0.000s] state BEFORE the fault
+
+  --- before the fault ---
+  simulator /v1/health   : HTTP 200 status=ok
+  platform simulator      : UP
+  platform database       : UP
+  data quality            : FRESH
+  decision eligible       : True
+  refresh age (s)         : 1.57
+  p95 latency (ms)        : 191.89
+  error rate (%)          : 0.0
+  circuit breaker         : CLOSED
+  event stream            : CONNECTED
+  snapshot quality        : FRESH
+  snapshot eligible       : True
+  warnings                : []
+[   6.240s] injecting the latency fault
+[   8.316s] fault injection -> HTTP 201
+[   8.316s] waiting 12 s for the platform to react
+
+  --- during the latency fault ---
+  simulator /v1/health   : HTTP 200 status=ok
+  platform simulator      : DOWN
+  platform database       : UP
+  data quality            : INVALID
+  decision eligible       : False
+  refresh age (s)         : 15.44
+  p95 latency (ms)        : 42.99
+  error rate (%)          : 0.0
+  circuit breaker         : CLOSED
+  event stream            : CONNECTED
+  snapshot quality        : INVALID
+  snapshot eligible       : False
+  warnings                : ['Fault[TRANSPORT_ERROR http=0] I/O error on GET request for "http://simulator-api:8000/v1/instance": Request cancelled']
+[  30.692s] approval attempt during the fault -> HTTP 409 code=STALE_OR_INVALID_SNAPSHOT
+[  30.692s] clearing the fault
+[  32.777s] fault cleared -> HTTP 200
+[  32.777s] waiting 35 s for the recovery
+
+  --- after the fault ---
+  simulator /v1/health   : HTTP 200 status=ok
+  platform simulator      : UP
+  platform database       : UP
+  data quality            : FRESH
+  decision eligible       : True
+  refresh age (s)         : 1.9
+  p95 latency (ms)        : 30.41
+  error rate (%)          : 4.0
+  circuit breaker         : CLOSED
+  event stream            : CONNECTED
+  snapshot quality        : FRESH
+  snapshot eligible       : True
+  warnings                : []
+
+==============================================================================
+TIMELINE
+==============================================================================
+  before : quality=FRESH eligible=True breaker=CLOSED simulator_health=HTTP 200 status=ok
+  during : quality=INVALID eligible=False breaker=CLOSED simulator_health=HTTP 200 status=ok
+  after  : quality=FRESH eligible=True breaker=CLOSED simulator_health=HTTP 200 status=ok
+
+  the simulator's /v1/health stayed HTTP 200 status=ok throughout
+  ù reachability is not freshness.

@@ -1,0 +1,29 @@
+﻿==============================================================================
+DAY 4 UI CHECK
+==============================================================================
+  index.html assets: ['/assets/index-CLEJDnSD.js', '/assets/index-DOJCLEnf.css']
+
+UI STRINGS
+------------------------------------------------------------------------------
+  [PASS] The simulator is not being called.
+  [PASS] The circuit breaker is OPEN after repeated failures.
+  [PASS] The simulator is being probed.
+  [PASS] The event stream is disconnected after
+  [PASS] A healthy health endpoint does not mean the station data is fresh.
+  [PASS] The cached view
+  [PASS] the last valid one, and approvals are blocked until the
+
+CSS RULES
+------------------------------------------------------------------------------
+  [PASS] .banner-danger
+
+SAFETY CHECKS
+------------------------------------------------------------------------------
+  [PASS] the panel is a component that can be hidden
+  [PASS] the panel is hidden on a healthy system
+  [PASS] the panel is gated on the breaker and stream state
+  [PASS] the browser never talks to the simulator
+  [PASS] the status type carries the resilience fields
+
+==============================================================================
+RESULT: all Day 4 UI checks passed

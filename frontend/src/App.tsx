@@ -49,6 +49,8 @@ export default function App() {
     proposals,
     shipments,
     approving,
+    creatingProposal,
+    createProposal,
     approve,
     reconcile,
     error: decisionError,
@@ -150,6 +152,8 @@ export default function App() {
         proposals={proposals}
         shipments={shipments}
         approving={approving}
+        creatingProposal={creatingProposal}
+        createProposal={createProposal}
         approve={approve}
         reconcile={reconcile}
         error={decisionError}
@@ -240,6 +244,8 @@ function Header({
         <MetaItem label="Error rate" value={errorRateLabel(status?.error_rate_percent)} />
       </div>
 
+      <ResiliencePanel status={status} />
+
       {meta.warnings.length > 0 && (
         <div className="banner banner-warn">
           <strong>This view may not back a decision.</strong>
@@ -257,6 +263,72 @@ function Header({
         </div>
       )}
     </header>
+  )
+}
+
+/**
+ * The resilience panel.
+ *
+ * <p>Three states the operator has to be able to tell apart at a glance:
+ *
+ * <ul>
+ *   <li><strong>The circuit breaker is OPEN.</strong> The platform has stopped
+ *       calling the simulator on purpose, because enough consecutive calls
+ *       failed. The cached view is still on screen.</li>
+ *   <li><strong>The event stream is DISCONNECTED.</strong> The REST poll is
+ *       still running, so the view is still correct — only less prompt. This is
+ *       not an outage and must not look like one.</li>
+ *   <li><strong>Neither.</strong> Everything is normal.</li>
+ * </ul>
+ *
+ * <p>The panel only appears when something is worth saying. A green panel that
+ * is always on screen teaches the operator to ignore it.
+ */
+function ResiliencePanel({ status }: { status: SystemStatus | null }) {
+  if (!status) return null
+
+  const breakerOpen = status.circuit_breaker === 'OPEN'
+  const breakerHalfOpen = status.circuit_breaker === 'HALF_OPEN'
+  const streamDown = status.event_stream === 'DISCONNECTED'
+
+  if (!breakerOpen && !breakerHalfOpen && !streamDown) return null
+
+  return (
+    <div className={`banner ${breakerOpen || breakerHalfOpen ? 'banner-danger' : 'banner-warn'}`}>
+      <strong>
+        {breakerOpen
+          ? 'The simulator is not being called.'
+          : breakerHalfOpen
+            ? 'The simulator is being probed.'
+            : 'The live update stream is disconnected.'}
+      </strong>
+      <ul>
+        {breakerOpen && (
+          <li>
+            The circuit breaker is OPEN after repeated failures. The cached view
+            below is the last valid one, and approvals are blocked until the
+            simulator answers again.
+          </li>
+        )}
+        {breakerHalfOpen && (
+          <li>
+            The circuit breaker is HALF_OPEN. A limited number of probes is
+            allowed through to find out whether the simulator has recovered.
+          </li>
+        )}
+        {streamDown && (
+          <li>
+            The event stream is disconnected after {status.stream_reconnects}{' '}
+            reconnect attempts. The REST poll still refreshes this page, so the
+            data below is correct — only less prompt. Nothing is lost.
+          </li>
+        )}
+        <li>
+          Simulator health endpoint: {status.simulator}. A healthy health
+          endpoint does not mean the station data is fresh.
+        </li>
+      </ul>
+    </div>
   )
 }
 

@@ -9,6 +9,11 @@ global:
   external_labels:
     environment: local-demo
 
+# The alerting rules are code, not console clicks. Each rule names the condition
+# it fires on and the runbook that explains what to do about it.
+rule_files:
+  - /etc/prometheus/alert_rules.yml
+
 scrape_configs:
   - job_name: fuel-backend
     metrics_path: /actuator/prometheus

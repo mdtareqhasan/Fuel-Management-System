@@ -1,0 +1,163 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(120, 160, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Resilience panel for the Fuel Supply Intelligence platform: the circuit breaker, the event stream, refresh freshness, approval refusals and the simulator's own failure modes.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "fuel-prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "options": { "0": { "text": "CLOSED" }, "1": { "text": "OPEN" } }, "type": "value" }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "value_and_name" },
+      "targets": [{ "editorMode": "code", "expr": "fuel_circuit_breaker_open", "instant": true, "legendFormat": "Circuit breaker", "refId": "A" }],
+      "title": "Circuit breaker (OPEN = refusing calls)",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "fuel-prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "options": { "0": { "text": "DISCONNECTED" }, "1": { "text": "CONNECTED" } }, "type": "value" }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "id": 2,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "value_and_name" },
+      "targets": [{ "editorMode": "code", "expr": "fuel_stream_connected", "instant": true, "legendFormat": "Event stream", "refId": "A" }],
+      "title": "Event stream (REST poll still runs)",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "fuel-prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "options": { "0": { "text": "DOWN" }, "1": { "text": "UP" } }, "type": "value" }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "id": 3,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "value_and_name" },
+      "targets": [{ "editorMode": "code", "expr": "fuel_simulator_up", "instant": true, "legendFormat": "Simulator", "refId": "A" }],
+      "title": "Simulator reachable",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "fuel-prometheus" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "decimals": 1, "unit": "s" }, "overrides": [] },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "id": 4,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "value_and_name" },
+      "targets": [{ "editorMode": "code", "expr": "fuel_data_age_seconds", "instant": true, "legendFormat": "Data age", "refId": "A" }],
+      "title": "Validated data age",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "fuel-prometheus" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "decimals": 2, "min": 0, "unit": "ops" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "id": 5,
+      "options": { "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [{ "editorMode": "code", "expr": "sum by (reason) (rate(fuel_approvals_refused_total[$__rate_interval])) or on() vector(0)", "legendFormat": "{{reason}}", "refId": "A" }],
+      "title": "Approvals refused, by reason",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "fuel-prometheus" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "decimals": 2, "min": 0, "unit": "ops" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "id": 6,
+      "options": { "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [{ "editorMode": "code", "expr": "sum by (reason) (rate(fuel_refresh_failures_total[$__rate_interval])) or on() vector(0)", "legendFormat": "{{reason}}", "refId": "A" }],
+      "title": "Refresh failures, by reason",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "fuel-prometheus" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "decimals": 3, "min": 0, "max": 1, "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "id": 7,
+      "options": { "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [{ "editorMode": "code", "expr": "fuel_circuit_breaker_state_code", "legendFormat": "Breaker state", "refId": "A" }, { "editorMode": "code", "expr": "fuel_stream_connected", "legendFormat": "Stream connected", "refId": "B" }],
+      "title": "Breaker state and stream connection",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "fuel-prometheus" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "decimals": 0, "min": 0, "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "id": 8,
+      "options": { "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [{ "editorMode": "code", "expr": "sum by (outcome) (rate(fuel_simulator_calls_total[$__rate_interval]))", "legendFormat": "{{outcome}}", "refId": "A" }, { "editorMode": "code", "expr": "increase(fuel_circuit_breaker_rejections_total[1h])", "legendFormat": "Breaker rejections / hour", "refId": "B" }],
+      "title": "Simulator call outcomes and breaker rejections",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "fuel-prometheus" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "decimals": 0, "min": 0, "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+      "id": 9,
+      "options": { "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [{ "editorMode": "code", "expr": "sum by (trigger) (rate(fuel_refresh_triggers_total[$__rate_interval]))", "legendFormat": "{{trigger}}", "refId": "A" }],
+      "title": "Refresh triggers, by source (stream vs poll)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "fuel-prometheus" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "decimals": 0, "min": 0, "unit": "ops" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+      "id": 10,
+      "options": { "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [{ "editorMode": "code", "expr": "sum by (outcome) (rate(fuel_commands_sent_total[$__rate_interval])) + sum by (outcome) (rate(fuel_commands_unknown_total[$__rate_interval]))", "legendFormat": "{{outcome}}", "refId": "A" }],
+      "title": "Shipment command outcomes",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["fuel-platform", "resilience", "operations"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Fuel Platform Resilience",
+  "uid": "fuel-platform-resilience",
+  "version": 1
+}

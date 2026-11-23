@@ -10,7 +10,7 @@ import {
   type ProposalLine,
   type Shipment,
 } from './decisionTypes'
-import type { ApproveOutcome } from './useDecisions'
+import type { ApproveOutcome, CreateProposalOutcome } from './useDecisions'
 
 /**
  * The decision panel: the review list, the approval dialog and the shipment
@@ -34,6 +34,8 @@ export function DecisionPanel({
   proposals,
   shipments,
   approving,
+  creatingProposal,
+  createProposal,
   approve,
   reconcile,
   error,
@@ -41,6 +43,8 @@ export function DecisionPanel({
   proposals: Proposal[]
   shipments: Shipment[]
   approving: string | null
+  creatingProposal: boolean
+  createProposal: () => Promise<CreateProposalOutcome>
   approve: (
     proposalId: string,
     actor: string,
@@ -52,6 +56,7 @@ export function DecisionPanel({
   const [actor, setActor] = useState('operator')
   const [reviewing, setReviewing] = useState<Proposal | null>(null)
   const [outcome, setOutcome] = useState<ApproveOutcome | null>(null)
+  const [createError, setCreateError] = useState<string | null>(null)
 
   const pending = useMemo(
     () => proposals.filter((proposal) => proposal.status === 'PENDING_REVIEW'),
@@ -72,6 +77,12 @@ export function DecisionPanel({
     setOutcome(null)
   }
 
+  const generateProposal = async () => {
+    setCreateError(null)
+    const result = await createProposal()
+    if (!result.ok) setCreateError(result.message)
+  }
+
   const submit = async (quantities: Record<string, number>) => {
     if (!reviewing) return
     const result = await approve(reviewing.id, actor, quantities)
@@ -88,6 +99,14 @@ export function DecisionPanel({
         {error && <p className="empty error-text">{error}</p>}
 
         <div className="decision-toolbar">
+          <button
+            type="button"
+            className="primary"
+            onClick={() => void generateProposal()}
+            disabled={creatingProposal}
+          >
+            {creatingProposal ? 'Generating…' : 'Generate proposal'}
+          </button>
           <label className="actor-field">
             Operator
             <input
@@ -101,6 +120,7 @@ export function DecisionPanel({
             Nothing reaches the simulator without an approval recorded here.
           </p>
         </div>
+        {createError && <p className="empty error-text">{createError}</p>}
 
         {pending.length === 0 && settled.length === 0 && (
           <p className="empty">No proposals yet. Generate one from the intelligence panel.</p>

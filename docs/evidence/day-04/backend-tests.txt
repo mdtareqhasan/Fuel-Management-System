@@ -1,0 +1,105 @@
+﻿.\mvnw.cmd : WARNING: A terminally deprecated method in sun.misc.Unsafe has 
+been called
+At line:1 char:99
++ ... m\Fuel-Management-System\backend'; .\mvnw.cmd clean test 2>&1 | Out-F ...
++                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (WARNING: A term...has been called 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by 
+com.google.inject.internal.aop.HiddenClassDefiner (file:/C:/Users/MSI/.m2/wrapp
+er/dists/apache-maven-3.9.11/03d7e36a140982eea48e22c1dcac01d8862b2550b2939e09a0
+809bbc5182a5bc/lib/guice-5.1.0-classes.jar)
+WARNING: Please consider reporting this to the maintainers of class 
+com.google.inject.internal.aop.HiddenClassDefiner
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------< com.fuelplatform:fuel-platform >-------------------
+[INFO] Building fuel-platform 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.4.1:clean (default-clean) @ fuel-platform ---
+[INFO] Deleting D:\Poridhi Lab\Fuel Management System\Fuel-Management-System\backend\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ fuel-platform ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ fuel-platform ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 74 source files with javac [debug parameters release 25] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ fuel-platform ---
+[INFO] skip non existing resourceDirectory D:\Poridhi Lab\Fuel Management System\Fuel-Management-System\backend\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ fuel-platform ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 15 source files with javac [debug parameters release 25] to target\test-classes
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ fuel-platform ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.fuelplatform.allocation.AllocationPlannerTest
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.334 s -- in com.fuelplatform.allocation.AllocationPlannerTest
+[INFO] Running com.fuelplatform.audit.AuditRepositoryTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.347 s -- in com.fuelplatform.audit.AuditRepositoryTest
+[INFO] Running com.fuelplatform.command.CommandWorkerTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will 
+no longer work in future releases of the JDK. Please add Mockito as an agent 
+to your build as described in Mockito's documentation: https://javadoc.io/doc/o
+rg.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\MSI\.m2\repository\
+net\bytebuddy\byte-buddy-agent\1.17.8\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with 
+-XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with 
+-Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future 
+release
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot 
+loader classes because bootstrap classpath has been appended
+06:40:54.973 [main] INFO com.fuelplatform.command.CommandWorker -- command 060961d5-4ce7-4e88-9783-5501043c5aea is already SENT, not sending
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.094 s -- in com.fuelplatform.command.CommandWorkerTest
+[INFO] Running com.fuelplatform.decision.ApprovalServiceTest
+06:40:55.070 [main] INFO com.fuelplatform.decision.ApprovalService -- line line-1 of proposal 64ba4710-7c21-46e5-b10b-bf95b697b304 sends nothing: route route-1 is DISRUPTED
+06:40:55.173 [main] INFO com.fuelplatform.decision.ApprovalService -- line line-1 of proposal 0d0df4ed-ae8b-4c82-8483-0db9e6689d6d sends nothing: station station-mirpur is OUTAGE
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.221 s -- in com.fuelplatform.decision.ApprovalServiceTest
+[INFO] Running com.fuelplatform.decision.FreshnessPolicyTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.071 s -- in com.fuelplatform.decision.FreshnessPolicyTest
+[INFO] Running com.fuelplatform.decision.RevalidatorTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.113 s -- in com.fuelplatform.decision.RevalidatorTest
+[INFO] Running com.fuelplatform.ingestion.SimulatorEventStreamReaderTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.589 s -- in com.fuelplatform.ingestion.SimulatorEventStreamReaderTest
+[INFO] Running com.fuelplatform.ingestion.SnapshotValidatorTest
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.053 s -- in com.fuelplatform.ingestion.SnapshotValidatorTest
+[INFO] Running com.fuelplatform.observability.CircuitBreakerTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.031 s -- in com.fuelplatform.observability.CircuitBreakerTest
+[INFO] Running com.fuelplatform.risk.DemandAnomalyDetectorTest
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.083 s -- in com.fuelplatform.risk.DemandAnomalyDetectorTest
+[INFO] Running com.fuelplatform.risk.DemandForecasterTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.054 s -- in com.fuelplatform.risk.DemandForecasterTest
+[INFO] Running com.fuelplatform.risk.StationRiskProjectorTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.060 s -- in com.fuelplatform.risk.StationRiskProjectorTest
+[INFO] Running com.fuelplatform.simulator.SimulatorClientStaleHeaderTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.025 s -- in com.fuelplatform.simulator.SimulatorClientStaleHeaderTest
+[INFO] Running com.fuelplatform.simulator.SimulatorErrorParserTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.025 s -- in com.fuelplatform.simulator.SimulatorErrorParserTest
+[INFO] Running com.fuelplatform.simulator.TransportFailureClassifierTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.021 s -- in com.fuelplatform.simulator.TransportFailureClassifierTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 149, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  18.502 s
+[INFO] Finished at: 2026-11-23T06:40:56+06:00
+[INFO] ------------------------------------------------------------------------

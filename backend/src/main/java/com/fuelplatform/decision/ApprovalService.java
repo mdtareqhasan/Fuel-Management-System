@@ -6,6 +6,7 @@ import com.fuelplatform.command.Command;
 import com.fuelplatform.command.CommandRepository;
 import com.fuelplatform.domain.WorldSnapshot;
 import com.fuelplatform.ingestion.SnapshotIngestionService;
+import com.fuelplatform.observability.DecisionMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -54,6 +55,7 @@ public class ApprovalService {
     private final SnapshotIngestionService ingestionService;
     private final ProposalFactory proposalFactory;
     private final FreshnessPolicy freshnessPolicy;
+    private final DecisionMetrics decisionMetrics;
     private final Clock clock;
 
     public ApprovalService(ProposalRepository proposalRepository,
@@ -63,6 +65,7 @@ public class ApprovalService {
                            SnapshotIngestionService ingestionService,
                            ProposalFactory proposalFactory,
                            FreshnessPolicy freshnessPolicy,
+                           DecisionMetrics decisionMetrics,
                            Clock clock) {
         this.proposalRepository = proposalRepository;
         this.snapshotRepository = snapshotRepository;
@@ -71,6 +74,7 @@ public class ApprovalService {
         this.ingestionService = ingestionService;
         this.proposalFactory = proposalFactory;
         this.freshnessPolicy = freshnessPolicy;
+        this.decisionMetrics = decisionMetrics;
         this.clock = clock;
     }
 
@@ -199,8 +203,7 @@ public class ApprovalService {
                                 "reviewed", line.reviewedQuantity()));
                 throw new ApprovalException(ApprovalError.QUANTITY_EXCEEDS_REVIEWED,
                         "line " + line.lineId() + " asked for " + asked
-                                + " litres but only " + line.reviewedQuantity() + " was reviewed");
-            }
+                                + " litres but only " + line.reviewedQuantity() + " was reviewed");            }
             if (asked < 0) {
                 throw new ApprovalException(ApprovalError.INVALID_REQUEST,
                         "line " + line.lineId() + " asked for a negative quantity");
@@ -271,6 +274,7 @@ public class ApprovalService {
                         "reviewedQuantity", proposal.reviewedQuantity(),
                         "shippedQuantity", outcomes.stream()
                                 .mapToDouble(ApprovalResult.LineOutcome::finalQuantity).sum()));
+        decisionMetrics.recordApprovalGranted(newStatus.name());
 
         return new ApprovalResult(
                 proposalId,

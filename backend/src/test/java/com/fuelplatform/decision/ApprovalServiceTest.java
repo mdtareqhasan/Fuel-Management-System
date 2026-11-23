@@ -69,6 +69,8 @@ class ApprovalServiceTest {
                 proposals, new FakeSnapshotRepository(), commands, audit, ingestion,
                 new ProposalFactory(),
                 new FreshnessPolicy(new com.fuelplatform.config.DecisionProperties(10, 120, 1, 50000)),
+                new com.fuelplatform.observability.DecisionMetrics(
+                        new io.micrometer.core.instrument.simple.SimpleMeterRegistry()),
                 clock);
     }
 
@@ -486,6 +488,8 @@ class ApprovalServiceTest {
                     new io.micrometer.core.instrument.simple.SimpleMeterRegistry(),
                     Clock.systemUTC(),
                     new com.fuelplatform.observability.HealthRegistry(
+                            new io.micrometer.core.instrument.simple.SimpleMeterRegistry()),
+                    new com.fuelplatform.observability.DecisionMetrics(
                             new io.micrometer.core.instrument.simple.SimpleMeterRegistry()));
         }
 

@@ -80,6 +80,50 @@ app:
     horizon-hours: ${PROJECTION_HORIZON_HOURS:8}
 
   # ------------------------------------------------------------------
+  # RESILIENCE — timeout, retry and circuit breaker, kept apart.
+  #
+  # The simulator's measured baseline response is ~2.05 s, and the backend's
+  # read timeout is 2 s. So a single clean read already sits on the timeout
+  # boundary, and the freshness limit is 10 s.
+  #
+  # That arithmetic sets the retry bound. Three attempts at a 2 s deadline
+  # span ~6 s, which still fits inside the 10 s freshness window. Five
+  # attempts would not, and a retry policy that outlives the freshness
+  # window hands the operator a view that expired while the retry was
+  # still running — worse than no retry at all.
+  # ------------------------------------------------------------------
+  resilience:
+    # Consecutive transport failures that open the breaker. A domain error
+    # never counts: it is a correct answer from a reachable simulator.
+    failure-threshold: ${RESILIENCE_FAILURE_THRESHOLD:3}
+    # How long the breaker stays open before it allows a probe.
+    open-seconds: ${RESILIENCE_OPEN_SECONDS:30}
+    # How many probes the half-open state allows.
+    half-open-probes: ${RESILIENCE_HALF_OPEN_PROBES:1}
+    # Additional attempts after the first, for READS only. Writes are never
+    # retried here: the command worker owns that decision, because only it
+    # knows whether the command body was persisted before the POST.
+    max-retries: ${RESILIENCE_MAX_RETRIES:1}
+    # Base backoff between read retries.
+    retry-backoff-ms: ${RESILIENCE_RETRY_BACKOFF_MS:250}
+
+  # ------------------------------------------------------------------
+  # EVENT STREAM — the simulator's SSE feed is a HINT, never the truth.
+  #
+  # The REST poll above always runs. The stream only makes the refresh
+  # happen sooner, and a dropped or disconnected stream changes nothing
+  # except how quickly the view updates.
+  # ------------------------------------------------------------------
+  stream:
+    enabled: ${STREAM_ENABLED:true}
+    connect-timeout-ms: ${STREAM_CONNECT_TIMEOUT_MS:1000}
+    reconnect-delay-ms: ${STREAM_RECONNECT_DELAY_MS:2000}
+    max-reconnect-delay-ms: ${STREAM_MAX_RECONNECT_DELAY_MS:30000}
+    # A reconnect that succeeds within this window counts as a blip rather
+    # than an outage.
+    outage-threshold-ms: ${STREAM_OUTAGE_THRESHOLD_MS:10000}
+
+  # ------------------------------------------------------------------
   # SIMULATOR PROFILE CONSTANTS — simulator-specific, not business rules.
   #
   # These are the numbers the official simulator uses to generate demand.

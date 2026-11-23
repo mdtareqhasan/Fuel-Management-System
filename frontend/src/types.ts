@@ -123,6 +123,20 @@ export interface SystemStatus {
   max_age_seconds: number
   tick: number | null
   sim_time: string | null
+  /**
+   * The simulator circuit breaker: CLOSED, OPEN or HALF_OPEN.
+   *
+   * OPEN means the platform has stopped calling the simulator on purpose. That
+   * is a different fact from "the simulator is down", and the operator needs to
+   * see both.
+   */
+  circuit_breaker: string
+  /** The simulator event stream: CONNECTED, DISCONNECTED or DISABLED. */
+  event_stream: string
+  /** Stream events received since the backend started. */
+  stream_events: number
+  /** Reconnect attempts since the backend started. */
+  stream_reconnects: number
 }
 
 // ------------------------------------------------------------------- risk view

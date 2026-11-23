@@ -23,7 +23,12 @@ import java.time.Duration;
  * </ul>
  */
 @Configuration
-@EnableConfigurationProperties({SimulatorProperties.class, FreshnessProperties.class, ProjectionProperties.class})
+@EnableConfigurationProperties({
+        SimulatorProperties.class,
+        FreshnessProperties.class,
+        ProjectionProperties.class,
+        ResilienceProperties.class,
+        StreamProperties.class})
 public class SimulatorClientConfig {
 
     @Bean

@@ -3,7 +3,9 @@ package com.fuelplatform.web;
 import com.fuelplatform.config.FreshnessProperties;
 import com.fuelplatform.domain.SimulationMode;
 import com.fuelplatform.domain.WorldSnapshot;
+import com.fuelplatform.ingestion.SimulatorEventStreamReader;
 import com.fuelplatform.ingestion.SnapshotIngestionService;
+import com.fuelplatform.observability.SimulatorCircuitBreakers;
 import com.fuelplatform.observability.HealthRegistry;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
@@ -39,15 +41,21 @@ public class SystemStatusController {
     private final MeterRegistry meterRegistry;
     private final HealthRegistry healthRegistry;
     private final FreshnessProperties freshness;
+    private final SimulatorCircuitBreakers breakers;
+    private final SimulatorEventStreamReader streamReader;
 
     public SystemStatusController(SnapshotIngestionService ingestionService,
                                   MeterRegistry meterRegistry,
                                   HealthRegistry healthRegistry,
-                                  FreshnessProperties freshness) {
+                                  FreshnessProperties freshness,
+                                  SimulatorCircuitBreakers breakers,
+                                  SimulatorEventStreamReader streamReader) {
         this.ingestionService = ingestionService;
         this.meterRegistry = meterRegistry;
         this.healthRegistry = healthRegistry;
         this.freshness = freshness;
+        this.breakers = breakers;
+        this.streamReader = streamReader;
     }
 
     @GetMapping("/system-status")
@@ -68,7 +76,11 @@ public class SystemStatusController {
                 errorRatePercent(),
                 freshness.maxAgeSeconds(),
                 snapshot == null ? null : snapshot.tick(),
-                snapshot == null ? null : snapshot.simTime());
+                snapshot == null ? null : snapshot.simTime(),
+                breakers.reads().stateName(),
+                streamReader.state(),
+                streamReader.eventsReceived(),
+                streamReader.reconnects());
     }
 
     /**
@@ -152,6 +164,10 @@ public class SystemStatusController {
      * @param maxAgeSeconds        the configured freshness limit
      * @param tick                 current simulator tick
      * @param simTime              simulator's own clock
+     * @param circuitBreaker       CLOSED, OPEN or HALF_OPEN
+     * @param eventStream         CONNECTED, DISCONNECTED or DISABLED
+     * @param streamEvents        stream events received since start
+     * @param streamReconnects     reconnect attempts since start
      */
     public record SystemStatus(
             String backend,
@@ -166,6 +182,10 @@ public class SystemStatusController {
             Double errorRatePercent,
             long maxAgeSeconds,
             Long tick,
-            String simTime) {
+            String simTime,
+            String circuitBreaker,
+            String eventStream,
+            long streamEvents,
+            long streamReconnects) {
     }
 }

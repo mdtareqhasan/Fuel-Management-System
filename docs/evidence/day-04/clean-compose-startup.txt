@@ -1,0 +1,19 @@
+﻿# Final clean Compose startup evidence
+
+Command sequence: `docker compose down` followed by `docker compose up --build -d`.
+`docker compose down` did not use `-v`, so named PostgreSQL and Grafana volumes were preserved. The simulator is seeded in memory; it restarted at tick 0.
+
+Build/start result: backend and frontend images built; PostgreSQL and simulator became healthy; backend became healthy; frontend, Prometheus, and Grafana started.
+
+Final `docker compose ps`:
+
+| Service | Status | Published port |
+|---|---|---|
+| backend | Up, healthy | 127.0.0.1:8080 |
+| frontend | Up, healthy | 127.0.0.1:5173 |
+| grafana | Up | 127.0.0.1:3000 |
+| postgres | Up, healthy | 127.0.0.1:5434 |
+| prometheus | Up | 127.0.0.1:9090 |
+| simulator-api | Up, healthy | 127.0.0.1:8000 |
+
+Post-start checks are in `metrics-after-clean-start.txt`: backend/database/simulator UP, data quality FRESH, decision eligible true, all 8 Prometheus rules healthy, and no active alerts.

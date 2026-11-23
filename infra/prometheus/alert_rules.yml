@@ -1,0 +1,122 @@
+# Prometheus alert rules for the Fuel Supply Intelligence platform.
+#
+# These are alerting rules as code. Each one names the condition it fires on,
+# why that condition matters, and what the operator should do about it — a
+# rule without a runbook is just a notification.
+#
+# Load them with:
+#   prometheus --config.file=prometheus.yml --rule.file=alert_rules.yml
+
+groups:
+  - name: fuel-platform-resilience
+    interval: 15s
+    rules:
+      # ------------------------------------------------------- the breaker
+      - alert: SimulatorCircuitBreakerOpen
+        expr: fuel_circuit_breaker_open == 1
+        for: 30s
+        labels:
+          severity: critical
+          component: simulator
+        annotations:
+          summary: "The simulator circuit breaker is OPEN"
+          description: >-
+            Consecutive simulator calls failed, so the platform has stopped calling
+            the simulator on purpose. The operator is looking at the last valid
+            snapshot and approvals are blocked.
+          runbook: "docs/evidence/day-04/README.md § Recovery"
+
+      - alert: SimulatorCircuitBreakerHalfOpen
+        expr: fuel_circuit_breaker_state_code == 0.5
+        for: 15s
+        labels:
+          severity: warning
+          component: simulator
+        annotations:
+          summary: "The simulator circuit breaker is probing for recovery"
+          description: >-
+            The breaker has started allowing probe calls through. If a probe
+            succeeds the breaker closes; if it fails the breaker reopens.
+          runbook: "docs/evidence/day-04/README.md § Recovery"
+
+      # ------------------------------------------------------ the freshness
+      - alert: StaleValidatedData
+        expr: fuel_data_age_seconds > 30
+        for: 30s
+        labels:
+          severity: warning
+          component: ingestion
+        annotations:
+          summary: "The validated view is older than 30 seconds"
+          description: >-
+            The platform has not published a fresh validated snapshot. Approvals
+            are blocked because the operator cannot see the current world.
+          runbook: "docs/evidence/day-04/README.md § Fault timeline"
+
+      - alert: RefreshFailuresSustained
+        expr: rate(fuel_refresh_failures_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          component: ingestion
+        annotations:
+          summary: "Snapshot refreshes are failing continuously"
+          description: >-
+            More than one refresh every ten seconds is failing. The cached view is
+            being held and the operator is seeing an ageing snapshot.
+          runbook: "docs/evidence/day-04/README.md § Fault timeline"
+
+      # ------------------------------------------------------- the approvals
+      - alert: ApprovalsBlockedOnStaleData
+        expr: increase(fuel_approvals_refused_total{reason="STALE_OR_INVALID_SNAPSHOT"}[10m]) > 0
+        labels:
+          severity: warning
+          component: decision
+        annotations:
+          summary: "Approvals are being refused because the world could not be read"
+          description: >-
+            The server-side stale guard is blocking approvals. This is the guard
+            working as designed, not a defect: a decision cannot be made against
+            a world the operator cannot see.
+          runbook: "docs/evidence/day-04/README.md § The stale guard"
+
+      # ------------------------------------------------------- the shipments
+      - alert: UnknownShipmentOutcomes
+        expr: increase(fuel_commands_unknown_total[10m]) > 0
+        labels:
+          severity: warning
+          component: command
+        annotations:
+          summary: "A shipment write timed out and its outcome is unknown"
+          description: >-
+            A simulator write did not return. The shipment may exist. It must be
+            reconciled by matching the idempotency key, never by sending again.
+          runbook: "docs/evidence/day-04/README.md § The lost response"
+
+      # ------------------------------------------------------- the stream
+      - alert: EventStreamDisconnected
+        expr: fuel_stream_connected == 0 and fuel_stream_events_received > 0
+        for: 60s
+        labels:
+          severity: info
+          component: ingestion
+        annotations:
+          summary: "The simulator event stream is disconnected"
+          description: >-
+            The stream is only a hint. The REST poll still refreshes the view, so
+            the data is correct — only less prompt. Nothing is lost.
+          runbook: "docs/evidence/day-04/README.md § The event stream"
+
+      # -------------------------------------------------------- the data quality
+      - alert: StaleResponsesFromSimulator
+        expr: increase(fuel_stale_responses_total[10m]) > 0
+        labels:
+          severity: warning
+          component: ingestion
+        annotations:
+          summary: "The simulator answered HTTP 200 with X-Simulator-Stale"
+          description: >-
+            A response carried the stale header. The status code alone says
+            nothing; a stale response must never become an eligible decision
+            snapshot.
+          runbook: "docs/evidence/day-04/README.md § The stale guard"

@@ -1,0 +1,66 @@
+﻿==============================================================================
+FAULT: stale_data for 30s
+==============================================================================
+[   0.000s] state BEFORE the fault
+
+  --- before the fault ---
+  simulator /v1/health   : HTTP 200 status=ok
+  platform simulator      : UP
+  platform database       : UP
+  data quality            : FRESH
+  decision eligible       : True
+  refresh age (s)         : 2.16
+  p95 latency (ms)        : 0.0
+  error rate (%)          : 0.67
+  circuit breaker         : CLOSED
+  event stream            : CONNECTED
+  snapshot quality        : FRESH
+  snapshot eligible       : True
+  warnings                : []
+[   6.282s] injecting the stale_data fault
+[   8.364s] fault injection -> HTTP 201
+[   8.364s] waiting 12 s for the platform to react
+
+  --- during the stale_data fault ---
+  simulator /v1/health   : HTTP 200 status=ok
+  platform simulator      : UP
+  platform database       : UP
+  data quality            : STALE
+  decision eligible       : False
+  refresh age (s)         : 1.37
+  p95 latency (ms)        : 0.0
+  error rate (%)          : 0.64
+  circuit breaker         : CLOSED
+  event stream            : CONNECTED
+  snapshot quality        : STALE
+  snapshot eligible       : False
+  warnings                : ['simulator reported stale data']
+[  30.599s] approval attempt during the fault -> HTTP 409 code=STALE_OR_INVALID_SNAPSHOT
+[  30.599s] clearing the fault
+[  32.657s] fault cleared -> HTTP 200
+[  32.657s] waiting 35 s for the recovery
+
+  --- after the fault ---
+  simulator /v1/health   : HTTP 200 status=ok
+  platform simulator      : UP
+  platform database       : UP
+  data quality            : FRESH
+  decision eligible       : True
+  refresh age (s)         : 0.39
+  p95 latency (ms)        : 0.0
+  error rate (%)          : 0.6
+  circuit breaker         : CLOSED
+  event stream            : CONNECTED
+  snapshot quality        : FRESH
+  snapshot eligible       : True
+  warnings                : []
+
+==============================================================================
+TIMELINE
+==============================================================================
+  before : quality=FRESH eligible=True breaker=CLOSED simulator_health=HTTP 200 status=ok
+  during : quality=STALE eligible=False breaker=CLOSED simulator_health=HTTP 200 status=ok
+  after  : quality=FRESH eligible=True breaker=CLOSED simulator_health=HTTP 200 status=ok
+
+  the simulator's /v1/health stayed HTTP 200 status=ok throughout
+  ù reachability is not freshness.

@@ -2,6 +2,7 @@ package com.fuelplatform.ingestion;
 
 import com.fuelplatform.domain.DataQuality;
 import com.fuelplatform.domain.WorldSnapshot;
+import com.fuelplatform.observability.DecisionMetrics;
 import com.fuelplatform.observability.HealthRegistry;
 import com.fuelplatform.simulator.SimulatorClient;
 import com.fuelplatform.simulator.SimulatorClient.Result;
@@ -52,6 +53,7 @@ public class SnapshotIngestionService {
     private final SnapshotValidator validator = new SnapshotValidator();
     private final Clock clock;
     private final HealthRegistry healthRegistry;
+    private final DecisionMetrics decisionMetrics;
 
     /** The single source of the current view. Swapped atomically. */
     private final AtomicReference<WorldSnapshot> current = new AtomicReference<>();
@@ -68,10 +70,12 @@ public class SnapshotIngestionService {
     public SnapshotIngestionService(SimulatorClient simulatorClient,
                                     MeterRegistry meterRegistry,
                                     Clock clock,
-                                    HealthRegistry healthRegistry) {
+                                    HealthRegistry healthRegistry,
+                                    DecisionMetrics decisionMetrics) {
         this.simulatorClient = simulatorClient;
         this.clock = clock;
         this.healthRegistry = healthRegistry;
+        this.decisionMetrics = decisionMetrics;
 
         this.staleResponses = Counter.builder("fuel_stale_responses_total")
                 .description("Simulator responses that carried the X-Simulator-Stale header")
@@ -132,6 +136,7 @@ public class SnapshotIngestionService {
             }
         }
         if (!readFailures.isEmpty()) {
+            decisionMetrics.recordRefreshFailed("partial_read_failure");
             return degrade("simulator read failed: " + String.join("; ", readFailures));
         }
 
@@ -172,7 +177,7 @@ public class SnapshotIngestionService {
                 regions.body(),
                 depots.body(),
                 stations.body(),
-                routes.body(),
+                RouteEventOverlay.apply(routes.body(), events.body()),
                 supplyArrivals.body(),
                 events.body(),
                 allocations.body());
@@ -183,7 +188,27 @@ public class SnapshotIngestionService {
             lastValid.set(snapshot);
         }
         updateTickRate(tickEnd, observedAt);
+        decisionMetrics.recordRefreshSucceeded();
         return true;
+    }
+
+    /**
+     * Maps a simulator error to a fixed metric label.
+     *
+     * <p>The label set is fixed. An error message contains a URL and a variable
+     * description, and using it as a label would create an unbounded number of
+     * time series (invariant INV-27).
+     */
+    private static String reasonOf(com.fuelplatform.simulator.SimulatorError error) {
+        if (error == null) {
+            return "unknown";
+        }
+        return switch (error) {
+            case com.fuelplatform.simulator.SimulatorError.Fault ignored -> "simulator_fault";
+            case com.fuelplatform.simulator.SimulatorError.Domain ignored -> "domain_error";
+            case com.fuelplatform.simulator.SimulatorError.Validation ignored -> "validation_error";
+            case com.fuelplatform.simulator.SimulatorError.Unparseable ignored -> "unparseable";
+        };
     }
 
     /**

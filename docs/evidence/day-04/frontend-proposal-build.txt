@@ -1,0 +1,11 @@
+Frontend proposal-generation control build
+Captured: 2026-11-23 (Asia/Dhaka)
+Command: `docker compose up -d --build frontend`
+
+Result:
+- Frontend TypeScript check and Vite production build succeeded.
+- Frontend container was recreated and started successfully.
+- Build includes the `Generate proposal` action in the Decisions panel, wired to `POST /api/proposals`.
+- The latest 31-test frontend suite is recorded in `frontend-tests.txt`; the suite was not rerun for this UI change.
+
+Runtime note: the simulator was PAUSED at tick 0 after clean startup, so the risk panel had no recommended shipments. A proposal can only be generated when the current plan contains a feasible recommendation.

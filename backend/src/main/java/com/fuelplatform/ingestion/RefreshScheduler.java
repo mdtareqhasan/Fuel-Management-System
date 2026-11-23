@@ -2,10 +2,15 @@ package com.fuelplatform.ingestion;
 
 import com.fuelplatform.domain.SimulationMode;
 import com.fuelplatform.domain.WorldSnapshot;
+import com.fuelplatform.config.FreshnessProperties;
+import com.fuelplatform.observability.DecisionMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Drives refreshes according to the simulator's mode.
@@ -36,6 +41,9 @@ public class RefreshScheduler {
     private static final Logger log = LoggerFactory.getLogger(RefreshScheduler.class);
 
     private final SnapshotIngestionService ingestionService;
+    private final DecisionMetrics decisionMetrics;
+    private final FreshnessProperties freshnessProperties;
+    private final AtomicLong lastEventRefreshNanos = new AtomicLong();
 
     /** Set when a refresh is requested while another is running. */
     private volatile boolean refreshPending;
@@ -44,8 +52,12 @@ public class RefreshScheduler {
     private final java.util.concurrent.atomic.AtomicBoolean refreshing =
             new java.util.concurrent.atomic.AtomicBoolean(false);
 
-    public RefreshScheduler(SnapshotIngestionService ingestionService) {
+    public RefreshScheduler(SnapshotIngestionService ingestionService,
+                            DecisionMetrics decisionMetrics,
+                            FreshnessProperties freshnessProperties) {
         this.ingestionService = ingestionService;
+        this.decisionMetrics = decisionMetrics;
+        this.freshnessProperties = freshnessProperties;
     }
 
     /**
@@ -56,6 +68,7 @@ public class RefreshScheduler {
      */
     @Scheduled(fixedDelayString = "${app.freshness.poll-interval-ms:2000}")
     public void pollRefresh() {
+        decisionMetrics.recordPollTriggeredRefresh();
         requestRefresh("poll");
     }
 
@@ -66,6 +79,14 @@ public class RefreshScheduler {
      * by the minimum refresh interval.
      */
     public void onSimulatorEvent() {
+        long now = System.nanoTime();
+        long interval = TimeUnit.MILLISECONDS.toNanos(freshnessProperties.minRefreshIntervalMs());
+        long previous = lastEventRefreshNanos.get();
+        if (now - previous < interval || !lastEventRefreshNanos.compareAndSet(previous, now)) {
+            decisionMetrics.recordEventRefreshCoalesced();
+            return;
+        }
+        decisionMetrics.recordEventTriggeredRefresh();
         requestRefresh("event");
     }
 

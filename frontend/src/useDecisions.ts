@@ -27,6 +27,11 @@ export interface DecisionState {
   error: string | null
 }
 
+export interface CreateProposalOutcome {
+  ok: boolean
+  message: string | null
+}
+
 export interface ApproveOutcome {
   ok: boolean
   result: ApprovalResponse | null
@@ -46,6 +51,7 @@ export function useDecisions() {
     error: null,
   })
   const [approving, setApproving] = useState<string | null>(null)
+  const [creatingProposal, setCreatingProposal] = useState(false)
   const controllerRef = useRef<AbortController | null>(null)
 
   const load = useCallback(async () => {
@@ -78,6 +84,32 @@ export function useDecisions() {
       }))
     }
   }, [])
+
+  const createProposal = useCallback(async (): Promise<CreateProposalOutcome> => {
+    setCreatingProposal(true)
+    try {
+      const response = await fetch('/api/proposals', { method: 'POST' })
+      if (!response.ok) {
+        let message = `proposal could not be created (${response.status})`
+        try {
+          const body = await readJson<{ message?: string }>(response)
+          if (body.message) message = body.message
+        } catch {
+          // Keep the status based message when the response is not JSON.
+        }
+        return { ok: false, message }
+      }
+      await load()
+      return { ok: true, message: null }
+    } catch (error) {
+      return {
+        ok: false,
+        message: error instanceof Error ? error.message : 'proposal could not be created',
+      }
+    } finally {
+      setCreatingProposal(false)
+    }
+  }, [load])
 
   useEffect(() => {
     void load()
@@ -155,5 +187,5 @@ export function useDecisions() {
     }
   }, [load])
 
-  return { ...state, approving, approve, reconcile, reload: load }
+  return { ...state, approving, creatingProposal, createProposal, approve, reconcile, reload: load }
 }

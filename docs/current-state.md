@@ -1,12 +1,13 @@
 # Current state
 
-**Updated:** 22 November 2026 · **Release target:** 24 November 2026
+**Updated:** 23 November 2026 · **Release target:** 24 November 2026
 
 ## Implemented
 
 - **Phase 00 · Bootstrap and simulator integration:** typed simulator client, validated snapshots, dashboard and status APIs, Compose deployment, CI, Prometheus scrape, Grafana provisioning. Completed 20 November.
 - **Phase 01 · Intelligence and risk:** demand forecasts, station/depot projections, rule-based anomaly flags, constrained shipment proposals, and risk UI. Completed 21 November.
-- **Phase 02 · Persistence and operator decisions:** PostgreSQL snapshots/proposals/commands/audit, review and approval API/UI, idempotent shipment commands, server-side revalidation, reconciliation, route inventory UI. **Completed and verified 22 November** — 17/17 live end-to-end checks.
+- **Phase 02 · Persistence and operator decisions:** PostgreSQL snapshots/proposals/commands/audit, review and approval API/UI, idempotent shipment commands, server-side revalidation, reconciliation, route inventory UI. Completed and verified 22 November — 17/17 live end-to-end checks.
+- **Phase 03 · Resilience and observability:** separate read/write circuit breakers, bounded read retries, stale-data approval guard, SSE with a 500 ms coalescing interval and REST polling fallback, route-event-aware planning, resilience metrics/dashboard, and alert rules as code. **Implemented and verified 23 November** with fault, forecast fallback, event crisis, restart and clean startup evidence; see [Day 4 completion audit](daily/Day-04.md#day-4-guide-completion-audit).
 
 The official simulator remains the source of truth for current fuel inventory, demand, events, and shipment state. The backend stores validated observations and application decision records. Shipment writes happen only after operator approval passes backend checks.
 
@@ -14,21 +15,52 @@ The official simulator remains the source of truth for current fuel inventory, d
 
 | Check | Result |
 |---|---|
-| [Day 3 end-to-end evidence](evidence/day-03/end-to-end-verification.txt) | **17/17 checks passed** against the running stack |
-| Backend `mvn test` | **126 tests passed**, 0 failures, 0 errors, 0 skipped · `BUILD SUCCESS` |
-| Frontend `npm test -- --run` | **31 tests passed** |
+| [Day 4 fault timeline](evidence/day-04/fault-unavailable.txt) | `FRESH` → `INVALID` → `FRESH`, breaker `CLOSED` → `OPEN` → `CLOSED`, approval refused with `STALE_OR_INVALID_SNAPSHOT` |
+| [Day 4 stale guard](evidence/day-04/fault-stale.txt) | HTTP 200 + stale header → `STALE`, ineligible, approval refused, breaker stays `CLOSED` |
+| [Day 4 demand spike](evidence/day-04/event-demand-spike.txt) | Region multiplier 1.8 → **6 `KNOWN_EVENT` flags** after four stepped ticks |
+| [Day 4 route crisis](evidence/day-04/event-combined-crisis.txt) | Six flags; Mirpur uses the Patiya alternative; **54.1 L** remains unmet at Tongi; events resolve at tick 44 |
+| [Day 4 shipment delay](evidence/day-04/event-shipment-delay.txt) | `delay_ticks=4` shifts planned supply arrivals; depot risk records the changes |
+| [Day 4 forecast fallback](evidence/day-04/forecast-fallback.txt) | 12 profile fallbacks during demand-history failure, then 12 EWMA forecasts after recovery |
+| [Day 4 stream fallback](evidence/day-04/stream-fallback.txt) | Stream disconnect shows poll fallback and recovers to `CONNECTED` |
+| [Day 4 RUNNING refresh volume](evidence/day-04/running-refresh-volume.txt) | 50 notifications coalesced; simulator calls 765→333 across comparable 16 s windows |
+| [Day 4 clean startup](evidence/day-04/clean-compose-startup.txt) | Six services rebuilt; all healthy after Compose startup |
+| [Day 4 clean-start metrics](evidence/day-04/metrics-after-clean-start.txt) | Fresh, eligible snapshot; eight rules `ok`; no active alerts |
+| [Day 4 slow-vs-dead](evidence/day-04/fault-latency.txt) | Under a `latency` fault the view goes `INVALID` and the approval is refused, but the breaker stays `CLOSED` |
+| [Day 3 regression against the Day 4 code](evidence/day-04/day3-regression.txt) | **17/17 checks passed** — the previous day's behaviour is intact |
+| Prometheus alert rules | **8 loaded**, health `ok` |
+| Backend `mvn clean test` | **154 tests passed**, 0 failures, 0 errors, 0 skipped · `BUILD SUCCESS` ([latest evidence](evidence/day-04/backend-tests-latest.txt)) |
+| Frontend `npm test` | **31 tests passed** |
 | Frontend `npm run build` | passed — clean production bundle |
+| Day 4 UI checks in the served bundle | 7/7 strings present, `.banner-danger` present, 5/5 safety checks passed |
+| [Day 3 end-to-end evidence](evidence/day-03/end-to-end-verification.txt) | **17/17 checks passed** against the running stack |
+| Backend `mvn test` (Day 3) | **126 tests passed**, 0 failures, 0 errors, 0 skipped · `BUILD SUCCESS` |
 | Day 3 UI strings in the served bundle | **12/12 present** |
-| Day 3 CSS rules in the served bundle | 5/5 present, `.grid` card layout intact |
 | Flyway migration | `V1__day3_persistence_and_decisions.sql` applied successfully |
 | Java runtime target | 25 |
 | Local JDK | Oracle OpenJDK 25.0.2+10-LTS-69 |
 | Backend container build | passed with `eclipse-temurin:25-jdk-alpine` / `eclipse-temurin:25-jre-alpine`; runtime reports `openjdk version "25.0.5.1"` |
 | `docker compose config -q` | passed |
 
-The Day 3 end-to-end run includes the lost-response case: a simulator write whose response never arrives is recorded as `UNKNOWN` with the quoted URL preserved in `last_error`, and reconciling it by idempotency key produces no second shipment.
+The simulator's `/v1/health` endpoint answered **HTTP 200 `status=ok` during every Day 4 fault**, because that endpoint bypasses fault injection. The platform reports reachability and data freshness as two separate facts, and the approval path refuses to act when the second one fails.
 
-Full evidence index: [docs/evidence/day-03/README.md](evidence/day-03/README.md).
+Full evidence index: [docs/evidence/day-04/README.md](evidence/day-04/README.md).
+
+## Day 4 surface
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/system-status` | Now also reports `circuit_breaker`, `event_stream`, `stream_events` and `stream_reconnects` |
+
+| Component | Purpose |
+|---|---|
+| `CircuitBreaker` / `SimulatorCircuitBreakers` | Separate `CLOSED`/`OPEN`/`HALF_OPEN` breakers for simulator reads and writes |
+| `SimulatorEventStreamReader` | Reads the simulator's SSE feed. A hint, never the truth — every event only asks for a re-read. |
+| `RefreshScheduler` | Coalesces stream notifications inside the configured 500 ms minimum interval; the 2 s poll remains active in both modes. |
+| `RouteEventOverlay` | Marks an actively disrupted route unavailable to planning, derived from the simulator event payload. |
+| `ResilienceProperties` | Timeout, retry and breaker policy, kept apart and bounded by the freshness window |
+| `DecisionMetrics` | Approval refusals, approval outcomes, refresh failures and refresh triggers |
+| `fuel-platform-resilience.json` | The Grafana dashboard for the integration's health |
+| `alert_rules.yml` | Eight Prometheus alert rules, each with a runbook reference |
 
 ## Day 3 surface
 
@@ -59,7 +91,6 @@ Full evidence index: [docs/evidence/day-03/README.md](evidence/day-03/README.md)
 
 ## Next work
 
-- **Phase 03 · Resilience and observability** (planned for 23 November): fault recovery, guarded writes, SSE refresh, crisis scenarios, and operational evidence.
 - **Phase 04 · Evaluation and release rehearsal** (planned for 24 November): policy comparison, load evaluation, clean startup, and demo rehearsal.
 
 ## Simulator contract facts
@@ -80,6 +111,7 @@ Full evidence index: [docs/evidence/day-03/README.md](evidence/day-03/README.md)
 
 - [System architecture](system-architecture.md)
 - [Acceptance criteria and invariants](acceptance-and-invariants.md) — INV-37 to INV-46 are the Day 3 rules
+- [Day 4 implementation and evidence](daily/Day-04.md)
 - [Day 3 implementation and evidence](daily/Day-03.md)
 - [ADR 009 — the decision record and the shipment ledger](adr/ADR-009-decision-record-and-shipment-ledger.md)
 - [Architecture decisions](adr/)

@@ -283,6 +283,18 @@ code {
   color: var(--text);
 }
 
+/*
+ * The dangerous banner is reserved for the state where the platform has
+ * stopped calling the simulator on purpose. It is deliberately a different
+ * colour from the warning banner, because "the data is old" and "the platform
+ * has stopped acting" call for different responses from the operator.
+ */
+.banner-danger {
+  border: 1px solid color-mix(in srgb, var(--bad) 55%, var(--border));
+  background: color-mix(in srgb, var(--bad) 10%, var(--surface));
+  color: var(--text);
+}
+
 .banner ul {
   margin: 6px 0 0;
   padding-left: 20px;

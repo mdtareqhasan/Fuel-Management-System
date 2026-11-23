@@ -31,11 +31,28 @@ An operator platform built around the **official BUP Fuel Supply Simulator**.
 
 | Latest milestone | Status date | Release target |
 |---|---|---|
-| **Phase 02 · Persistence & Operator Decisions** | **Complete · 22 Nov 2026** | **24 Nov 2026** |
+| **Phase 03 · Resilience & Observability** | **Complete · 23 Nov 2026** | **24 Nov 2026** |
 
-The application turns simulator snapshots into station and depot risk, anomaly flags, forecasts, and constraint-checked shipment proposals. Operators review proposals and approve them through a persisted, idempotent command flow; reconciliation tracks the simulator's shipment state. Phase 02 adds five PostgreSQL tables for snapshots, proposals, proposal lines, commands, and audit events, with database constraints protecting reviewed quantities and duplicate commands.
+The application turns simulator snapshots into station and depot risk, anomaly flags, forecasts, and constraint-checked shipment proposals. Operators review proposals and approve them through a persisted, idempotent command flow; reconciliation tracks the simulator's shipment state. Phase 03 adds a circuit breaker, bounded retries, an SSE refresh path with a REST polling fallback, refusal and recovery metrics, a resilience dashboard, and Prometheus alert rules as code.
 
-**The result in one line:** the platform forecasts demand 8 hours ahead, scores every station and fuel for shortage risk with the signals that drove the score, and passed **20/20** live decision-path checks, **126** backend tests, **31** frontend tests, and a clean production build — while requiring recorded human approval before a shipment reaches the simulator.
+**The result in one line:** the platform survives a simulator outage without lying about it — during a total outage the simulator's own `/v1/health` still answered `HTTP 200 ok`, and the console showed `INVALID`, refused the approval with `STALE_OR_INVALID_SNAPSHOT`, opened the circuit breaker, and recovered on its own — with **4** live fault timelines, **154** backend tests, **31** frontend tests, **8** alert rules loaded, and the previous day's end-to-end verifier still at **17/17**.
+
+### Day 4 completion and audit summary
+
+Day 4's resilience and observability work is complete for the local project scope. The table below links the measured results to their audit artifacts. The independent reviewer handoff is prepared; an external review has not been performed.
+
+| Audit area | Recorded result | Evidence |
+|---|---|---|
+| Backend regression suite | **154 passed**, 0 failures, 0 errors, 0 skipped; clean build succeeded | [Latest backend test run](docs/evidence/day-04/backend-tests-latest.txt) |
+| Frontend checks | **31 tests passed** in the recorded suite; the latest TypeScript/Vite production image build also succeeded after adding `Generate proposal` to Decisions. The suite was not rerun for that UI change. | [Frontend test/build capture](docs/evidence/day-04/frontend-tests.txt), [proposal button build](docs/evidence/day-04/frontend-proposal-build.txt) |
+| Simulator failure handling | Unavailable, stale-response, and latency scenarios recorded; stale/ineligible approval attempts were refused. The breaker opened on availability failures and recovered. | [Unavailable](docs/evidence/day-04/fault-unavailable.txt), [stale](docs/evidence/day-04/fault-stale.txt), [latency](docs/evidence/day-04/fault-latency.txt), [breaker trace](docs/evidence/day-04/breaker-trace.txt) |
+| Event stream and refresh load | Disconnect/reconnect retained REST polling fallback. In a **16.14 s** RUNNING sample, **76** stream events coalesced to **50** refresh triggers and simulator calls were reduced by **333**. | [Stream fallback](docs/evidence/day-04/stream-fallback.txt), [refresh volume](docs/evidence/day-04/running-refresh-volume.txt) |
+| Combined demand and route crisis | Six event-attributed anomaly flags; Mirpur supply used the Patiya route; Tongi had **54.1 L** unmet. Both injected events resolved by tick 44. | [Combined crisis](docs/evidence/day-04/event-combined-crisis.txt) |
+| Monitoring baseline | **8/8** Prometheus rules healthy after clean startup; no active alerts in that capture. | [Post-startup metrics](docs/evidence/day-04/metrics-after-clean-start.txt) |
+| Day 3 regression | **17/17** checks passed against Day 4 changes. | [Regression run](docs/evidence/day-04/day3-regression.txt) |
+| Review handoff | Run ID, snapshot, service status, logs, and resilience metrics assembled; independent review remains pending. | [Incident handoff](docs/evidence/day-04/incident-handoff.txt) |
+
+After a clean startup the simulator is paused at tick 0, where there may be no shipment recommendations. Advance to a scenario with projected shortages before generating a proposal. Proposal creation itself does not dispatch fuel; an operator must review and approve it.
 
 ## Overview
 
@@ -50,6 +67,9 @@ The platform is an operator console over a simulated fuel network. The simulator
 | Prometheus metrics and provisioned Grafana overview | Implemented |
 | Operator proposal review, approval, idempotent shipment commands, reconciliation, and audit records | Implemented |
 | Durable decision record in PostgreSQL (snapshots, proposals, lines, commands, audit events) | Implemented; five tables with database-enforced constraints |
+| Circuit breaker with separate read and write channels, bounded read retries | Implemented; the breaker counts availability failures, not domain errors |
+| SSE event refresh with a coalesced re-read and a REST polling fallback | Implemented; the stream is a hint, never the source of truth |
+| Approval-refusal and recovery metrics, a resilience dashboard, and alert rules as code | Implemented; 8 Prometheus rules, each with a runbook reference |
 
 **Source of truth:** station inventory, depot inventory, demand, and shipment state come from the simulator. PostgreSQL stores application observations and decision/command/audit records; it does not replace the simulator as the authority for operational fuel state.
 
@@ -75,12 +95,19 @@ Every number below was measured against the running stack. Nothing here is a tra
 
 | Check | Recorded result | Evidence |
 |---|---|---|
-| Backend clean build and tests | `mvn clean test` — **126 passed**, 0 failures, 0 errors, 0 skipped · `BUILD SUCCESS` | [backend-tests.txt](docs/evidence/day-03/backend-tests.txt) |
-| Frontend tests | `npm run test` — **31 passed** (22 filters, 9 decision types) | [frontend-tests.txt](docs/evidence/day-03/frontend-tests.txt) |
-| Frontend production build | `npm run build` — **passed**, clean type check and bundle | [frontend-tests.txt](docs/evidence/day-03/frontend-tests.txt) |
+| Day 4 failure boundary under a simulator outage | `FRESH` → `INVALID` → `FRESH`, breaker `CLOSED` → `OPEN` → `CLOSED`, approval refused | [fault-unavailable.txt](docs/evidence/day-04/fault-unavailable.txt) |
+| Day 4 stale guard | HTTP 200 + stale header → `STALE`, ineligible, approval refused | [fault-stale.txt](docs/evidence/day-04/fault-stale.txt) |
+| Day 4 slow simulator is not a dead one | Under `latency` the view is `INVALID` and the approval refused, but the breaker stays `CLOSED` | [fault-latency.txt](docs/evidence/day-04/fault-latency.txt) |
+| Day 4 circuit breaker, second by second | `OPEN` from t+4s to t+16s, `opened_total=1`, `rejections=14` | [breaker-trace.txt](docs/evidence/day-04/breaker-trace.txt) |
+| Day 4 combined crisis | 6 event-attributed flags; Mirpur rerouted; 54.1 L unmet at Tongi; both events resolved by tick 44 | [event-combined-crisis.txt](docs/evidence/day-04/event-combined-crisis.txt) |
+| Prometheus alert rules | **8 loaded**, health `ok` | [metrics-steady-state.txt](docs/evidence/day-04/metrics-steady-state.txt) |
+| Day 4 UI in the served bundle | 7/7 strings, `.banner-danger` present, 5/5 safety checks | [frontend-ui-checks.txt](docs/evidence/day-04/frontend-ui-checks.txt) |
+| Day 3 regression against the Day 4 code | **17/17 checks passed** | [day3-regression.txt](docs/evidence/day-04/day3-regression.txt) |
+| Backend clean build and tests | **154 passed**, 0 failures, 0 errors, 0 skipped · `BUILD SUCCESS` | [backend-tests-latest.txt](docs/evidence/day-04/backend-tests-latest.txt) |
+| Frontend tests | `npm run test` — **31 passed** (22 filters, 9 decision types) | [frontend-tests.txt](docs/evidence/day-04/frontend-tests.txt) |
+| Frontend production build | `npm run build` — **passed**, clean type check and bundle | [frontend-tests.txt](docs/evidence/day-04/frontend-tests.txt) |
 | Day 3 live decision flow | **20/20 acceptance checks passed** | [end-to-end-verification.txt](docs/evidence/day-03/end-to-end-verification.txt) |
 | Day 3 UI strings in the served bundle | **12/12 present** | [frontend-checks.txt](docs/evidence/day-03/frontend-checks.txt) |
-| Day 3 CSS rules in the served bundle | 5/5 present, `.grid` card layout intact | [frontend-checks.txt](docs/evidence/day-03/frontend-checks.txt) |
 | Schema as the database holds it | 5 tables, `uq_command_line`, `uq_command_key`, `chk_final_not_above_reviewed` | [schema-and-ledger.txt](docs/evidence/day-03/schema-and-ledger.txt) |
 | Day 1 simulator contract | **34/34 end-to-end checks passed** | [Day 1 evidence](docs/evidence/day-01/) |
 | Demand-profile measurement | **97/98** documented hourly factors matched in the measured run | [Day 2 measurements](docs/daily/Day-02.md) |
@@ -121,7 +148,7 @@ The event screenshot shows one simulator scenario; values and event state can ch
 | **Simulator route inventory**<br><img src="images/simulator-route-inventory.jpg" alt="Route list with depot, destination, transit time, shipment limit, and status" width="100%"> | **Unmet supply needs**<br><img src="images/unmet-supply-needs.jpg" alt="Needs that could not be met and their reasons" width="100%"> |
 | **Active demand-spike event**<br><img src="images/active-demand-spike-event.jpg" alt="Active demand spike event in the simulator snapshot" width="100%"> | **Shipment ledger and route status**<br><img src="images/shipment-ledger-route-status.jpg" alt="Recent shipment ledger with route, quantity, and simulator status" width="100%"> |
 | **Prometheus scrape targets**<br><img src="images/prometheus-target-health.jpg" alt="Prometheus showing backend and Prometheus targets UP" width="100%"> | **Prometheus data-age metric**<br><img src="images/prometheus-data-age-metric.jpg" alt="Prometheus graph of backend data age" width="100%"> |
-| **Prometheus runtime information**<br><img src="images/prometheus-runtime-information.jpg" alt="Prometheus runtime and build information" width="100%"> | **Grafana health overview**<br><img src="images/grafana-overview-health.png" alt="Grafana overview for backend service health and request latency" width="100%"> |
+| **Prometheus runtime information**<br><img src="images/prometheus-runtime-information.jpg" alt="Prometheus runtime and build information" width="100%"> | **Grafana resilience dashboard — healthy baseline**<br><img src="images/Screenshot%202026-11-23%20104826.png" alt="Grafana Fuel Platform Resilience dashboard with both circuit breakers closed, event stream connected, simulator up, and no current approval refusals or refresh failures" width="100%"> |
 
 ### PostgreSQL persistence
 
@@ -199,8 +226,8 @@ Each phase links to its detailed Markdown update. The dates below reflect the ac
 | [Phase 00 · Day 1](docs/daily/Day-01.md) | Bootstrap & simulator contract | Simulator experiments, typed integration, validated dashboard, Compose, CI, metrics | Fri 20 Nov · **Done** |
 | [Phase 01 · Day 2](docs/daily/Day-02.md) | Intelligence & risk | Forecasts, station/depot projections, anomaly detection, constrained proposals | Sat 21 Nov · **Done** |
 | [Phase 02 · Day 3](docs/daily/Day-03.md) | Persistence & operator decisions | Durable records, human approval, idempotent command processing, shipment tracking | Sun 22 Nov · **Done** |
-| [Phase 03 · Day 4](docs/daily/Day-04.md) | Resilience & observability | Fault recovery, guarded writes, SSE, crisis scenarios, operations evidence | Mon 23 Nov · **Next** |
-| [Phase 04 · Day 5](docs/daily/Day-05.md) | Evaluation & release rehearsal | Policy comparison, load evaluation, clean startup, documentation, demo rehearsal | Tue 24 Nov · **Planned** |
+| [Phase 03 · Day 4](docs/daily/Day-04.md) | Resilience & observability | Fault recovery, guarded writes, SSE, crisis scenarios, operations evidence | Mon 23 Nov · **Done** |
+| [Phase 04 · Day 5](docs/daily/Day-05.md) | Evaluation & release rehearsal | Policy comparison, load evaluation, clean startup, documentation, demo rehearsal | Tue 24 Nov · **Next** |
 
 ## Project structure
 
@@ -325,6 +352,12 @@ python scripts/verify_day3_end_to_end.py        # 20 Day 3 decision-path checks 
 python scripts/verify_frontend_day3_ui.py       # 12 Day 3 UI strings in the served bundle
 python scripts/verify_frontend_day3_css.py      # the table rules and the card grid
 python scripts/inspect_day3_schema.py           # the schema as the database holds it
+
+python scripts/inject_fault.py unavailable 30   # Day 4: the full failure boundary (mutates the stack)
+python scripts/inject_fault.py stale 30          # Day 4: the stale guard
+python scripts/inject_fault.py event demand_spike 8   # Day 4: a crisis event
+python scripts/trace_breaker_during_fault.py    # Day 4: the breaker, second by second
+python scripts/verify_frontend_day4_ui.py       # Day 4: the resilience UI in the served bundle
 ```
 
 CI configuration is in `.github/workflows/`.
@@ -336,6 +369,8 @@ CI configuration is in `.github/workflows/`.
 - [Acceptance criteria and invariants](docs/acceptance-and-invariants.md) — the operational rules, INV-1 to INV-46
 - [Contract notes](docs/contract-notes.md) — integration details and API observations
 - [Current state](docs/current-state.md) — implementation status and verification notes
+- [Day 4 — Resilience & observability](docs/daily/Day-04.md) — the failure boundary, the breaker, the stream, and the evidence
+- [Day 4 evidence](docs/evidence/day-04/README.md) — the recorded fault timelines and how to reproduce them
 - [Agent activity log](docs/agent-activity-log.md) — what was built, what broke, and why
 - [Architecture decisions](docs/adr/) — recorded design decisions
 - [Issue board](docs/issue-board.md) — tracked work and specifications

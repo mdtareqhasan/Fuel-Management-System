@@ -74,6 +74,23 @@ These are properties that must hold **always**. Each is enforced by code, a data
 | INV-45 | The depot's dispatch allowance is **re-reserved at approval time**, shared across every line and every fuel/destination, including fuel already dispatched at the current tick. | `Revalidator.DispatchBudget` · `RevalidatorTest` |
 | INV-46 | A proposal that cannot be revalidated against a fresh world sends **nothing**. The operator is told which line changed and why. | `Revalidator` · `ApprovalService` · UI wording "Re-review required" |
 
+### Resilience and the failure boundary (Day 4)
+
+| ID | Invariant | Enforced by |
+|---|---|---|
+| INV-47 | **Reachability is not freshness.** The simulator's `/v1/health` bypasses fault injection, so it may answer `200 ok` while every station read fails. The platform reports the two facts separately and never treats a healthy health endpoint as a fresh view. | `HealthRegistry` vs `DataQuality` · `SystemStatusController` · evidence `fault-unavailable.txt` |
+| INV-48 | An HTTP 200 carrying `X-Simulator-Stale: true` **never** becomes an eligible decision snapshot. | `SimulatorClient.isStale` · `SnapshotIngestionService` · `SimulatorClientStaleHeaderTest` · evidence `fault-stale.txt` |
+| INV-49 | While the view is not eligible, an approval is **refused server-side** with `STALE_OR_INVALID_SNAPSHOT`. The guard is on the server, not on a disabled button. | `ApprovalService` · `FreshnessPolicy` · evidence `fault-unavailable.txt` |
+| INV-50 | The circuit breaker counts **availability** failures only. A domain error is a correct answer from a reachable simulator and must not open it. | `SimulatorClient.isAvailabilityFailure` · `CircuitBreaker` |
+| INV-50a | A **timeout** is not an outage. The breaker opens for a refused connection, not for a slow simulator. Opening it to avoid one timeout would take the whole integration offline and starve every dependent feature of its reads. | `TransportFailureClassifier` · evidence `fault-latency.txt` · `day3-regression.txt` |
+| INV-51 | Reads and writes have **separate** breakers. A slow write must not stop the refresh loop. | `SimulatorCircuitBreakers` |
+| INV-52 | While the breaker is `OPEN`, calls are refused **before** any network request is made. The failing calls cost no timeout. | `CircuitBreaker.allowCall` · evidence `breaker-trace.txt` |
+| INV-53 | The retry budget is **bounded by the freshness window**. A retry policy that outlives it hands the operator a view that expired while the retry was still running. | `ResilienceProperties` · `CircuitBreakerTest` |
+| INV-54 | Retries apply to **reads only**. A write is retried by the command worker, which is the only component that knows whether the body was persisted first. | `SimulatorClient.exchange` (`retryable`) · `CommandWorker` |
+| INV-55 | The event stream is a **hint, never the truth**. An event only asks for a re-read; nothing is applied from the event payload, and the REST poll always runs. | `SimulatorEventStreamReader` · `RefreshScheduler` |
+| INV-56 | Every metric label comes from a **fixed set**. No id ever becomes a label, or Prometheus grows an unbounded number of time series. | `DecisionMetrics` · `SimulatorMetrics` (INV-27) |
+| INV-57 | A refusal is **observable and explainable**. Every refused approval carries a reason code, and the operator's screen says which one. | `DecisionMetrics.recordApprovalRefused` · `ResiliencePanel` |
+
 ### Decision quality
 
 | ID | Invariant | Enforced by |
