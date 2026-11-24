@@ -32,8 +32,11 @@ An operator platform built around the **official BUP Fuel Supply Simulator**.
 | Latest milestone | Status date | Release target |
 |---|---|---|
 | **Phase 03 · Resilience & Observability** | **Complete · 23 Nov 2026** | **24 Nov 2026** |
+| **Phase 04 · Evaluation & Release Rehearsal** | **Technical checks complete · 24 Nov 2026; human UI rehearsals and hosted CI pending** | **24 Nov 2026** |
 
 The application turns simulator snapshots into station and depot risk, anomaly flags, forecasts, and constraint-checked shipment proposals. Operators review proposals and approve them through a persisted, idempotent command flow; reconciliation tracks the simulator's shipment state. Phase 03 adds a circuit breaker, bounded retries, an SSE refresh path with a REST polling fallback, refusal and recovery metrics, a resilience dashboard, and Prometheus alert rules as code.
+
+**Day 5 evaluation:** 155 backend tests and 31 frontend tests pass; the frontend production build and clean local Compose startup were verified. The quiet anomaly replay had 0 false flags across 12 station/fuel series; an injected 1.8× demand spike was detected after 2 ticks. Two agent-run decision-flow rehearsals passed 20/20 and 21/21 checks, and the unavailable-simulator drill recovered safely. The bounded load probe had no HTTP errors, but `/api/risk` reached **11.77 s p95** with 25 users while simulation was RUNNING; a separate repeated stress attempt exhausted the simulator's connection pool. These local measurements do not establish production capacity. Human UI walkthroughs, an unannounced human surprise drill, and hosted GitHub CI remain pending. See the [Day 5 report](docs/daily/Day-05.md) and [load-test report](docs/evidence/day-05/load-test-report.md).
 
 **The result in one line:** the platform survives a simulator outage without lying about it — during a total outage the simulator's own `/v1/health` still answered `HTTP 200 ok`, and the console showed `INVALID`, refused the approval with `STALE_OR_INVALID_SNAPSHOT`, opened the circuit breaker, and recovered on its own — with **4** live fault timelines, **154** backend tests, **31** frontend tests, **8** alert rules loaded, and the previous day's end-to-end verifier still at **17/17**.
 
@@ -113,8 +116,11 @@ Every number below was measured against the running stack. Nothing here is a tra
 | Demand-profile measurement | **97/98** documented hourly factors matched in the measured run | [Day 2 measurements](docs/daily/Day-02.md) |
 | Anomaly detector check | **0 false flags** in a quiet run; injected R1/R2 anomalies detected within **2 ticks** | [Day 2 measurements](docs/daily/Day-02.md) |
 | Shared dispatch limit | Held across every fuel and destination at a depot | [Day 2 measurements](docs/daily/Day-02.md) |
+| Day 5 quiet anomaly replay | **0 false flags across 12 station/fuel series** | [Anomaly replay](docs/evidence/day-05/anomaly-replay.txt) |
+| Day 5 injected demand spike | R1 and R2 detected the 1.8× Dhaka spike after **2 ticks**; backend independently reported 6 event-attributed flags | [Anomaly replay](docs/evidence/day-05/anomaly-replay.txt) |
 | Day 5 bounded load probe | PAUSED: 1/5/10/25 VUs, 0 errors; RUNNING: 25 VUs, 0 errors, but `/api/risk` reached **11.77 s p95** | [Detailed load test report](docs/evidence/day-05/load-test-report.md), [raw JSON](docs/evidence/day-05/load-summary.json) |
-| Separate repeated stress attempt | Simulator SQLAlchemy pool (5 + 10 overflow) exhausted; simulator/backend restarted and recovered | [Overload logs](docs/evidence/day-05/simulator-overload-logs.txt) |
+| Day 5 repeated stress boundary | Simulator SQLAlchemy pool (5 + 10 overflow) exhausted; simulator/backend restarted and recovered | [Overload logs](docs/evidence/day-05/simulator-overload-logs.txt) |
+| Day 5 approval and recovery rehearsals | **20/20** and **21/21** decision-flow checks; unavailable fault blocked approval and recovered | [Rehearsal records](docs/evidence/day-05/rehearsals.md) |
 
 ## Architecture
 
@@ -229,7 +235,7 @@ Each phase links to its detailed Markdown update. The dates below reflect the ac
 | [Phase 01 · Day 2](docs/daily/Day-02.md) | Intelligence & risk | Forecasts, station/depot projections, anomaly detection, constrained proposals | Sat 21 Nov · **Done** |
 | [Phase 02 · Day 3](docs/daily/Day-03.md) | Persistence & operator decisions | Durable records, human approval, idempotent command processing, shipment tracking | Sun 22 Nov · **Done** |
 | [Phase 03 · Day 4](docs/daily/Day-04.md) | Resilience & observability | Fault recovery, guarded writes, SSE, crisis scenarios, operations evidence | Mon 23 Nov · **Done** |
-| [Phase 04 · Day 5](docs/daily/Day-05.md) | Evaluation & release rehearsal | Policy comparison, load evaluation, clean startup, documentation, demo rehearsal | Tue 24 Nov · **Next** |
+| [Phase 04 · Day 5](docs/daily/Day-05.md) | Evaluation & release rehearsal | Policy comparison, load evaluation, clean startup, documentation, demo rehearsal | Tue 24 Nov · **Technical complete; human rehearsal and hosted CI pending** |
 
 ## Project structure
 
