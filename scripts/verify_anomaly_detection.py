@@ -63,12 +63,14 @@ def hour_factor(profile, hour):
     return busy_factor if hour in busy_hours else off_factor
 
 
-def ratio_series(station, rows, region_factor, ticks_per_day):
+def ratio_series(station, rows, region_factor, ticks_per_day, fuel_filter=None):
     """The observed/expected ratio for one station and fuel, oldest tick first."""
     profile = station["demand_profile"]
     series = []
     for row in sorted(rows, key=lambda r: r["tick"]):
         if row["fuel_type"] not in FUELS:
+            continue
+        if fuel_filter is not None and row["fuel_type"] != fuel_filter:
             continue
         fuel = row["fuel_type"]
         hour = int(row["sim_time"][11:13])
@@ -115,14 +117,15 @@ def main():
     for station in stations:
         rows = call(f"{SIM}/v1/demand-history?station_id={station['id']}&limit=2000")
         region_factor = regions[station["region_id"]]
-        series = ratio_series(station, rows, region_factor, ticks_per_day)
-        fired = evaluate(series)
-        max_ratio = max((r for _, r in series), default=0)
-        status = f"FLAGGED at tick {fired}" if fired is not None else "no flag"
-        print(f"  {station['id']:<22} {station['demand_profile']:<12} "
-              f"n={len(series):<5} max ratio={max_ratio:.4f}  {status}")
-        if fired is not None:
-            quiet_flags += 1
+        for fuel in FUELS:
+            series = ratio_series(station, rows, region_factor, ticks_per_day, fuel)
+            fired = evaluate(series)
+            max_ratio = max((r for _, r in series), default=0)
+            status = f"FLAGGED at tick {fired}" if fired is not None else "no flag"
+            print(f"  {station['id']:<22} {fuel:<8} {station['demand_profile']:<12} "
+                  f"n={len(series):<5} max ratio={max_ratio:.4f}  {status}")
+            if fired is not None:
+                quiet_flags += 1
 
     print()
     print(f"QUIET RUN FALSE FLAGS: {quiet_flags}")
@@ -147,25 +150,28 @@ def main():
     for station in stations:
         rows = call(f"{SIM}/v1/demand-history?station_id={station['id']}&limit=2000")
         region_factor = regions[station["region_id"]]
-        series = ratio_series(station, rows, region_factor, ticks_per_day)
-        station_ticks[station["id"]] = evaluate(series)
+        station_ticks[station["id"]] = {}
+        for fuel in FUELS:
+            series = ratio_series(station, rows, region_factor, ticks_per_day, fuel)
+            station_ticks[station["id"]][fuel] = evaluate(series)
 
     print()
-    print(f"{'station':<22} {'region':<20} {'R1 fired at tick':<20} {'delay after spike'}")
+    print(f"{'station':<22} {'fuel':<8} {'region':<20} {'R1 fired at tick':<20} {'delay after spike'}")
     print("-" * 85)
     dhaka = [s for s in stations if s["region_id"] == "region-dhaka"]
     first_fire = None
     for station in stations:
-        fired = station_ticks[station["id"]]
-        if fired is None:
-            print(f"  {station['id']:<22} {station['region_id']:<20} {'never':<20} -")
-        else:
-            print(f"  {station['id']:<22} {station['region_id']:<20} {fired:<20} "
-                  f"{fired - spike_tick} ticks")
-            if station["region_id"] == "region-dhaka" and (first_fire is None or fired < first_fire):
-                first_fire = fired
+        for fuel in FUELS:
+            fired = station_ticks[station["id"]][fuel]
+            if fired is None:
+                print(f"  {station['id']:<22} {fuel:<8} {station['region_id']:<20} {'never':<20} -")
+            else:
+                print(f"  {station['id']:<22} {fuel:<8} {station['region_id']:<20} {fired:<20} "
+                      f"{fired - spike_tick} ticks")
+                if station["region_id"] == "region-dhaka" and (first_fire is None or fired < first_fire):
+                    first_fire = fired
 
-    dhaka_fires = [station_ticks[s["id"]] for s in dhaka if station_ticks[s["id"]] is not None]
+    dhaka_fires = [s for s in dhaka if any(station_ticks[s["id"]][fuel] is not None for fuel in FUELS)]
     print()
     if first_fire is not None:
         print(f"R1 FIRED: {first_fire - spike_tick} ticks after the spike was injected")
@@ -173,7 +179,12 @@ def main():
         print("R1 NEVER FIRED")
 
     if len(dhaka_fires) >= REGIONAL_STATIONS:
-        r2_tick = max(dhaka_fires)
+        r2_tick = max(
+            fired
+            for station in dhaka_fires
+            for fired in station_ticks[station["id"]].values()
+            if fired is not None
+        )
         print(f"R2 FIRED: {r2_tick - spike_tick} ticks after the spike was injected "
               f"({len(dhaka_fires)} stations of region-dhaka flagged)")
     else:

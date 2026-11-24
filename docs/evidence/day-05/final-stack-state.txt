@@ -1,0 +1,24 @@
+﻿Captured 23 November 2026 after the three agent-run technical rehearsals and cleanup.
+
+All six Compose services were running; backend, frontend, database and simulator health checks were healthy. Prometheus and Grafana were running.
+
+```json
+{
+  "backend": "UP",
+  "database": "UP",
+  "simulator": "UP",
+  "simulation_mode": "PAUSED",
+  "data_quality": "FRESH",
+  "decision_eligible": true,
+  "refresh_age_seconds": 0.36,
+  "max_age_seconds": 10,
+  "tick": 77,
+  "sim_time": "2026-01-01T19:15:00",
+  "circuit_breaker": "CLOSED",
+  "event_stream": "CONNECTED",
+  "stream_events": 552,
+  "stream_reconnects": 0
+}
+```
+
+Faults were cleared and the simulator paused after the drill. The database contains test shipment and audit records created by the end-to-end verification runs; these rehearsals did not erase or restore the persistent database volume.

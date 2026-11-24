@@ -1,0 +1,217 @@
+{
+  "run_id": "1edec77f-5c28-4611-83bf-fb7610ea4ae5",
+  "captured_at": "2026-11-23T12:57:00.627179+00:00",
+  "machine": {
+    "os": "Windows-11-10.0.26300-SP0",
+    "processor": "AMD64 Family 23 Model 104 Stepping 1, AuthenticAMD",
+    "logical_cpu_count": 12
+  },
+  "workload": {
+    "kind": "simultaneous HTTP burst; one request per virtual user; not a soak or browser rendering",
+    "endpoints": [
+      "/api/dashboard",
+      "/api/risk",
+      "/api/system-status"
+    ],
+    "requests_per_virtual_user": 1,
+    "request_timeout_seconds": 12,
+    "paused_stages_vus": [
+      1,
+      5,
+      10,
+      25
+    ],
+    "running_stage_vus": 25
+  },
+  "initial_mode": "PAUSED",
+  "stages": [
+    {
+      "mode": "PAUSED",
+      "label": "paused-1vu",
+      "virtual_users": 1,
+      "duration_seconds": 0.047,
+      "requests": 1,
+      "errors": 0,
+      "requests_per_second": 21.45,
+      "latency_ms": {
+        "p50": 30.857,
+        "p95": 30.857,
+        "p99": 30.857,
+        "max": 30.857
+      },
+      "endpoint_latency_ms": {
+        "/api/dashboard": {
+          "requests": 1,
+          "p50": 30.857,
+          "p95": 30.857,
+          "max": 30.857
+        },
+        "/api/risk": {
+          "requests": 0,
+          "p50": null,
+          "p95": null,
+          "max": null
+        },
+        "/api/system-status": {
+          "requests": 0,
+          "p50": null,
+          "p95": null,
+          "max": null
+        }
+      },
+      "error_samples": []
+    },
+    {
+      "mode": "PAUSED",
+      "label": "paused-5vu",
+      "virtual_users": 5,
+      "duration_seconds": 0.262,
+      "requests": 5,
+      "errors": 0,
+      "requests_per_second": 19.05,
+      "latency_ms": {
+        "p50": 16.373,
+        "p95": 257.893,
+        "p99": 257.893,
+        "max": 257.893
+      },
+      "endpoint_latency_ms": {
+        "/api/dashboard": {
+          "requests": 2,
+          "p50": 15.697,
+          "p95": 16.373,
+          "max": 16.373
+        },
+        "/api/risk": {
+          "requests": 2,
+          "p50": 242.933,
+          "p95": 257.893,
+          "max": 257.893
+        },
+        "/api/system-status": {
+          "requests": 1,
+          "p50": 15.579,
+          "p95": 15.579,
+          "max": 15.579
+        }
+      },
+      "error_samples": []
+    },
+    {
+      "mode": "PAUSED",
+      "label": "paused-10vu",
+      "virtual_users": 10,
+      "duration_seconds": 0.037,
+      "requests": 10,
+      "errors": 0,
+      "requests_per_second": 270.15,
+      "latency_ms": {
+        "p50": 19.663,
+        "p95": 28.544,
+        "p99": 28.544,
+        "max": 28.544
+      },
+      "endpoint_latency_ms": {
+        "/api/dashboard": {
+          "requests": 4,
+          "p50": 17.406,
+          "p95": 27.875,
+          "max": 27.875
+        },
+        "/api/risk": {
+          "requests": 3,
+          "p50": 25.608,
+          "p95": 26.865,
+          "max": 26.865
+        },
+        "/api/system-status": {
+          "requests": 3,
+          "p50": 19.663,
+          "p95": 28.544,
+          "max": 28.544
+        }
+      },
+      "error_samples": []
+    },
+    {
+      "mode": "PAUSED",
+      "label": "paused-25vu",
+      "virtual_users": 25,
+      "duration_seconds": 0.097,
+      "requests": 25,
+      "errors": 0,
+      "requests_per_second": 256.51,
+      "latency_ms": {
+        "p50": 50.358,
+        "p95": 73.929,
+        "p99": 81.095,
+        "max": 81.095
+      },
+      "endpoint_latency_ms": {
+        "/api/dashboard": {
+          "requests": 9,
+          "p50": 53.671,
+          "p95": 68.61,
+          "max": 68.61
+        },
+        "/api/risk": {
+          "requests": 8,
+          "p50": 58.633,
+          "p95": 81.095,
+          "max": 81.095
+        },
+        "/api/system-status": {
+          "requests": 8,
+          "p50": 37.051,
+          "p95": 62.647,
+          "max": 62.647
+        }
+      },
+      "error_samples": []
+    },
+    {
+      "mode": "RUNNING",
+      "label": "running-25vu",
+      "virtual_users": 25,
+      "duration_seconds": 11.788,
+      "requests": 25,
+      "errors": 0,
+      "requests_per_second": 2.12,
+      "latency_ms": {
+        "p50": 52.567,
+        "p95": 11768.171,
+        "p99": 11769.979,
+        "max": 11769.979
+      },
+      "endpoint_latency_ms": {
+        "/api/dashboard": {
+          "requests": 9,
+          "p50": 46.204,
+          "p95": 59.707,
+          "max": 59.707
+        },
+        "/api/risk": {
+          "requests": 8,
+          "p50": 11761.662,
+          "p95": 11769.979,
+          "max": 11769.979
+        },
+        "/api/system-status": {
+          "requests": 8,
+          "p50": 38.24,
+          "p95": 52.984,
+          "max": 52.984
+        }
+      },
+      "error_samples": []
+    }
+  ],
+  "restored_mode": "PAUSED",
+  "final_status": {
+    "data_quality": "FRESH",
+    "decision_eligible": true,
+    "p95_latency_ms": 0.0,
+    "error_rate_percent": 0.0,
+    "refresh_age_seconds": 0.12
+  }
+}

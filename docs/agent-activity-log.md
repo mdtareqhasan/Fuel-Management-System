@@ -316,3 +316,29 @@ cd backend && ./mvnw verify       # 126 unit tests
 cd frontend && npm run test       # 31 unit tests
 cd frontend && npm run build      # type check + production build
 ```
+
+## 2026-11-23 — Day 5, evaluation and release rehearsal preparation
+
+**Goal:** measure policy sensitivity and operational limits, then verify the local release candidate.
+
+**Actions and results:**
+- Compared the production allocation planner under deterministic normal, demand-spike, route-disruption and combined fixtures. Recorded candidate proposal volume increasing from 24,082 L to 78,454 L; documented that this does not prove improved realized service.
+- Repaired the anomaly replay verifier so each station/fuel series is checked independently. Confirmed zero quiet-run flags and detection of the injected 1.8× event after two ticks.
+- Measured bounded concurrent read bursts while PAUSED and RUNNING. Recorded a slow RUNNING risk endpoint and the simulator connection-pool boundary observed during a separate repeated stress attempt; restarted and recovered the stack.
+- Passed 155 backend tests, 31 frontend tests and the frontend production build. Rebuilt and recreated the Compose services, retained named volumes, validated Flyway, and checked dashboard/status/metrics endpoints.
+- Passed 18/18 approval/reconciliation checks, including duplicate-approval refusal, reviewed-quantity enforcement, UNKNOWN reconciliation without a duplicate shipment, arrival and audit evidence.
+- Reset the simulator and captured the final healthy local stack state.
+
+**Evidence:** `docs/evidence/day-05/`, `docs/daily/Day-05.md`, and `docs/demo-runbook.md`.
+
+**Still pending:** three real timed operator rehearsals and the surprise drill; hosted GitHub CI and release tagging require a pushed, authorized release candidate. No human rehearsal or hosted CI run is claimed here.
+
+## 2026-11-23 — Day 5 technical rehearsal execution
+
+**Actions:**
+- Ran the end-to-end decision/approval/reconciliation verifier twice through the local stack. After granting Docker access for the database audit query, runs passed 20/20 in 5m 23s and 21/21 in 5m 28s.
+- Ran an unavailable-fault drill in 1m 23s. The backend changed from `FRESH`/eligible/`CLOSED` to `INVALID`/ineligible/`OPEN`, refused approval with HTTP 409, and recovered to `FRESH`/eligible/`CLOSED` after clearing the fault.
+- Cleared faults, paused the simulator at tick 77, and confirmed the backend remained fresh and decision-eligible. All six Compose services were up; health checks were healthy where configured.
+- Recorded complete console evidence and a final stack-state capture under `docs/evidence/day-05/`.
+
+**Limit:** these were agent-executed API/backend rehearsals, not human UI presentations. They do not satisfy the three presenter walkthroughs or an unannounced human surprise drill. End-to-end runs add shipment and audit test rows to the persistent local database; no DB volume was deleted.

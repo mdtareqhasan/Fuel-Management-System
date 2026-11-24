@@ -1,0 +1,300 @@
+{
+  "kind" : "deterministic planner scenario comparison",
+  "source" : "production AllocationPlanner with simulator-topology-based deterministic fixtures",
+  "limitations" : [ "This compares proposal quantities and physical feasibility, not realized service level or forecast accuracy.", "The spike and route changes are deterministic input transformations, not live simulator event runs.", "Tick 4 is a stepped inventory fixture with demand consumption applied; it is not a live simulator step.", "The constraint count covers each depot's shared per-tick dispatch ceiling; source stock, route, and tank caps are applied by AllocationPlanner." ],
+  "policies" : {
+    "candidate_6h_200l_reserve" : {
+      "target_cover_hours" : 6,
+      "safety_reserve_liters" : 200
+    },
+    "baseline_4h_no_reserve" : {
+      "target_cover_hours" : 4,
+      "safety_reserve_liters" : 0
+    }
+  },
+  "seed" : 12345,
+  "tick_minutes" : 15,
+  "aggregate" : {
+    "fixture_rows_per_policy" : 8,
+    "baseline" : {
+      "proposal_lines" : 38,
+      "constraint_violations" : 0,
+      "proposed_liters" : 24082.0,
+      "estimated_unmet_liters" : 0.0
+    },
+    "candidate" : {
+      "proposal_lines" : 66,
+      "constraint_violations" : 0,
+      "proposed_liters" : 78454.0,
+      "estimated_unmet_liters" : 0.0
+    },
+    "candidate_proposed_liters_change_percent" : 225.78
+  },
+  "results" : [ {
+    "scenario" : "normal",
+    "tick" : 0,
+    "mode" : "PAUSED deterministic replay",
+    "policy" : "baseline_4h_no_reserve",
+    "target_cover_hours" : 4.0,
+    "safety_reserve_liters" : 0.0,
+    "proposal_lines" : 0,
+    "proposed_liters" : 0.0,
+    "estimated_unmet_liters" : 0.0,
+    "need_liters" : 0.0,
+    "unmet_need_items" : 0,
+    "constraint_violations" : 0,
+    "dispatch_by_depot_liters" : { }
+  }, {
+    "scenario" : "normal",
+    "tick" : 0,
+    "mode" : "PAUSED deterministic replay",
+    "policy" : "candidate_6h_200l_reserve",
+    "target_cover_hours" : 6.0,
+    "safety_reserve_liters" : 200.0,
+    "proposal_lines" : 6,
+    "proposed_liters" : 2785.0,
+    "estimated_unmet_liters" : 0.0,
+    "need_liters" : 2787.55,
+    "unmet_need_items" : 0,
+    "constraint_violations" : 0,
+    "dispatch_by_depot_liters" : {
+      "depot-patiya" : 1786.0,
+      "depot-gazipur" : 999.0
+    }
+  }, {
+    "scenario" : "normal",
+    "tick" : 4,
+    "mode" : "PAUSED deterministic replay",
+    "policy" : "baseline_4h_no_reserve",
+    "target_cover_hours" : 4.0,
+    "safety_reserve_liters" : 0.0,
+    "proposal_lines" : 3,
+    "proposed_liters" : 658.0,
+    "estimated_unmet_liters" : 0.0,
+    "need_liters" : 659.38,
+    "unmet_need_items" : 0,
+    "constraint_violations" : 0,
+    "dispatch_by_depot_liters" : {
+      "depot-patiya" : 627.0,
+      "depot-gazipur" : 31.0
+    }
+  }, {
+    "scenario" : "normal",
+    "tick" : 4,
+    "mode" : "PAUSED deterministic replay",
+    "policy" : "candidate_6h_200l_reserve",
+    "target_cover_hours" : 6.0,
+    "safety_reserve_liters" : 200.0,
+    "proposal_lines" : 8,
+    "proposed_liters" : 4887.0,
+    "estimated_unmet_liters" : 0.0,
+    "need_liters" : 4891.09,
+    "unmet_need_items" : 0,
+    "constraint_violations" : 0,
+    "dispatch_by_depot_liters" : {
+      "depot-patiya" : 3072.0,
+      "depot-gazipur" : 1815.0
+    }
+  }, {
+    "scenario" : "demand_spike_1_8x",
+    "tick" : 0,
+    "mode" : "PAUSED deterministic replay",
+    "policy" : "baseline_4h_no_reserve",
+    "target_cover_hours" : 4.0,
+    "safety_reserve_liters" : 0.0,
+    "proposal_lines" : 8,
+    "proposed_liters" : 3726.0,
+    "estimated_unmet_liters" : 0.0,
+    "need_liters" : 3727.98,
+    "unmet_need_items" : 0,
+    "constraint_violations" : 0,
+    "dispatch_by_depot_liters" : {
+      "depot-patiya" : 2346.0,
+      "depot-gazipur" : 1380.0
+    }
+  }, {
+    "scenario" : "demand_spike_1_8x",
+    "tick" : 0,
+    "mode" : "PAUSED deterministic replay",
+    "policy" : "candidate_6h_200l_reserve",
+    "target_cover_hours" : 6.0,
+    "safety_reserve_liters" : 200.0,
+    "proposal_lines" : 9,
+    "proposed_liters" : 13652.0,
+    "estimated_unmet_liters" : 0.0,
+    "need_liters" : 13655.97,
+    "unmet_need_items" : 0,
+    "constraint_violations" : 0,
+    "dispatch_by_depot_liters" : {
+      "depot-patiya" : 8269.0,
+      "depot-gazipur" : 5383.0
+    }
+  }, {
+    "scenario" : "demand_spike_1_8x",
+    "tick" : 4,
+    "mode" : "PAUSED deterministic replay",
+    "policy" : "baseline_4h_no_reserve",
+    "target_cover_hours" : 4.0,
+    "safety_reserve_liters" : 0.0,
+    "proposal_lines" : 8,
+    "proposed_liters" : 7657.0,
+    "estimated_unmet_liters" : 0.0,
+    "need_liters" : 7659.98,
+    "unmet_need_items" : 0,
+    "constraint_violations" : 0,
+    "dispatch_by_depot_liters" : {
+      "depot-patiya" : 4808.0,
+      "depot-gazipur" : 2849.0
+    }
+  }, {
+    "scenario" : "demand_spike_1_8x",
+    "tick" : 4,
+    "mode" : "PAUSED deterministic replay",
+    "policy" : "candidate_6h_200l_reserve",
+    "target_cover_hours" : 6.0,
+    "safety_reserve_liters" : 200.0,
+    "proposal_lines" : 10,
+    "proposed_liters" : 17903.0,
+    "estimated_unmet_liters" : 0.0,
+    "need_liters" : 17908.75,
+    "unmet_need_items" : 0,
+    "constraint_violations" : 0,
+    "dispatch_by_depot_liters" : {
+      "depot-patiya" : 10757.0,
+      "depot-gazipur" : 7146.0
+    }
+  }, {
+    "scenario" : "route_disruption",
+    "tick" : 0,
+    "mode" : "PAUSED deterministic replay",
+    "policy" : "baseline_4h_no_reserve",
+    "target_cover_hours" : 4.0,
+    "safety_reserve_liters" : 0.0,
+    "proposal_lines" : 0,
+    "proposed_liters" : 0.0,
+    "estimated_unmet_liters" : 0.0,
+    "need_liters" : 0.0,
+    "unmet_need_items" : 0,
+    "constraint_violations" : 0,
+    "dispatch_by_depot_liters" : { }
+  }, {
+    "scenario" : "route_disruption",
+    "tick" : 0,
+    "mode" : "PAUSED deterministic replay",
+    "policy" : "candidate_6h_200l_reserve",
+    "target_cover_hours" : 6.0,
+    "safety_reserve_liters" : 200.0,
+    "proposal_lines" : 6,
+    "proposed_liters" : 2785.0,
+    "estimated_unmet_liters" : 0.0,
+    "need_liters" : 2787.55,
+    "unmet_need_items" : 0,
+    "constraint_violations" : 0,
+    "dispatch_by_depot_liters" : {
+      "depot-gazipur" : 1786.0,
+      "depot-patiya" : 999.0
+    }
+  }, {
+    "scenario" : "route_disruption",
+    "tick" : 4,
+    "mode" : "PAUSED deterministic replay",
+    "policy" : "baseline_4h_no_reserve",
+    "target_cover_hours" : 4.0,
+    "safety_reserve_liters" : 0.0,
+    "proposal_lines" : 3,
+    "proposed_liters" : 658.0,
+    "estimated_unmet_liters" : 0.0,
+    "need_liters" : 659.38,
+    "unmet_need_items" : 0,
+    "constraint_violations" : 0,
+    "dispatch_by_depot_liters" : {
+      "depot-gazipur" : 627.0,
+      "depot-patiya" : 31.0
+    }
+  }, {
+    "scenario" : "route_disruption",
+    "tick" : 4,
+    "mode" : "PAUSED deterministic replay",
+    "policy" : "candidate_6h_200l_reserve",
+    "target_cover_hours" : 6.0,
+    "safety_reserve_liters" : 200.0,
+    "proposal_lines" : 8,
+    "proposed_liters" : 4887.0,
+    "estimated_unmet_liters" : 0.0,
+    "need_liters" : 4891.09,
+    "unmet_need_items" : 0,
+    "constraint_violations" : 0,
+    "dispatch_by_depot_liters" : {
+      "depot-gazipur" : 3072.0,
+      "depot-patiya" : 1815.0
+    }
+  }, {
+    "scenario" : "combined_spike_and_route_disruption",
+    "tick" : 0,
+    "mode" : "PAUSED deterministic replay",
+    "policy" : "baseline_4h_no_reserve",
+    "target_cover_hours" : 4.0,
+    "safety_reserve_liters" : 0.0,
+    "proposal_lines" : 8,
+    "proposed_liters" : 3726.0,
+    "estimated_unmet_liters" : 0.0,
+    "need_liters" : 3727.98,
+    "unmet_need_items" : 0,
+    "constraint_violations" : 0,
+    "dispatch_by_depot_liters" : {
+      "depot-gazipur" : 2346.0,
+      "depot-patiya" : 1380.0
+    }
+  }, {
+    "scenario" : "combined_spike_and_route_disruption",
+    "tick" : 0,
+    "mode" : "PAUSED deterministic replay",
+    "policy" : "candidate_6h_200l_reserve",
+    "target_cover_hours" : 6.0,
+    "safety_reserve_liters" : 200.0,
+    "proposal_lines" : 9,
+    "proposed_liters" : 13652.0,
+    "estimated_unmet_liters" : 0.0,
+    "need_liters" : 13655.97,
+    "unmet_need_items" : 0,
+    "constraint_violations" : 0,
+    "dispatch_by_depot_liters" : {
+      "depot-gazipur" : 8269.0,
+      "depot-patiya" : 5383.0
+    }
+  }, {
+    "scenario" : "combined_spike_and_route_disruption",
+    "tick" : 4,
+    "mode" : "PAUSED deterministic replay",
+    "policy" : "baseline_4h_no_reserve",
+    "target_cover_hours" : 4.0,
+    "safety_reserve_liters" : 0.0,
+    "proposal_lines" : 8,
+    "proposed_liters" : 7657.0,
+    "estimated_unmet_liters" : 0.0,
+    "need_liters" : 7659.98,
+    "unmet_need_items" : 0,
+    "constraint_violations" : 0,
+    "dispatch_by_depot_liters" : {
+      "depot-gazipur" : 4808.0,
+      "depot-patiya" : 2849.0
+    }
+  }, {
+    "scenario" : "combined_spike_and_route_disruption",
+    "tick" : 4,
+    "mode" : "PAUSED deterministic replay",
+    "policy" : "candidate_6h_200l_reserve",
+    "target_cover_hours" : 6.0,
+    "safety_reserve_liters" : 200.0,
+    "proposal_lines" : 10,
+    "proposed_liters" : 17903.0,
+    "estimated_unmet_liters" : 0.0,
+    "need_liters" : 17908.75,
+    "unmet_need_items" : 0,
+    "constraint_violations" : 0,
+    "dispatch_by_depot_liters" : {
+      "depot-gazipur" : 10757.0,
+      "depot-patiya" : 7146.0
+    }
+  } ]
+}

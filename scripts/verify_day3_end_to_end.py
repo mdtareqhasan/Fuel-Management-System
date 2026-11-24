@@ -715,11 +715,13 @@ try:
         text=True,
         timeout=30,
     )
+    if rows.returncode != 0:
+        raise RuntimeError(rows.stderr.strip() or f"docker exec exited with {rows.returncode}")
     print(rows.stdout)
     check(
-        "the audit trail recorded the decisions",
-        "APPROVAL" in rows.stdout,
-        "audit_events contains APPROVAL rows",
+        "the audit trail recorded approvals and reconciliation",
+        "APPROVAL" in rows.stdout and "COMMAND_RECONCILED" in rows.stdout,
+        "audit_events contains APPROVAL and COMMAND_RECONCILED rows",
     )
 except Exception as error:  # pragma: no cover - the check reports it
     print(f"could not query the database: {error}")

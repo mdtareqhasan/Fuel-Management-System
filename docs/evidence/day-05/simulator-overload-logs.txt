@@ -1,0 +1,260 @@
+﻿fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/routes HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/supply-arrivals HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/events HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/allocations HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/instance HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/instance HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/regions HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/depots HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/stations HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/routes HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/supply-arrivals HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/events HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/allocations HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/instance HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/instance HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/regions HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/depots HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/stations HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/routes HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/supply-arrivals HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/events HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/allocations HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/instance HTTP/1.1" 200 OK
+fuel-simulator-api  | INFO:     127.0.0.1:58316 - "GET /v1/health HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/instance HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/regions HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/depots HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/stations HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/routes HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/supply-arrivals HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/events HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/allocations HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/instance HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/instance HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/regions HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/depots HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/stations HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/routes HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/supply-arrivals HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/events HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/allocations HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/instance HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/instance HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/regions HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/depots HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/stations HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/routes HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/supply-arrivals HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/events HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/allocations HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/instance HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/instance HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/regions HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/depots HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/stations HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/routes HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/supply-arrivals HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/events HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/allocations HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/instance HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/instance HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/regions HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/depots HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/stations HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/routes HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/supply-arrivals HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/events HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/allocations HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/instance HTTP/1.1" 200 OK
+fuel-simulator-api  | INFO:     127.0.0.1:49368 - "GET /v1/health HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/instance HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/regions HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/depots HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/stations HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/routes HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/supply-arrivals HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/events HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/allocations HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/instance HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/instance HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/regions HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/depots HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/stations HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/routes HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/supply-arrivals HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/events HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/allocations HTTP/1.1" 200 OK
+fuel-simulator-api  | WARNING:  Unsupported upgrade request.
+fuel-simulator-api  | WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+fuel-simulator-api  | INFO:     172.21.0.4:48264 - "GET /v1/instance HTTP/1.1" 200 OK

@@ -36,9 +36,9 @@ that proves it.
 | FUEL 019 | SSE reader with coalescing and polling fallback | `simulator` | **open** | log excerpt of reconnect and full refresh |
 | FUEL 020 | Crisis injections: spike, route disruption, delay | `scripts` | **open** | per-scenario evidence |
 | FUEL 021 | Metrics, logs, Grafana panels, status panel | `observability` | **open** | status panel with p95 and error rate during a fault |
-| FUEL 022 | Baseline vs candidate comparison, detection replay | `scripts` | **open** | `policy-comparison.json`, `anomaly-replay.txt` |
-| FUEL 023 | Load test in PAUSED and RUNNING | `tests` | **open** | `load-summary.json` |
-| FUEL 024 | README, ADRs, evidence index, runbook | `docs` | **open** | a reviewer can reproduce the run |
+| FUEL 022 | Baseline vs candidate comparison, detection replay | `scripts` + `allocation` | **done with scope noted** | `policy-comparison.json` (deterministic production-planner sensitivity fixtures), `anomaly-replay.txt` (live replay; per-fuel verifier) |
+| FUEL 023 | Load test in PAUSED and RUNNING | `tests` | **done; capacity limit recorded** | `load-summary.json` (bounded bursts, 0 HTTP errors, slow RUNNING risk path); `simulator-overload-logs.txt` (pool exhaustion under repeated stress) |
+| FUEL 024 | README, ADRs, evidence index, runbook | `docs` | **done** | `docs/evidence/day-05/README.md`, `docs/demo-runbook.md`, updated Day 5/current-state docs |
 | FUEL 025 | Demo rehearsals and the surprise drill | — | **open** | rehearsal notes and the final report |
 
 **Cut order, if the schedule slips** (from the guide's scope rules):

@@ -113,6 +113,8 @@ Every number below was measured against the running stack. Nothing here is a tra
 | Demand-profile measurement | **97/98** documented hourly factors matched in the measured run | [Day 2 measurements](docs/daily/Day-02.md) |
 | Anomaly detector check | **0 false flags** in a quiet run; injected R1/R2 anomalies detected within **2 ticks** | [Day 2 measurements](docs/daily/Day-02.md) |
 | Shared dispatch limit | Held across every fuel and destination at a depot | [Day 2 measurements](docs/daily/Day-02.md) |
+| Day 5 bounded load probe | PAUSED: 1/5/10/25 VUs, 0 errors; RUNNING: 25 VUs, 0 errors, but `/api/risk` reached **11.77 s p95** | [Detailed load test report](docs/evidence/day-05/load-test-report.md), [raw JSON](docs/evidence/day-05/load-summary.json) |
+| Separate repeated stress attempt | Simulator SQLAlchemy pool (5 + 10 overflow) exhausted; simulator/backend restarted and recovered | [Overload logs](docs/evidence/day-05/simulator-overload-logs.txt) |
 
 ## Architecture
 
