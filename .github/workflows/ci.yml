@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
   pull_request:
@@ -12,6 +13,9 @@ on:
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   backend:
@@ -28,9 +32,10 @@ jobs:
           cache: maven
 
       # The Maven Wrapper is committed, so the build uses the same Maven
-      # version locally and in CI.
+      # version locally and in CI. Invoke through bash so the runner does not
+      # depend on the executable bit surviving a Windows-created commit.
       - name: Build and test
-        run: ./mvnw -B verify
+        run: bash ./mvnw -B verify
         working-directory: backend
 
       - name: Upload test results

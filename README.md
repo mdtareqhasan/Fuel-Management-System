@@ -31,7 +31,7 @@ An operator platform built around the **official BUP Fuel Supply Simulator**.
 
 | Latest milestone | Status date | Release target |
 |---|---|---|
-| **Phase 04 · Evaluation & Release Rehearsal** | **Technical work and human checks complete · 25 Nov 2026; hosted CI pending** | **24 Nov 2026** |
+| **Phase 04 · Evaluation & Release Rehearsal** | **Complete · 25 Nov 2026** | **24 Nov 2026** |
 
 The application turns simulator snapshots into station and depot risk, anomaly flags, forecasts, and constraint-checked shipment proposals. Operators review proposals and approve them through a persisted, idempotent command flow; reconciliation tracks the simulator's shipment state. Phase 03 adds a circuit breaker, bounded retries, an SSE refresh path with a REST polling fallback, refusal and recovery metrics, a resilience dashboard, and Prometheus alert rules as code.
 
@@ -227,7 +227,7 @@ Each phase links to its detailed Markdown update. The dates below reflect the ac
 | [Phase 01 · Day 2](docs/daily/Day-02.md) | Intelligence & risk | Forecasts, station/depot projections, anomaly detection, constrained proposals | Sat 21 Nov · **Done** |
 | [Phase 02 · Day 3](docs/daily/Day-03.md) | Persistence & operator decisions | Durable records, human approval, idempotent command processing, shipment tracking | Sun 22 Nov · **Done** |
 | [Phase 03 · Day 4](docs/daily/Day-04.md) | Resilience & observability | Fault recovery, guarded writes, SSE, crisis scenarios, operations evidence | Mon 23 Nov · **Done** |
-| [Phase 04 · Day 5](docs/daily/Day-05.md) | Evaluation & release rehearsal | Policy comparison, load evaluation, clean startup, documentation, demo rehearsal | **Technical and human checks complete · hosted CI pending** |
+| [Phase 04 · Day 5](docs/daily/Day-05.md) | Evaluation & release rehearsal | Policy comparison, load evaluation, clean startup, documentation, demo rehearsal | **Complete · 25 Nov 2026** |
 
 ## Project structure
 

@@ -3,7 +3,9 @@
 **Target:** Tuesday, 24 November 2026 · **Technical status:** Complete and
 locally verified on 23 November · **Human rehearsal status:** The project owner
 confirmed all three walkthrough checks, including the surprise check, complete
-on 25 November 2026. Hosted CI and release tagging remain pending.
+on 25 November 2026. The GitHub Actions workflow is configured, including a
+manual dispatch option; its hosted result will be available after these changes
+are committed and pushed.
 
 | Milestone | Focus areas | Result |
 |:--|:--|:--|
@@ -74,7 +76,8 @@ replays added test shipment and audit records to the local database.
 | Demo runbook and evidence index | Done | [`demo-runbook.md`](../demo-runbook.md), [Day 5 evidence index](../evidence/day-05/README.md) |
 | Agent-run technical rehearsals | Two end-to-end replays passed; unavailable-fault drill recovered | [`rehearsals.md`](../evidence/day-05/rehearsals.md), run logs in the evidence folder |
 | Three human UI walkthroughs and surprise check | Complete; owner-confirmed 25 Nov 2026; run metadata not provided | [`rehearsals.md`](../evidence/day-05/rehearsals.md) |
-| Hosted CI result and release tag | Pending a push/authorized release action | CI workflow: `.github/workflows/ci.yml` |
+| CI workflow configuration | Done; push/PR triggers, manual dispatch, read-only token permissions, backend/frontend/image/Compose smoke jobs | [CI workflow](../../.github/workflows/ci.yml) |
+| Hosted CI run and release tag | Run after pushing this working tree; tag the SHA only after hosted checks pass | [CI workflow](../../.github/workflows/ci.yml) |
 
 ## Limits and interpretation
 
