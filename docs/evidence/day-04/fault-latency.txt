@@ -1,66 +1,80 @@
-﻿==============================================================================
-FAULT: latency for 25s
 ==============================================================================
-[   0.000s] state BEFORE the fault
-
-  --- before the fault ---
-  simulator /v1/health   : HTTP 200 status=ok
-  platform simulator      : UP
-  platform database       : UP
-  data quality            : FRESH
-  decision eligible       : True
-  refresh age (s)         : 1.57
-  p95 latency (ms)        : 191.89
-  error rate (%)          : 0.0
-  circuit breaker         : CLOSED
-  event stream            : CONNECTED
-  snapshot quality        : FRESH
-  snapshot eligible       : True
-  warnings                : []
-[   6.240s] injecting the latency fault
-[   8.316s] fault injection -> HTTP 201
-[   8.316s] waiting 12 s for the platform to react
-
-  --- during the latency fault ---
-  simulator /v1/health   : HTTP 200 status=ok
-  platform simulator      : DOWN
-  platform database       : UP
-  data quality            : INVALID
-  decision eligible       : False
-  refresh age (s)         : 15.44
-  p95 latency (ms)        : 42.99
-  error rate (%)          : 0.0
-  circuit breaker         : CLOSED
-  event stream            : CONNECTED
-  snapshot quality        : INVALID
-  snapshot eligible       : False
-  warnings                : ['Fault[TRANSPORT_ERROR http=0] I/O error on GET request for "http://simulator-api:8000/v1/instance": Request cancelled']
-[  30.692s] approval attempt during the fault -> HTTP 409 code=STALE_OR_INVALID_SNAPSHOT
-[  30.692s] clearing the fault
-[  32.777s] fault cleared -> HTTP 200
-[  32.777s] waiting 35 s for the recovery
-
-  --- after the fault ---
-  simulator /v1/health   : HTTP 200 status=ok
-  platform simulator      : UP
-  platform database       : UP
-  data quality            : FRESH
-  decision eligible       : True
-  refresh age (s)         : 1.9
-  p95 latency (ms)        : 30.41
-  error rate (%)          : 4.0
-  circuit breaker         : CLOSED
-  event stream            : CONNECTED
-  snapshot quality        : FRESH
-  snapshot eligible       : True
-  warnings                : []
+BASELINE
+==============================================================================
+  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=1.87s
 
 ==============================================================================
-TIMELINE
+INJECTING A LATENCY FAULT (delay_ms=4000, 30 s)
 ==============================================================================
-  before : quality=FRESH eligible=True breaker=CLOSED simulator_health=HTTP 200 status=ok
-  during : quality=INVALID eligible=False breaker=CLOSED simulator_health=HTTP 200 status=ok
-  after  : quality=FRESH eligible=True breaker=CLOSED simulator_health=HTTP 200 status=ok
+  fault injection -> HTTP 201
 
-  the simulator's /v1/health stayed HTTP 200 status=ok throughout
-  ù reachability is not freshness.
+  the simulator answers in ~6 s; the backend's read timeout is 2 s,
+  so every read times out. Sampling every second:
+
+  t+ 5s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=4.91s  opened_total=2.0
+  t+10s  quality=INVALID eligible=False breaker=CLOSED simulator=DOWN age=10.03s  opened_total=2.0
+  t+15s  quality=INVALID eligible=False breaker=CLOSED simulator=DOWN age=15.22s  opened_total=2.0
+  t+20s  quality=INVALID eligible=False breaker=CLOSED simulator=DOWN age=20.33s  opened_total=2.0
+  t+25s  quality=INVALID eligible=False breaker=CLOSED simulator=DOWN age=25.43s  opened_total=2.0
+  t+30s  quality=INVALID eligible=False breaker=CLOSED simulator=DOWN age=30.54s  opened_total=2.0
+  t+35s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=2.21s  opened_total=2.0
+  t+40s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=0.98s  opened_total=2.0
+  t+46s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=1.93s  opened_total=2.0
+  t+51s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=0.75s  opened_total=2.0
+  t+56s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=1.64s  opened_total=2.0
+  t+61s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=0.5s  opened_total=2.0
+  t+66s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=1.42s  opened_total=2.0
+  t+71s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=0.24s  opened_total=2.0
+  t+76s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=1.15s  opened_total=2.0
+  t+81s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=2.08s  opened_total=2.0
+  t+87s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=0.92s  opened_total=2.0
+  t+92s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=1.84s  opened_total=2.0
+  t+97s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=0.67s  opened_total=2.0
+  t+102s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=1.59s  opened_total=2.0
+  t+107s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=0.3s  opened_total=2.0
+  t+112s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=1.2s  opened_total=2.0
+  t+117s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=1.95s  opened_total=2.0
+  t+122s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=0.74s  opened_total=2.0
+  t+127s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=1.61s  opened_total=2.0
+  t+133s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=0.33s  opened_total=2.0
+  t+138s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=1.31s  opened_total=2.0
+  t+143s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=2.21s  opened_total=2.0
+  t+148s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=0.93s  opened_total=2.0
+  t+153s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=1.84s  opened_total=2.0
+  t+158s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=0.63s  opened_total=2.0
+  t+163s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=1.5s  opened_total=2.0
+  t+168s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=0.28s  opened_total=2.0
+  t+173s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=1.21s  opened_total=2.0
+  t+179s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=2.1s  opened_total=2.0
+  t+184s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=0.92s  opened_total=2.0
+  t+189s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=1.85s  opened_total=2.0
+  t+194s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=0.68s  opened_total=2.0
+  t+199s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=1.61s  opened_total=2.0
+  t+204s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=0.45s  opened_total=2.0
+
+==============================================================================
+CLEARING
+==============================================================================
+  fault cleared -> HTTP 200
+
+  the platform recovers on its own:
+  t+ 1s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=1.37s
+  t+ 2s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=0.18s
+  t+ 3s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=1.15s
+  t+ 4s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=2.12s
+  t+ 5s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=0.98s
+  t+ 6s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=1.93s
+  t+ 7s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=0.8s
+  t+ 8s  quality=FRESH eligible=True breaker=CLOSED simulator=UP age=1.78s
+
+==============================================================================
+WHAT THE TIMELINE SHOWS
+==============================================================================
+  samples                     : 40
+  samples with quality=INVALID: 5
+  samples with eligible=False : 5
+  samples with breaker=OPEN   : 0
+
+  the breaker never opened: a slow simulator is not a dead one.
+  the view went INVALID and the approval was blocked, which is
+  correct: the platform cannot see the world while it is slow.

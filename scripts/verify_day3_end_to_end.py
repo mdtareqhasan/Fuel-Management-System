@@ -679,17 +679,31 @@ if sent:
     )
 
     _, shipments_after, _ = get(f"{BACKEND}/api/shipments")
-    for shipment in shipments_after or []:
-        if shipment["simulator_allocation_id"] == allocation_id:
-            print(
-                f"  ledger now: command={shipment['command_status']} "
-                f"simulator={shipment['simulator_status']}"
-            )
-            check(
-                "the ledger's simulator column tracks the simulator's own status",
-                shipment["simulator_status"] == seen_status,
-                f"ledger={shipment['simulator_status']} simulator={seen_status}",
-            )
+    # The simulator is reset between runs, so allocation IDs are reused. An
+    # earlier run's command can therefore share this allocation_id, and
+    # matching on the ID alone picks the wrong command.
+    #
+    # The command is matched by its IDEMPOTENCY KEY instead, because that is
+    # what identifies it uniquely across runs. The check also runs exactly
+    # once, outside the loop — inside the loop it was counted once per
+    # matching row, which made the headline total depend on how many commands
+    # previous runs had left behind.
+    matching = [
+        s for s in (shipments_after or [])
+        if s.get("simulator_allocation_id") == allocation_id
+        and s.get("idempotency_key") == target.get("idempotency_key")
+    ]
+    for shipment in matching:
+        print(
+            f"  ledger now: command={shipment['command_status']} "
+            f"simulator={shipment['simulator_status']}"
+        )
+    check(
+        "the ledger's simulator column tracks the simulator's own status",
+        len(matching) == 1 and matching[0]["simulator_status"] == seen_status,
+        f"ledger={matching[0]['simulator_status'] if matching else 'not found'} "
+        f"simulator={seen_status}",
+    )
 else:
     check("a shipment was available to follow", False, "no SENT command")
 

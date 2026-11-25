@@ -1,6 +1,6 @@
 # Phase 03 · Day 4 — Resilience & Observability
 
-**Target:** Monday, 23 November 2026 · **Status:** Day 4 technical tasks complete and locally verified — 154 backend tests, 31 frontend tests, 8 Prometheus alert rules loaded, clean Compose startup and incident recovery evidence.
+**Target:** Monday, 23 November 2026 · **Status:** Day 4 technical tasks complete and locally verified — 157 backend tests, 31 frontend tests, 8 Prometheus alert rules loaded, clean Compose startup and incident recovery evidence.
 
 | Milestone | Focus areas | Intended result |
 |:--|:--|:--|
@@ -29,7 +29,7 @@ fault** — because that endpoint bypasses fault injection. A platform that
 trusted it would have shown a healthy green screen throughout a total outage.
 That contrast is the single most important result of the day.
 
-The backend suite passed **154 tests**, the frontend suite passed
+The backend suite passed **157 tests**, the frontend suite passed
 **31 tests**, the frontend production build completed cleanly, Prometheus
 loaded all **8** alert rules with their health reported as `ok`, and the
 previous day's end-to-end verifier still passes **17/17** against the Day 4
@@ -57,12 +57,15 @@ the obvious implementation is wrong:
   *availability* failure and does count. Getting this backwards means the
   breaker never opens during a real outage. This was a real bug found on Day 4;
   see the table below.
-- **A timeout is not an outage.** A read timeout proves the simulator is
-  *slow*, not that it is *down*. `TransportFailureClassifier` tells the two
-  apart: a refused connection opens the breaker, a timeout does not. Opening
-  the breaker to avoid one timeout would take the whole integration offline
-  for 30 seconds and starve every dependent feature — the shipment tracker,
-  the risk engine — of the reads it needs.
+- **A timeout is not an outage — but a *connect* timeout is.** A read timeout
+  proves the simulator is *slow*, not that it is *down*.
+  `TransportFailureClassifier` tells the three cases apart: a refused
+  connection opens the breaker, a read timeout does not, and a *connect*
+  timeout — where the connection was never established at all — opens it
+  again, because that one really is an unreachable host. Opening the breaker
+  to avoid one slow read would take the whole integration offline for 30
+  seconds and starve every dependent feature — the shipment tracker, the risk
+  engine — of the reads it needs.
 - **Reads and writes have separate breakers** (`SimulatorCircuitBreakers`). A
   write that times out may be one slow depot; it says nothing about whether
   reads still work. One shared breaker would let a single slow write stop the
@@ -175,10 +178,16 @@ Each of these was found by running the thing, not by reading it.
 | The retry count was unbounded | `maxRetries` was read straight from configuration, so a misconfiguration could outlive the freshness window. | Capped at 3 in `ResilienceProperties`, with a test asserting the cap. |
 | The event script could not detect anything | The crisis event was injected while the simulator was `PAUSED`, so the tick never advanced past the event's start tick and no anomaly could appear. | `inject_fault.py` now starts the simulation before injecting and pauses it afterwards. The result went from *0 anomaly flags* to *4 unmet needs*. |
 | A timeout opened the breaker | The Day 3 end-to-end verifier injects a 120-second `latency` fault. The resulting read timeouts were counted as availability failures, so the breaker opened for 30 seconds and starved the shipment tracker of its reads. **Two Day 3 checks failed as a result** — 15/17 instead of 17/17. | `TransportFailureClassifier` separates a timeout from a connection failure. A timeout no longer counts; the Day 3 verifier is back to **17/17**. |
+| The timeout was classified by **reading the message text** | The classifier fell back to matching `"request cancelled"` in the exception message, because the exception type was assumed rather than measured. A wording change in the JDK or Spring would have silently reopened the regression. | The exception chains are now **measured** by `SimulatorTransportTimeoutTest`, which drives a real read timeout and a real connection refusal through the real `RestClient` + `JdkClientHttpRequestFactory` and asserts the classification. The measurement is a test, not a comment. |
+| A **connect** timeout was classified as a slow simulator | `HttpConnectTimeoutException` extends `HttpTimeoutException`, so the timeout branch caught it first. A blackholed simulator — the one failure that really is an outage — would have been treated as "slow" and the breaker would never have opened for it. | The connect-timeout case is now checked **before** the read-timeout case, with a test for both the bare and the wrapped form. A connect timeout opens the breaker; a read timeout does not. |
 
 That last one is the most valuable bug of the day, and it was found only by
 running the *previous* day's verifier against the new code. A green test suite
 proves the unit tests still pass; it does not prove the system still works.
+
+The two rows after it have the same root cause: **the exception was assumed
+rather than measured.** The fix was not a better guess at the wording — it was
+a test that drives the real transport and prints the chain it produced.
 
 ## Verification evidence
 
@@ -189,13 +198,13 @@ number in it was measured against the running stack.
 |---|---|
 | [`fault-unavailable.txt`](../evidence/day-04/fault-unavailable.txt) | **The full failure boundary.** `FRESH` → `INVALID` → `FRESH`, with the breaker `CLOSED` → `OPEN` → `CLOSED`, the approval refused with `STALE_OR_INVALID_SNAPSHOT`, and the simulator's `/v1/health` answering `HTTP 200 status=ok` at every single step. |
 | [`fault-stale.txt`](../evidence/day-04/fault-stale.txt) | **The stale guard.** HTTP 200 + `X-Simulator-Stale: true` → quality `STALE`, eligibility `false`, approval refused — while the breaker stays `CLOSED`, because the simulator *is* reachable. |
-| [`fault-latency.txt`](../evidence/day-04/fault-latency.txt) | **A slow simulator is not a dead one.** Under a `latency` fault the quality goes `INVALID` and the approval is refused, but the breaker stays `CLOSED` — the simulator is slow, not gone. |
+| [`fault-latency.txt`](../evidence/day-04/fault-latency.txt) | **A slow simulator is not a dead one.** 40 samples, one per second, under a `latency` fault: the quality goes `INVALID` and the approval is refused, but the breaker stays `CLOSED` in **every single sample** — the simulator is slow, not gone. |
 | [`breaker-trace.txt`](../evidence/day-04/breaker-trace.txt) | **The breaker, second by second.** `breaker=OPEN` from t+4s to t+16s, `fuel_circuit_breaker_opened_total=1`, `rejections=14`, and a closed breaker by t+18s. |
 | [`event-demand-spike.txt`](../evidence/day-04/event-demand-spike.txt) | **The crisis event.** A region demand multiplier of 1.8 produced **6 `KNOWN_EVENT` anomaly flags** after four stepped ticks. |
 | [`metrics-steady-state.txt`](../evidence/day-04/metrics-steady-state.txt) | The Prometheus surface: the status, the resilience series, the **8 alert rules and their health**, and the alerts that are firing. |
 | [`metrics-after-clean-start.txt`](../evidence/day-04/metrics-after-clean-start.txt) | Fresh eligible snapshot after final startup, all **8 rules healthy**, and no active alerts. |
-| [`backend-tests-latest.txt`](../evidence/day-04/backend-tests-latest.txt) | Latest suite after route-event handling and SSE coalescing — **154 tests passed**, 0 failures, 0 errors. |
-| [`backend-tests.txt`](../evidence/day-04/backend-tests.txt) | Earlier `mvn clean test` capture — 149 tests passed. |
+| [`backend-tests-latest.txt`](../evidence/day-04/backend-tests-latest.txt) | Earlier suite after route-event handling and SSE coalescing — **154 tests passed**. |
+| [`backend-tests.txt`](../evidence/day-04/backend-tests.txt) | `mvn clean test` — **157 tests passed**, 0 failures, 0 errors. |
 | [`day3-regression.txt`](../evidence/day-04/day3-regression.txt) | **17/17 Day 3 checks passed** against the Day 4 code. The regression run that caught the timeout bug is what proves the fix landed. |
 | [`frontend-tests.txt`](../evidence/day-04/frontend-tests.txt) | `npm test` — **31 tests passed**; `npm run build` — clean. |
 | [`frontend-ui-checks.txt`](../evidence/day-04/frontend-ui-checks.txt) | The Day 4 UI strings present in the **served bundle**, the `.banner-danger` rule present, and the safety checks: the panel is hidden on a healthy system, gated on the breaker state, and the browser never talks to the simulator. |
@@ -287,10 +296,12 @@ against a simulator that is not answering.
 - The circuit breaker counts **consecutive** failures. A simulator that fails
   once every ten refreshes never opens it, because every success in between
   resets the counter. A failure *ratio* would be the next step.
-- A timeout never opens the breaker, by design. That is correct for a
+- A **read** timeout never opens the breaker, by design. That is correct for a
   simulator that is slow, but it means a simulator that is slow *and*
   permanently so is never detected as unavailable. The freshness limit
   catches that case instead — the view ages out and the approval is refused.
+  A **connect** timeout does open the breaker, because the connection was
+  never established, so a blackholed host is still detected.
 - The retry budget is derived from the simulator's measured baseline. A slower
   simulator would need the cap lowered, and the cap is currently hard-coded at
   3 rather than derived from the freshness limit at runtime.

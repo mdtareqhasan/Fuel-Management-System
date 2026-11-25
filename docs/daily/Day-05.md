@@ -1,9 +1,9 @@
 # Phase 04 · Day 5 — Evaluation & Release Rehearsal
 
 **Target:** Tuesday, 24 November 2026 · **Technical status:** Complete and
-locally verified on 23 November · **Release rehearsal:** Agent-run technical
-replays and a fault drill are recorded; three human UI walkthroughs and an
-unannounced human surprise drill remain pending.
+locally verified on 23 November · **Human rehearsal status:** The project owner
+confirmed all three walkthrough checks, including the surprise check, complete
+on 25 November 2026. Hosted CI and release tagging remain pending.
 
 | Milestone | Focus areas | Result |
 |:--|:--|:--|
@@ -73,7 +73,7 @@ replays added test shipment and audit records to the local database.
 | Compose image build, clean recreation, Flyway check and HTTP smoke | Done without deleting named volumes | [`compose-startup.txt`](../evidence/day-05/compose-startup.txt) |
 | Demo runbook and evidence index | Done | [`demo-runbook.md`](../demo-runbook.md), [Day 5 evidence index](../evidence/day-05/README.md) |
 | Agent-run technical rehearsals | Two end-to-end replays passed; unavailable-fault drill recovered | [`rehearsals.md`](../evidence/day-05/rehearsals.md), run logs in the evidence folder |
-| Three eight-minute human UI walkthroughs and surprise drill | Pending actual presenter and observer | [`rehearsals.md`](../evidence/day-05/rehearsals.md) |
+| Three human UI walkthroughs and surprise check | Complete; owner-confirmed 25 Nov 2026; run metadata not provided | [`rehearsals.md`](../evidence/day-05/rehearsals.md) |
 | Hosted CI result and release tag | Pending a push/authorized release action | CI workflow: `.github/workflows/ci.yml` |
 
 ## Limits and interpretation
@@ -88,9 +88,10 @@ replays added test shipment and audit records to the local database.
   implemented quiet/spike behavior, not general real-world predictive quality.
 - The Compose stack was rebuilt and recreated from this working tree with
   named volumes preserved. This is not a fresh Git clone.
-- Run the three operator walkthroughs and surprise drill before calling the
-  release rehearsal complete. Record duration, run ID, commit SHA, and any
-  repair in [`rehearsals.md`](../evidence/day-05/rehearsals.md).
+- Push the verified candidate to run hosted GitHub CI; create a release tag
+  only after the hosted checks pass. Human walkthrough completion is owner-
+  confirmed; detailed run metadata can still be added to
+  [`rehearsals.md`](../evidence/day-05/rehearsals.md).
 
 ## Reproduce the local checks
 

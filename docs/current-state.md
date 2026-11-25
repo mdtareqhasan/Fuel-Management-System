@@ -58,6 +58,7 @@ Full evidence index: [docs/evidence/day-04/README.md](evidence/day-04/README.md)
 | `RefreshScheduler` | Coalesces stream notifications inside the configured 500 ms minimum interval; the 2 s poll remains active in both modes. |
 | `RouteEventOverlay` | Marks an actively disrupted route unavailable to planning, derived from the simulator event payload. |
 | `ResilienceProperties` | Timeout, retry and breaker policy, kept apart and bounded by the freshness window |
+| `TransportFailureClassifier` | Tells a refused connection (an outage) from a read timeout (a slow simulator) from a connect timeout (an outage). The chains are measured by a test, not assumed. |
 | `DecisionMetrics` | Approval refusals, approval outcomes, refresh failures and refresh triggers |
 | `fuel-platform-resilience.json` | The Grafana dashboard for the integration's health |
 | `alert_rules.yml` | Eight Prometheus alert rules, each with a runbook reference |

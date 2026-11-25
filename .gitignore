@@ -50,6 +50,12 @@ keys.txt
 simapi.txt
 probe.txt
 
+# Scratch output from ad-hoc Java probes. The recorded measurement lives in
+# the test suite (SimulatorTransportTimeoutTest) and in docs/evidence/.
+Probe.java
+Probe.class
+*.class
+
 # OS temp
 *.tmp
 *.bak

@@ -1,28 +1,41 @@
-﻿==============================================================================
+==============================================================================
 BASELINE
 ==============================================================================
   --- before the fault ---
-    fuel_circuit_breaker_opened_total{channel="read"} = 0.0
+    fuel_circuit_breaker_opened_total{channel="read"} = 1.0
     fuel_circuit_breaker_opened_total{channel="write"} = 0.0
-    fuel_circuit_breaker_rejections_total{channel="read"} = 0.0
+    fuel_circuit_breaker_rejections_total{channel="read"} = 14.0
     fuel_circuit_breaker_rejections_total{channel="write"} = 0.0
     fuel_circuit_breaker_open{channel="read"} = 0.0
     fuel_circuit_breaker_open{channel="write"} = 0.0
-    fuel_circuit_breaker_opened_total{channel="read"} = 0.0
+    fuel_circuit_breaker_opened_total{channel="read"} = 1.0
     fuel_circuit_breaker_opened_total{channel="write"} = 0.0
-    fuel_simulator_call_seconds_count{endpoint="/v1/allocations",outcome="success"} = 67
-    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-coxsbazar&limit=600",outcome="success"} = 1
-    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-karnaphuli&limit=600",outcome="success"} = 1
-    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-mirpur&limit=600",outcome="success"} = 1
-    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-tongi&limit=600",outcome="success"} = 1
-    fuel_simulator_call_seconds_count{endpoint="/v1/depots",outcome="success"} = 67
-    fuel_simulator_call_seconds_count{endpoint="/v1/events",outcome="success"} = 67
-    fuel_simulator_call_seconds_count{endpoint="/v1/instance",outcome="success"} = 134
-    fuel_simulator_call_seconds_count{endpoint="/v1/regions",outcome="success"} = 67
-    fuel_simulator_call_seconds_count{endpoint="/v1/routes",outcome="success"} = 67
-    fuel_simulator_call_seconds_count{endpoint="/v1/stations",outcome="success"} = 67
-    fuel_simulator_call_seconds_count{endpoint="/v1/supply-arrivals",outcome="success"} = 67
-    fuel_refresh_success_total = 67.0
+    fuel_simulator_call_seconds_count{endpoint="/v1/allocations",outcome="success"} = 276
+    fuel_simulator_call_seconds_count{endpoint="/v1/allocations",outcome="transport_error"} = 2
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-coxsbazar&limit=600",outcome="success"} = 39
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-coxsbazar&limit=600",outcome="transport_error"} = 4
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-karnaphuli&limit=600",outcome="success"} = 39
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-karnaphuli&limit=600",outcome="transport_error"} = 4
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-mirpur&limit=600",outcome="success"} = 39
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-mirpur&limit=600",outcome="transport_error"} = 4
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-tongi&limit=600",outcome="success"} = 39
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-tongi&limit=600",outcome="transport_error"} = 4
+    fuel_simulator_call_seconds_count{endpoint="/v1/depots",outcome="success"} = 277
+    fuel_simulator_call_seconds_count{endpoint="/v1/events",outcome="success"} = 276
+    fuel_simulator_call_seconds_count{endpoint="/v1/events",outcome="transport_error"} = 2
+    fuel_simulator_call_seconds_count{endpoint="/v1/instance",outcome="circuit_open"} = 14
+    fuel_simulator_call_seconds_count{endpoint="/v1/instance",outcome="fault"} = 3
+    fuel_simulator_call_seconds_count{endpoint="/v1/instance",outcome="success"} = 553
+    fuel_simulator_call_seconds_count{endpoint="/v1/instance",outcome="transport_error"} = 17
+    fuel_simulator_call_seconds_count{endpoint="/v1/regions",outcome="success"} = 277
+    fuel_simulator_call_seconds_count{endpoint="/v1/routes",outcome="success"} = 276
+    fuel_simulator_call_seconds_count{endpoint="/v1/routes",outcome="transport_error"} = 2
+    fuel_simulator_call_seconds_count{endpoint="/v1/stations",outcome="success"} = 276
+    fuel_simulator_call_seconds_count{endpoint="/v1/stations",outcome="transport_error"} = 2
+    fuel_simulator_call_seconds_count{endpoint="/v1/supply-arrivals",outcome="success"} = 276
+    fuel_simulator_call_seconds_count{endpoint="/v1/supply-arrivals",outcome="transport_error"} = 2
+    fuel_refresh_failures_total{reason="partial_read_failure"} = 1.0
+    fuel_refresh_success_total = 276.0
 
 ==============================================================================
 INJECTING A 20 SECOND UNAVAILABLE FAULT
@@ -42,54 +55,76 @@ fault injection -> HTTP 201
   t+24s  quality=FRESH breaker=CLOSED simulator=UP
 
   --- during the fault ---
-    fuel_circuit_breaker_opened_total{channel="read"} = 1.0
+    fuel_circuit_breaker_opened_total{channel="read"} = 2.0
     fuel_circuit_breaker_opened_total{channel="write"} = 0.0
-    fuel_circuit_breaker_rejections_total{channel="read"} = 14.0
+    fuel_circuit_breaker_rejections_total{channel="read"} = 28.0
     fuel_circuit_breaker_rejections_total{channel="write"} = 0.0
     fuel_circuit_breaker_open{channel="read"} = 0.0
     fuel_circuit_breaker_open{channel="write"} = 0.0
-    fuel_circuit_breaker_opened_total{channel="read"} = 1.0
+    fuel_circuit_breaker_opened_total{channel="read"} = 2.0
     fuel_circuit_breaker_opened_total{channel="write"} = 0.0
-    fuel_simulator_call_seconds_count{endpoint="/v1/allocations",outcome="success"} = 76
-    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-coxsbazar&limit=600",outcome="success"} = 1
-    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-karnaphuli&limit=600",outcome="success"} = 1
-    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-mirpur&limit=600",outcome="success"} = 1
-    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-tongi&limit=600",outcome="success"} = 1
-    fuel_simulator_call_seconds_count{endpoint="/v1/depots",outcome="success"} = 76
-    fuel_simulator_call_seconds_count{endpoint="/v1/events",outcome="success"} = 76
-    fuel_simulator_call_seconds_count{endpoint="/v1/instance",outcome="circuit_open"} = 14
-    fuel_simulator_call_seconds_count{endpoint="/v1/instance",outcome="fault"} = 3
-    fuel_simulator_call_seconds_count{endpoint="/v1/instance",outcome="success"} = 152
-    fuel_simulator_call_seconds_count{endpoint="/v1/regions",outcome="success"} = 76
-    fuel_simulator_call_seconds_count{endpoint="/v1/routes",outcome="success"} = 76
-    fuel_simulator_call_seconds_count{endpoint="/v1/stations",outcome="success"} = 76
-    fuel_simulator_call_seconds_count{endpoint="/v1/supply-arrivals",outcome="success"} = 76
-    fuel_refresh_success_total = 76.0
+    fuel_simulator_call_seconds_count{endpoint="/v1/allocations",outcome="success"} = 285
+    fuel_simulator_call_seconds_count{endpoint="/v1/allocations",outcome="transport_error"} = 2
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-coxsbazar&limit=600",outcome="success"} = 40
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-coxsbazar&limit=600",outcome="transport_error"} = 4
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-karnaphuli&limit=600",outcome="success"} = 40
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-karnaphuli&limit=600",outcome="transport_error"} = 4
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-mirpur&limit=600",outcome="success"} = 40
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-mirpur&limit=600",outcome="transport_error"} = 4
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-tongi&limit=600",outcome="success"} = 40
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-tongi&limit=600",outcome="transport_error"} = 4
+    fuel_simulator_call_seconds_count{endpoint="/v1/depots",outcome="success"} = 286
+    fuel_simulator_call_seconds_count{endpoint="/v1/events",outcome="success"} = 285
+    fuel_simulator_call_seconds_count{endpoint="/v1/events",outcome="transport_error"} = 2
+    fuel_simulator_call_seconds_count{endpoint="/v1/instance",outcome="circuit_open"} = 28
+    fuel_simulator_call_seconds_count{endpoint="/v1/instance",outcome="fault"} = 6
+    fuel_simulator_call_seconds_count{endpoint="/v1/instance",outcome="success"} = 571
+    fuel_simulator_call_seconds_count{endpoint="/v1/instance",outcome="transport_error"} = 17
+    fuel_simulator_call_seconds_count{endpoint="/v1/regions",outcome="success"} = 286
+    fuel_simulator_call_seconds_count{endpoint="/v1/routes",outcome="success"} = 285
+    fuel_simulator_call_seconds_count{endpoint="/v1/routes",outcome="transport_error"} = 2
+    fuel_simulator_call_seconds_count{endpoint="/v1/stations",outcome="success"} = 285
+    fuel_simulator_call_seconds_count{endpoint="/v1/stations",outcome="transport_error"} = 2
+    fuel_simulator_call_seconds_count{endpoint="/v1/supply-arrivals",outcome="success"} = 285
+    fuel_simulator_call_seconds_count{endpoint="/v1/supply-arrivals",outcome="transport_error"} = 2
+    fuel_refresh_failures_total{reason="partial_read_failure"} = 1.0
+    fuel_refresh_success_total = 285.0
 
 ==============================================================================
 CLEARING
 ==============================================================================
   --- after the fault ---
-    fuel_circuit_breaker_opened_total{channel="read"} = 1.0
+    fuel_circuit_breaker_opened_total{channel="read"} = 2.0
     fuel_circuit_breaker_opened_total{channel="write"} = 0.0
-    fuel_circuit_breaker_rejections_total{channel="read"} = 14.0
+    fuel_circuit_breaker_rejections_total{channel="read"} = 28.0
     fuel_circuit_breaker_rejections_total{channel="write"} = 0.0
     fuel_circuit_breaker_open{channel="read"} = 0.0
     fuel_circuit_breaker_open{channel="write"} = 0.0
-    fuel_circuit_breaker_opened_total{channel="read"} = 1.0
+    fuel_circuit_breaker_opened_total{channel="read"} = 2.0
     fuel_circuit_breaker_opened_total{channel="write"} = 0.0
-    fuel_simulator_call_seconds_count{endpoint="/v1/allocations",outcome="success"} = 80
-    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-coxsbazar&limit=600",outcome="success"} = 1
-    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-karnaphuli&limit=600",outcome="success"} = 1
-    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-mirpur&limit=600",outcome="success"} = 1
-    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-tongi&limit=600",outcome="success"} = 1
-    fuel_simulator_call_seconds_count{endpoint="/v1/depots",outcome="success"} = 80
-    fuel_simulator_call_seconds_count{endpoint="/v1/events",outcome="success"} = 80
-    fuel_simulator_call_seconds_count{endpoint="/v1/instance",outcome="circuit_open"} = 14
-    fuel_simulator_call_seconds_count{endpoint="/v1/instance",outcome="fault"} = 3
-    fuel_simulator_call_seconds_count{endpoint="/v1/instance",outcome="success"} = 160
-    fuel_simulator_call_seconds_count{endpoint="/v1/regions",outcome="success"} = 80
-    fuel_simulator_call_seconds_count{endpoint="/v1/routes",outcome="success"} = 80
-    fuel_simulator_call_seconds_count{endpoint="/v1/stations",outcome="success"} = 80
-    fuel_simulator_call_seconds_count{endpoint="/v1/supply-arrivals",outcome="success"} = 80
-    fuel_refresh_success_total = 80.0
+    fuel_simulator_call_seconds_count{endpoint="/v1/allocations",outcome="success"} = 289
+    fuel_simulator_call_seconds_count{endpoint="/v1/allocations",outcome="transport_error"} = 2
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-coxsbazar&limit=600",outcome="success"} = 41
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-coxsbazar&limit=600",outcome="transport_error"} = 4
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-karnaphuli&limit=600",outcome="success"} = 41
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-karnaphuli&limit=600",outcome="transport_error"} = 4
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-mirpur&limit=600",outcome="success"} = 41
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-mirpur&limit=600",outcome="transport_error"} = 4
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-tongi&limit=600",outcome="success"} = 41
+    fuel_simulator_call_seconds_count{endpoint="/v1/demand-history?station_id=station-tongi&limit=600",outcome="transport_error"} = 4
+    fuel_simulator_call_seconds_count{endpoint="/v1/depots",outcome="success"} = 290
+    fuel_simulator_call_seconds_count{endpoint="/v1/events",outcome="success"} = 289
+    fuel_simulator_call_seconds_count{endpoint="/v1/events",outcome="transport_error"} = 2
+    fuel_simulator_call_seconds_count{endpoint="/v1/instance",outcome="circuit_open"} = 28
+    fuel_simulator_call_seconds_count{endpoint="/v1/instance",outcome="fault"} = 6
+    fuel_simulator_call_seconds_count{endpoint="/v1/instance",outcome="success"} = 579
+    fuel_simulator_call_seconds_count{endpoint="/v1/instance",outcome="transport_error"} = 17
+    fuel_simulator_call_seconds_count{endpoint="/v1/regions",outcome="success"} = 290
+    fuel_simulator_call_seconds_count{endpoint="/v1/routes",outcome="success"} = 289
+    fuel_simulator_call_seconds_count{endpoint="/v1/routes",outcome="transport_error"} = 2
+    fuel_simulator_call_seconds_count{endpoint="/v1/stations",outcome="success"} = 289
+    fuel_simulator_call_seconds_count{endpoint="/v1/stations",outcome="transport_error"} = 2
+    fuel_simulator_call_seconds_count{endpoint="/v1/supply-arrivals",outcome="success"} = 289
+    fuel_simulator_call_seconds_count{endpoint="/v1/supply-arrivals",outcome="transport_error"} = 2
+    fuel_refresh_failures_total{reason="partial_read_failure"} = 1.0
+    fuel_refresh_success_total = 289.0

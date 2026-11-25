@@ -14,8 +14,8 @@ supposed to do.
 | `event-demand-spike.txt` | A region demand multiplier of 1.8 produces **6 `KNOWN_EVENT` anomaly flags** after four stepped ticks. | `python scripts/capture_day4_event.py demand_spike 12` |
 | `metrics-steady-state.txt` | The Prometheus surface: the system status, the resilience series, the **8 alert rules with their health**, and the alerts that are firing. | `python scripts/capture_metrics_evidence.py steady-state docs/evidence/day-04/metrics-steady-state.txt` |
 | `metrics-after-clean-start.txt` | Post-startup snapshot is fresh and eligible, all **8 rules healthy**, and no alerts are firing. | `python scripts/capture_metrics_evidence.py after-clean-start docs/evidence/day-04/metrics-after-clean-start.txt` |
-| `backend-tests.txt` | `mvn clean test` — **149 tests passed**, 0 failures, 0 errors. | `cd backend && ./mvnw.cmd clean test` |
-| `backend-tests-latest.txt` | Latest backend suite after route-event handling and SSE coalescing — **154 tests passed**, 0 failures, 0 errors. | `cd backend && docker build -f Dockerfile.test -t fuel-platform-backend-tests .` |
+| `backend-tests.txt` | `mvn clean test` — **157 tests passed**, 0 failures, 0 errors. Includes the measured transport chains. | `cd backend && ./mvnw.cmd clean test` |
+| `backend-tests-latest.txt` | Earlier backend suite after route-event handling and SSE coalescing — **154 tests passed**, 0 failures, 0 errors. | `cd backend && docker build -f Dockerfile.test -t fuel-platform-backend-tests .` |
 | `day3-regression.txt` | The previous day's end-to-end verifier run against the Day 4 code — **17/17 checks passed**. This is the run that caught the timeout bug, and the run that proves the fix landed. | `python scripts/verify_day3_end_to_end.py` |
 | `frontend-tests.txt` | `npm test` — **31 tests passed**; `npm run build` — clean. | `cd frontend && npm test && npm run build` |
 | `frontend-ui-checks.txt` | The Day 4 UI strings present in the **served bundle**, the `.banner-danger` rule present, and the safety checks: the panel is hidden on a healthy system, gated on the breaker state, and the browser never talks to the simulator. | `python scripts/verify_frontend_day4_ui.py` |
@@ -57,6 +57,24 @@ Measured against the running simulator — see `scripts/inspect_fault_shapes.py`
 
 The middle row is the one that catches people out. The status code says
 everything is fine; only the header tells the truth.
+
+The third row has a subtlety worth stating, because it is where the
+classification actually turns. There are **two** timeouts, and they mean
+opposite things:
+
+| Timeout | What happened | Breaker |
+|---|---|---|
+| **Read** timeout | the connection was made and the simulator answered too late | stays closed |
+| **Connect** timeout | the connection was never established | **opens** |
+
+The chains are measured rather than assumed —
+`SimulatorTransportTimeoutTest` drives both real cases through the real
+`RestClient` + `JdkClientHttpRequestFactory` and prints them:
+
+```
+read timeout        ResourceAccessException -> java.net.http.HttpTimeoutException
+connection refused ResourceAccessException -> java.net.ConnectException -> ClosedChannelException
+```
 
 ## The result worth reading twice
 

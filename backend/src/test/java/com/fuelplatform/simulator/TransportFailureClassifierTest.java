@@ -8,6 +8,7 @@ import java.io.InterruptedIOException;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpTimeoutException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,6 +51,25 @@ class TransportFailureClassifierTest {
     @DisplayName("a cancelled request does NOT mean the simulator is unavailable")
     void cancelledRequestIsNotUnavailable() {
         assertThat(TransportFailureClassifier.isUnavailable(new InterruptedIOException("Request cancelled"))).isFalse();
+    }
+
+    @Test
+    @DisplayName("a connect timeout DOES mean the simulator is unavailable")
+    void connectTimeoutIsUnavailable() {
+        // HttpConnectTimeoutException extends HttpTimeoutException, so a naive
+        // "is it a timeout?" check would call this one slow and leave the
+        // breaker closed for a simulator that never accepted the connection.
+        assertThat(TransportFailureClassifier.isUnavailable(new HttpConnectTimeoutException("connect timed out")))
+                .isTrue();
+    }
+
+    @Test
+    @DisplayName("a wrapped connect timeout is still an outage")
+    void wrappedConnectTimeoutIsUnavailable() {
+        IOException wrapped = new IOException("read failed",
+                new HttpConnectTimeoutException("connect timed out"));
+
+        assertThat(TransportFailureClassifier.isUnavailable(wrapped)).isTrue();
     }
 
     @Test
