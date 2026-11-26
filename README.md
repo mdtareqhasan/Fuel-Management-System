@@ -301,6 +301,16 @@ Stop the services with `docker compose down`. Add `-v` only when you intend to r
 
 > **After any frontend change**, run `docker compose build frontend` before `docker compose up -d frontend`. The container serves a built bundle, so without the rebuild it keeps serving the previous one.
 
+## Deploy a reviewer demo on the VPS
+
+The VPS deployment uses a separate project directory and loopback-only ports so
+it can coexist with the server's existing applications. Follow the
+[Ubuntu VPS deployment guide](docs/vps-deployment.md) for unique credentials,
+memory-aware image builds, an isolated Nginx hostname, HTTPS, Basic Auth,
+backups and rollback. The app has no built-in user authentication, so the
+shared Basic Auth credential is only a temporary trusted-reviewer gate; it
+does not provide per-user identity or operator roles.
+
 ## How the data flows
 
 1. The official simulator maintains the simulated fuel network and its state.

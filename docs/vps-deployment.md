@@ -1,0 +1,259 @@
+# VPS demo deployment — Ubuntu, Docker Compose, Nginx
+
+This guide deploys the project alongside the existing services on the Kubijatra
+Ubuntu VPS. It keeps this project in `/opt/fuel-management-system`, publishes
+its containers only on loopback, and uses a separate Nginx virtual host for
+`fuel-demo.kubijatra.com`.
+
+> **Demo access boundary:** the application has no built-in authentication or
+> roles. The Nginx Basic Auth step below protects the whole UI/API with one
+> shared demo credential. Any person who receives that credential can use
+> approval actions. Give it only to trusted reviewers; it is not a substitute
+> for application user identity or role-based authorization.
+
+## VPS facts and isolation plan
+
+Inspection on 26 November 2026 found:
+
+| Item | Existing state | Fuel project setting |
+|---|---|---|
+| Project directory | `/opt` contains other projects | `/opt/fuel-management-system` |
+| Nginx | Active on ports 80/443; existing `kubijatra.com` vhost | Add a separate `fuel-demo.kubijatra.com` vhost; do not edit existing vhosts |
+| Java service | Host port 8080 already occupied | Backend published on `127.0.0.1:18080` |
+| PostgreSQL | Existing container on `127.0.0.1:5432` | Fuel DB on `127.0.0.1:15432` |
+| Host resources | 2 vCPU, 3.8 GiB RAM, no swap, 35 GiB disk free at inspection | Build sequentially; monitor memory and disk |
+| DNS | Cloudflare authoritative; `fuel-demo.kubijatra.com` resolves to this VPS | DNS-only A record while issuing/checking origin TLS |
+
+Fuel app mappings are loopback-only: frontend `15173`, backend `18080`,
+simulator `18000`, PostgreSQL `15432`, Prometheus `19090`, Grafana `13000`.
+Do not open these ports in UFW/provider firewall. Only SSH, HTTP and HTTPS are
+needed publicly. The names `fuel-*`, Compose project `fuel-platform`, and
+volume names are separate from the inspected `cou-bus-tracker-*` containers.
+
+The remote clone was `main` at `c49f44e` when inspected. Deploy only after the
+required changes have been pushed and verified in GitHub; then update the clone
+to that commit. Do not copy `.env` into Git or paste its values into chat.
+
+## 1. Check out the intended revision
+
+Run on the VPS after the deployment commit is pushed:
+
+```bash
+cd /opt/fuel-management-system
+git status --short --branch
+git fetch origin
+git pull --ff-only origin main
+git log -1 --oneline
+```
+
+If the local tree is not clean, stop and inspect it; do not reset or overwrite
+it blindly.
+
+## 2. Create the private environment file
+
+The VPS operator should create strong, unique credentials and retain the
+existing `.env` with mode `600`. Never replace it by copying the example over
+it. Required values include:
+
+```dotenv
+DB_PASSWORD=<unique-random-secret>
+GRAFANA_ADMIN_USER=admin
+GRAFANA_ADMIN_PASSWORD=<different-unique-random-secret>
+DB_PORT=15432
+BACKEND_PORT=18080
+FRONTEND_PORT=15173
+SIMULATOR_PORT=18000
+PROMETHEUS_PORT=19090
+GRAFANA_PORT=13000
+SIMULATOR_START_MODE=paused
+```
+
+The compose file keeps host mappings on `127.0.0.1`; do not change them to
+`0.0.0.0`. Check without printing secrets:
+
+```bash
+chmod 600 .env
+docker compose config -q
+docker compose config --format json \
+  | python3 -c 'import json,sys; d=json.load(sys.stdin); [print(n, s.get("ports", [])) for n,s in d["services"].items()]'
+```
+
+Confirm that only the six loopback mappings above appear.
+
+## 3. Build in stages and watch resources
+
+The VPS already hosts another application and has 4 GiB RAM with no swap.
+Building Java and frontend images together may cause memory pressure. Build
+separately and check the current containers after each build:
+
+```bash
+free -h
+df -h /
+docker compose build backend
+docker compose build frontend
+docker compose images
+docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+free -h
+```
+
+If memory becomes critically low or an existing service degrades, stop and
+inspect before continuing. Do not prune global Docker images/volumes: those may
+belong to existing applications.
+
+## 4. Start only this Compose project
+
+First validate that the project container names are not already in use. Then:
+
+```bash
+cd /opt/fuel-management-system
+docker compose up -d
+docker compose ps
+docker compose logs --tail=100 backend frontend simulator-api
+```
+
+Compose operates on this directory's `fuel-platform` project. Do not run
+`docker compose down` from another application's directory, and never use
+`docker compose down -v` for this demo. The latter deletes this project's
+database/Grafana volumes.
+
+Check local-only endpoints from the VPS:
+
+```bash
+curl -fsS http://127.0.0.1:18080/api/system-status
+curl -I http://127.0.0.1:15173/
+```
+
+Expect backend/database/simulator `UP`, a `FRESH` snapshot and
+`decision_eligible: true`. Also confirm existing services remain healthy:
+
+```bash
+docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+sudo nginx -t
+```
+
+## 5. Add a separate password-protected Nginx site
+
+Keep the existing `/etc/nginx/sites-available/kubijatra.com.conf` unchanged.
+Install the htpasswd utility if needed, and create a separate password file:
+
+```bash
+sudo apt update
+sudo apt install -y apache2-utils
+sudo htpasswd -cB /etc/nginx/.htpasswd-fuel-demo supervisor
+sudo chmod 640 /etc/nginx/.htpasswd-fuel-demo
+sudo chown root:www-data /etc/nginx/.htpasswd-fuel-demo
+```
+
+The password prompt is interactive; do not put the password in shell history.
+Create a new HTTP-only site file:
+
+```bash
+sudo tee /etc/nginx/sites-available/fuel-demo.kubijatra.com.conf >/dev/null <<'NGINX'
+server {
+    listen 80;
+    listen [::]:80;
+    server_name fuel-demo.kubijatra.com;
+
+    auth_basic "Fuel Supply Intelligence demo";
+    auth_basic_user_file /etc/nginx/.htpasswd-fuel-demo;
+
+    location / {
+        proxy_pass http://127.0.0.1:15173;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 90s;
+        proxy_buffering off;
+    }
+}
+NGINX
+
+sudo ln -s /etc/nginx/sites-available/fuel-demo.kubijatra.com.conf \
+  /etc/nginx/sites-enabled/fuel-demo.kubijatra.com.conf
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+If the symlink already exists, inspect it rather than replacing it. Verify the
+existing sites still load and the new hostname prompts for Basic Auth over
+HTTP before proceeding to TLS.
+
+## 6. Issue TLS for only the new hostname
+
+The DNS A record should resolve to this VPS and be DNS-only in Cloudflare while
+using the Nginx HTTP-01 flow. Port 80 must be reachable in both UFW and the VPS
+provider firewall. The existing certificate does not include this hostname.
+
+```bash
+sudo certbot --nginx -d fuel-demo.kubijatra.com
+sudo nginx -t
+sudo systemctl reload nginx
+sudo certbot renew --dry-run
+```
+
+Certbot may update the new site file to add the certificate and HTTP-to-HTTPS
+redirect. Inspect the diff/virtual host, then verify:
+
+```bash
+curl -I https://fuel-demo.kubijatra.com
+```
+
+The response should ask for Basic Auth (HTTP 401 without credentials). Test in
+a private browser window, authenticate, and verify the dashboard and API work.
+Do not expose Grafana, Prometheus, PostgreSQL, backend, or simulator via
+additional public proxy routes unless separately protected.
+
+## 7. Backups, updates and rollback
+
+Before upgrades, back up PostgreSQL to a location outside the container and
+outside any directory served by Nginx:
+
+```bash
+cd /opt/fuel-management-system
+docker compose exec -T postgres sh -c \
+  'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' \
+  > /root/fuel-platform-$(date +%F-%H%M).sql
+```
+
+Record the current revision, then update only after the new commit is pushed:
+
+```bash
+git rev-parse HEAD
+git pull --ff-only origin main
+docker compose config -q
+docker compose build backend frontend
+docker compose up -d
+docker compose ps
+```
+
+For rollback, check out the previous known-good commit and rebuild/recreate
+this project's services. Back up the database first; schema migrations may
+not be reversible. Never delete named volumes as a rollback shortcut.
+
+## 8. Operations and costs
+
+```bash
+cd /opt/fuel-management-system
+docker compose ps
+docker compose logs -f backend
+sudo nginx -t
+sudo systemctl status nginx --no-pager
+```
+
+Keep Cloudflare DNS-only for this simple origin setup unless you deliberately
+configure and test Cloudflare proxy/TLS mode. Maintain UFW/provider rules for
+SSH, 80 and 443 only. Schedule database backups and verify restore on a
+separate test database before relying on them. Watch RAM, swap, disk and
+container health during a demo; the earlier RUNNING load probe found an
+11.77-second `/api/risk` p95 and a separate stress attempt exhausted the
+simulator connection pool.
+
+## Verified locally vs. VPS-specific
+
+This document is a deployment procedure, not evidence that the AWS/VPS-hosted
+deployment has completed. The VPS operator must verify TLS, Basic Auth, all
+container health, existing site health, and persistent database behavior after
+following the steps. The local app itself does not authenticate users; the
+shared Nginx password is only a temporary reviewer access barrier.
