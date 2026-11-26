@@ -32,14 +32,16 @@ An operator platform built around the **official BUP Fuel Supply Simulator**.
 | Latest milestone | Status date | Release target |
 |---|---|---|
 | **Phase 04 · Evaluation & Release Rehearsal** | **Complete · 25 Nov 2026** | **24 Nov 2026** |
-| **VPS reviewer demo** | **Preparation complete; server rollout in progress · 26 Nov 2026** | **After VPS verification** |
+| **VPS reviewer demo** | **Live · HTTPS and Basic Auth verified · 26 Nov 2026** | **Operational checks ongoing** |
 
-**VPS rollout status:** the repository has a dedicated [Ubuntu VPS deployment
-guide](docs/vps-deployment.md), and `fuel-demo.kubijatra.com` resolves to the
-VPS. A separate project directory and conflict-free local port plan are
-prepared. The latest code still needs to be pulled on the VPS, images built,
-containers started, and the isolated Nginx/HTTPS/Basic Auth route verified
-before the demo URL is considered live.
+**VPS rollout status:** `fuel-demo.kubijatra.com` is serving the application
+through Nginx with HTTPS and a Basic Auth challenge. Certbot's renewal dry-run
+passed for the new certificate and the existing `kubijatra.com` certificate.
+All six Fuel Compose services are running; backend, frontend, PostgreSQL and
+simulator health checks are healthy. The service ports remain loopback-only,
+and the existing bus-tracker containers remain running. Cloudflare SSL/TLS
+encryption mode still needs confirmation as **Full (strict)**. See the
+[deployment guide](docs/vps-deployment.md).
 
 The application turns simulator snapshots into station and depot risk, anomaly flags, forecasts, and constraint-checked shipment proposals. Operators review proposals and approve them through a persisted, idempotent command flow; reconciliation tracks the simulator's shipment state. Phase 03 adds a circuit breaker, bounded retries, an SSE refresh path with a REST polling fallback, refusal and recovery metrics, a resilience dashboard, and Prometheus alert rules as code.
 
@@ -311,7 +313,7 @@ Stop the services with `docker compose down`. Add `-v` only when you intend to r
 
 ## Deploy a reviewer demo on the VPS
 
-The reviewer demo is planned on the existing Ubuntu 24.04 VPS, alongside its
+The reviewer demo is live on the existing Ubuntu 24.04 VPS, alongside its
 current sites and services. The measured host has 2 vCPU, 3.8 GiB RAM, 48 GiB
 disk (about 35 GiB free at inspection), and no swap. Nginx already owns public
 ports 80/443; an existing Java service uses host port 8080, and another
@@ -320,18 +322,22 @@ project's PostgreSQL uses `127.0.0.1:5432`.
 The Fuel stack stays in `/opt/fuel-management-system`. Its six service ports
 are mapped to loopback only: frontend `15173`, backend `18080`, simulator
 `18000`, PostgreSQL `15432`, Prometheus `19090`, and Grafana `13000`. Nginx
-will route only `fuel-demo.kubijatra.com` to the frontend; it will not replace
-the existing `kubijatra.com` virtual hosts. Cloudflare DNS for the new
-subdomain is configured and resolves to the VPS. The remaining rollout steps
-are pull the pushed revision, build images sequentially, start/check the
-containers, add a separate password-protected Nginx site, issue TLS, and verify
-the URL. See the [step-by-step VPS configuration and operations guide](docs/vps-deployment.md).
+routes `fuel-demo.kubijatra.com` to the frontend; existing `kubijatra.com`
+virtual hosts remain in place. Cloudflare proxies the new hostname. Nginx
+HTTPS and the Basic Auth challenge were verified, and Certbot's renewal dry-run
+passed for both the demo and existing certificates. All six Compose containers
+are running. See the [step-by-step VPS configuration and operations guide](docs/vps-deployment.md).
 
-**Current deployment state:** DNS and repository checkout are prepared, but
-the VPS update/build/start and HTTPS access check are not yet confirmed. Do not
-share the hostname as a live demo until those checks pass. The application has
-no built-in user authentication; Nginx Basic Auth is a temporary shared gate
-for trusted reviewers, not per-user identity or role-based authorization.
+**Current deployment state:** live at `https://fuel-demo.kubijatra.com` behind
+shared Basic Auth. Confirm Cloudflare SSL/TLS mode is **Full (strict)** and
+continue monitoring memory during the demo. The application has no built-in
+user authentication; Nginx Basic Auth is a temporary shared gate for trusted
+reviewers, not per-user identity or role-based authorization. Grafana and
+Prometheus subdomains are not configured yet. Before exposing them, set
+`GRAFANA_ROOT_URL` and `GRAFANA_DOMAIN` in the private VPS `.env`, then add
+separate Basic Auth-protected Nginx sites and TLS certificates as described in
+the [VPS guide](docs/vps-deployment.md). Prometheus must remain behind Basic
+Auth because it does not provide its own login.
 
 ## How the data flows
 

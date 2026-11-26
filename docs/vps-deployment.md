@@ -22,7 +22,7 @@ Inspection on 26 November 2026 found:
 | Java service | Host port 8080 already occupied | Backend published on `127.0.0.1:18080` |
 | PostgreSQL | Existing container on `127.0.0.1:5432` | Fuel DB on `127.0.0.1:15432` |
 | Host resources | 2 vCPU, 3.8 GiB RAM, no swap, 35 GiB disk free at inspection | Build sequentially; monitor memory and disk |
-| DNS | Cloudflare authoritative; `fuel-demo.kubijatra.com` resolves to this VPS | DNS-only A record while issuing/checking origin TLS |
+| DNS | Cloudflare authoritative; `fuel-demo.kubijatra.com` resolves to this VPS | Cloudflare proxy is enabled after certificate issuance |
 
 Fuel app mappings are loopback-only: frontend `15173`, backend `18080`,
 simulator `18000`, PostgreSQL `15432`, Prometheus `19090`, Grafana `13000`.
@@ -59,6 +59,8 @@ it. Required values include:
 DB_PASSWORD=<unique-random-secret>
 GRAFANA_ADMIN_USER=admin
 GRAFANA_ADMIN_PASSWORD=<different-unique-random-secret>
+GRAFANA_ROOT_URL=https://grafana-demo.kubijatra.com/
+GRAFANA_DOMAIN=grafana-demo.kubijatra.com
 DB_PORT=15432
 BACKEND_PORT=18080
 FRONTEND_PORT=15173
@@ -131,7 +133,7 @@ docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
 sudo nginx -t
 ```
 
-## 5. Add a separate password-protected Nginx site
+## 5. Add separate password-protected Nginx sites
 
 Keep the existing `/etc/nginx/sites-available/kubijatra.com.conf` unchanged.
 Install the htpasswd utility if needed, and create a separate password file:
@@ -180,7 +182,47 @@ If the symlink already exists, inspect it rather than replacing it. Verify the
 existing sites still load and the new hostname prompts for Basic Auth over
 HTTP before proceeding to TLS.
 
-## 6. Issue TLS for only the new hostname
+### Add monitoring hostnames
+
+The `grafana-demo` and `prometheus-demo` DNS A records should resolve to this
+VPS. Add two more `server` blocks (in their own new files, leaving every
+existing vhost untouched) and reuse `/etc/nginx/.htpasswd-fuel-demo`:
+
+```nginx
+server {
+    listen 80;
+    listen [::]:80;
+    server_name grafana-demo.kubijatra.com;
+    auth_basic "Fuel monitoring";
+    auth_basic_user_file /etc/nginx/.htpasswd-fuel-demo;
+    location / {
+        proxy_pass http://127.0.0.1:13000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+For Prometheus use `server_name prometheus-demo.kubijatra.com` and
+`proxy_pass http://127.0.0.1:19090`. Keep Basic Auth enabled: Prometheus has no
+built-in user login. Grafana keeps its own login behind the Nginx password.
+After creating distinct site files/symlinks, run `sudo nginx -t` before reload.
+
+Because Grafana uses a hostname URL, add these two non-secret values to the
+private VPS `.env` before recreating Grafana:
+
+```dotenv
+GRAFANA_ROOT_URL=https://grafana-demo.kubijatra.com/
+GRAFANA_DOMAIN=grafana-demo.kubijatra.com
+```
+
+The Compose file maps those to Grafana's `GF_SERVER_ROOT_URL` and
+`GF_SERVER_DOMAIN`. Apply only Grafana's environment update with
+`docker compose up -d grafana`; do not recreate or stop the unrelated app.
+
+## 6. Issue TLS for the demo and optional monitoring hostnames
 
 The DNS A record should resolve to this VPS and be DNS-only in Cloudflare while
 using the Nginx HTTP-01 flow. Port 80 must be reachable in both UFW and the VPS
@@ -188,6 +230,9 @@ provider firewall. The existing certificate does not include this hostname.
 
 ```bash
 sudo certbot --nginx -d fuel-demo.kubijatra.com
+# Only after adding the two monitoring Nginx sites:
+sudo certbot --nginx -d grafana-demo.kubijatra.com
+sudo certbot --nginx -d prometheus-demo.kubijatra.com
 sudo nginx -t
 sudo systemctl reload nginx
 sudo certbot renew --dry-run
@@ -242,18 +287,31 @@ sudo nginx -t
 sudo systemctl status nginx --no-pager
 ```
 
-Keep Cloudflare DNS-only for this simple origin setup unless you deliberately
-configure and test Cloudflare proxy/TLS mode. Maintain UFW/provider rules for
-SSH, 80 and 443 only. Schedule database backups and verify restore on a
+Cloudflare proxy is currently enabled for `fuel-demo.kubijatra.com`. In the
+Cloudflare dashboard, verify **SSL/TLS → Overview → Full (strict)** so traffic
+from Cloudflare to this VPS is encrypted and validates the Certbot origin
+certificate. Do not use Flexible mode. Maintain UFW/provider rules for SSH, 80
+and 443 only. Schedule database backups and verify restore on a
 separate test database before relying on them. Watch RAM, swap, disk and
 container health during a demo; the earlier RUNNING load probe found an
 11.77-second `/api/risk` p95 and a separate stress attempt exhausted the
 simulator connection pool.
 
-## Verified locally vs. VPS-specific
+## VPS deployment verification — 26 November 2026
 
-This document is a deployment procedure, not evidence that the AWS/VPS-hosted
-deployment has completed. The VPS operator must verify TLS, Basic Auth, all
-container health, existing site health, and persistent database behavior after
-following the steps. The local app itself does not authenticate users; the
-shared Nginx password is only a temporary reviewer access barrier.
+- Repository updated to `03ea084` (`Document VPS deployment status`).
+- All six Fuel Compose services started. Backend, frontend, PostgreSQL and
+  simulator health checks reported healthy; Prometheus `/‑/healthy` returned
+  healthy and Grafana `/login` returned HTTP 200 after startup.
+- Fuel host ports were loopback-only and did not collide with the existing
+  Java service on 8080 or the bus-tracker PostgreSQL on 5432.
+- Nginx returned a Basic Auth challenge for `fuel-demo.kubijatra.com` over
+  HTTPS. Certbot renewal dry-run succeeded for both the new certificate and
+  the existing site certificate.
+- Existing `cou-bus-tracker` containers remained running.
+- Cloudflare currently proxies the new hostname. Verify its SSL/TLS mode is
+  `Full (strict)` in the dashboard; that setting was not observable from the
+  VPS shell evidence.
+
+The local app itself does not authenticate users; the shared Nginx password is
+only a temporary reviewer access barrier, not per-user identity or roles.
