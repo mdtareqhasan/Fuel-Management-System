@@ -11,6 +11,22 @@ its containers only on loopback, and uses a separate Nginx virtual host for
 > approval actions. Give it only to trusted reviewers; it is not a substitute
 > for application user identity or role-based authorization.
 
+## Current live URLs
+
+The VPS deployment has been configured and these endpoints were opened
+successfully on 26 November 2026:
+
+| Service | URL | Access |
+|---|---|---|
+| Fuel Supply Intelligence | [https://fuel-demo.kubijatra.com/](https://fuel-demo.kubijatra.com/) | Nginx Basic Auth |
+| Grafana dashboards | [https://grafana-demo.kubijatra.com/dashboards](https://grafana-demo.kubijatra.com/dashboards) | Nginx Basic Auth, then Grafana login |
+| Prometheus query UI | [https://prometheus-demo.kubijatra.com/query](https://prometheus-demo.kubijatra.com/query) | Nginx Basic Auth |
+
+The public VPS address is `103.174.50.68`, but use the HTTPS hostnames above:
+Nginx routes each hostname to the correct loopback-only service. The browser
+first asks for the shared Nginx credential (`supervisor`); Grafana then asks
+for its own Grafana account. Never publish either password in this repository.
+
 ## VPS facts and isolation plan
 
 Inspection on 26 November 2026 found:
@@ -22,7 +38,7 @@ Inspection on 26 November 2026 found:
 | Java service | Host port 8080 already occupied | Backend published on `127.0.0.1:18080` |
 | PostgreSQL | Existing container on `127.0.0.1:5432` | Fuel DB on `127.0.0.1:15432` |
 | Host resources | 2 vCPU, 3.8 GiB RAM, no swap, 35 GiB disk free at inspection | Build sequentially; monitor memory and disk |
-| DNS | Cloudflare authoritative; `fuel-demo.kubijatra.com` resolves to this VPS | Cloudflare proxy is enabled after certificate issuance |
+| DNS | Cloudflare authoritative; demo and monitoring hostnames resolve to this VPS | Each hostname routes through its own Nginx virtual host |
 
 Fuel app mappings are loopback-only: frontend `15173`, backend `18080`,
 simulator `18000`, PostgreSQL `15432`, Prometheus `19090`, Grafana `13000`.
@@ -182,11 +198,12 @@ If the symlink already exists, inspect it rather than replacing it. Verify the
 existing sites still load and the new hostname prompts for Basic Auth over
 HTTP before proceeding to TLS.
 
-### Add monitoring hostnames
+### Monitoring hostnames (configured)
 
-The `grafana-demo` and `prometheus-demo` DNS A records should resolve to this
-VPS. Add two more `server` blocks (in their own new files, leaving every
-existing vhost untouched) and reuse `/etc/nginx/.htpasswd-fuel-demo`:
+The `grafana-demo` and `prometheus-demo` DNS records resolve to this VPS. The
+following is the initial setup pattern (the live host blocks have already been
+added in a separate Nginx site file, leaving the existing vhosts untouched).
+Both monitoring hosts reuse `/etc/nginx/.htpasswd-fuel-demo`:
 
 ```nginx
 server {
@@ -208,10 +225,13 @@ server {
 For Prometheus use `server_name prometheus-demo.kubijatra.com` and
 `proxy_pass http://127.0.0.1:19090`. Keep Basic Auth enabled: Prometheus has no
 built-in user login. Grafana keeps its own login behind the Nginx password.
-After creating distinct site files/symlinks, run `sudo nginx -t` before reload.
+The two monitoring sites are now configured in a separate Nginx file, protected
+with the shared Basic Auth file, and use the loopback-only upstreams shown
+above. The example block is retained as a reference. Run `sudo nginx -t` before
+reloading Nginx after any future edits.
 
-Because Grafana uses a hostname URL, add these two non-secret values to the
-private VPS `.env` before recreating Grafana:
+Grafana uses its public hostname as its root URL. These non-secret values are
+configured in the private VPS `.env`:
 
 ```dotenv
 GRAFANA_ROOT_URL=https://grafana-demo.kubijatra.com/
@@ -222,15 +242,16 @@ The Compose file maps those to Grafana's `GF_SERVER_ROOT_URL` and
 `GF_SERVER_DOMAIN`. Apply only Grafana's environment update with
 `docker compose up -d grafana`; do not recreate or stop the unrelated app.
 
-## 6. Issue TLS for the demo and optional monitoring hostnames
+## 6. TLS issuance and renewal checks
 
-The DNS A record should resolve to this VPS and be DNS-only in Cloudflare while
-using the Nginx HTTP-01 flow. Port 80 must be reachable in both UFW and the VPS
-provider firewall. The existing certificate does not include this hostname.
+For first-time HTTP-01 issuance, each DNS record must resolve to this VPS and
+port 80 must be reachable in both UFW and the VPS provider firewall. If
+Cloudflare proxying interferes with validation, temporarily use DNS-only mode
+for issuance. Certificates for all three demo hostnames have now been issued.
 
 ```bash
+# Initial issuance commands (already completed on the current VPS):
 sudo certbot --nginx -d fuel-demo.kubijatra.com
-# Only after adding the two monitoring Nginx sites:
 sudo certbot --nginx -d grafana-demo.kubijatra.com
 sudo certbot --nginx -d prometheus-demo.kubijatra.com
 sudo nginx -t
@@ -243,6 +264,8 @@ redirect. Inspect the diff/virtual host, then verify:
 
 ```bash
 curl -I https://fuel-demo.kubijatra.com
+curl -I https://grafana-demo.kubijatra.com/dashboards
+curl -I https://prometheus-demo.kubijatra.com/query
 ```
 
 The response should ask for Basic Auth (HTTP 401 without credentials). Test in
@@ -308,6 +331,12 @@ simulator connection pool.
 - Nginx returned a Basic Auth challenge for `fuel-demo.kubijatra.com` over
   HTTPS. Certbot renewal dry-run succeeded for both the new certificate and
   the existing site certificate.
+- The operator confirmed the live Grafana dashboards at
+  `https://grafana-demo.kubijatra.com/dashboards` and Prometheus query page at
+  `https://prometheus-demo.kubijatra.com/query`.
+- `curl -I` returned HTTP/2 401 with the expected `Fuel monitoring` Basic Auth
+  challenge for both monitoring hostnames. This confirms the HTTPS virtual
+  hosts and access gate are active; authenticate in a browser to use them.
 - Existing `cou-bus-tracker` containers remained running.
 - Cloudflare currently proxies the new hostname. Verify its SSL/TLS mode is
   `Full (strict)` in the dashboard; that setting was not observable from the

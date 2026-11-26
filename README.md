@@ -34,14 +34,15 @@ An operator platform built around the **official BUP Fuel Supply Simulator**.
 | **Phase 04 · Evaluation & Release Rehearsal** | **Complete · 25 Nov 2026** | **24 Nov 2026** |
 | **VPS reviewer demo** | **Live · HTTPS and Basic Auth verified · 26 Nov 2026** | **Operational checks ongoing** |
 
-**VPS rollout status:** `fuel-demo.kubijatra.com` is serving the application
-through Nginx with HTTPS and a Basic Auth challenge. Certbot's renewal dry-run
-passed for the new certificate and the existing `kubijatra.com` certificate.
-All six Fuel Compose services are running; backend, frontend, PostgreSQL and
-simulator health checks are healthy. The service ports remain loopback-only,
-and the existing bus-tracker containers remain running. Cloudflare SSL/TLS
-encryption mode still needs confirmation as **Full (strict)**. See the
-[deployment guide](docs/vps-deployment.md).
+**VPS rollout status:** the [application](https://fuel-demo.kubijatra.com/),
+[Grafana dashboards](https://grafana-demo.kubijatra.com/dashboards), and
+[Prometheus query UI](https://prometheus-demo.kubijatra.com/query) are serving
+over HTTPS behind Basic Auth. Grafana also requires its own login. Certbot's
+renewal dry-run passed for the demo and existing site certificates. All six
+Fuel Compose services are running; backend, frontend, PostgreSQL and simulator
+health checks are healthy. Service ports remain loopback-only, and the existing
+bus-tracker containers remain running. Cloudflare SSL/TLS mode still needs
+confirmation as **Full (strict)**. See the [deployment guide](docs/vps-deployment.md).
 
 The application turns simulator snapshots into station and depot risk, anomaly flags, forecasts, and constraint-checked shipment proposals. Operators review proposals and approve them through a persisted, idempotent command flow; reconciliation tracks the simulator's shipment state. Phase 03 adds a circuit breaker, bounded retries, an SSE refresh path with a REST polling fallback, refusal and recovery metrics, a resilience dashboard, and Prometheus alert rules as code.
 
@@ -328,16 +329,12 @@ HTTPS and the Basic Auth challenge were verified, and Certbot's renewal dry-run
 passed for both the demo and existing certificates. All six Compose containers
 are running. See the [step-by-step VPS configuration and operations guide](docs/vps-deployment.md).
 
-**Current deployment state:** live at `https://fuel-demo.kubijatra.com` behind
-shared Basic Auth. Confirm Cloudflare SSL/TLS mode is **Full (strict)** and
-continue monitoring memory during the demo. The application has no built-in
-user authentication; Nginx Basic Auth is a temporary shared gate for trusted
-reviewers, not per-user identity or role-based authorization. Grafana and
-Prometheus subdomains are not configured yet. Before exposing them, set
-`GRAFANA_ROOT_URL` and `GRAFANA_DOMAIN` in the private VPS `.env`, then add
-separate Basic Auth-protected Nginx sites and TLS certificates as described in
-the [VPS guide](docs/vps-deployment.md). Prometheus must remain behind Basic
-Auth because it does not provide its own login.
+**Current deployment state:** the UI, Grafana, and Prometheus are live over
+HTTPS. All three use the shared Nginx Basic Auth gate; Grafana also has its own
+login. Continue monitoring memory during the demo. The application has no
+built-in user authentication; the shared gate is for trusted reviewers, not
+per-user identity or role-based authorization. Prometheus remains protected by
+Basic Auth because it does not provide its own login.
 
 ## API reference and deployment addresses
 
@@ -376,7 +373,8 @@ by the shared Nginx Basic Auth login.
 | Local Grafana | [http://localhost:3000](http://localhost:3000) | Local machine only |
 | VPS public IP | `103.174.50.68` | VPS host address; application traffic should use its named HTTPS host |
 | VPS UI and REST API | [https://fuel-demo.kubijatra.com](https://fuel-demo.kubijatra.com) | Live; shared Basic Auth required |
-| VPS Grafana / Prometheus | `grafana-demo.kubijatra.com` / `prometheus-demo.kubijatra.com` | DNS points to the VPS, but Nginx sites and protected HTTPS access are not configured yet |
+| VPS Grafana dashboards | [https://grafana-demo.kubijatra.com/dashboards](https://grafana-demo.kubijatra.com/dashboards) | Live; shared Basic Auth plus Grafana login required |
+| VPS Prometheus query | [https://prometheus-demo.kubijatra.com/query](https://prometheus-demo.kubijatra.com/query) | Live; shared Basic Auth required |
 
 On the VPS, Docker publishes the app ports on loopback only: frontend `127.0.0.1:15173`,
 backend `127.0.0.1:18080`, simulator `127.0.0.1:18000`, PostgreSQL
