@@ -32,6 +32,14 @@ An operator platform built around the **official BUP Fuel Supply Simulator**.
 | Latest milestone | Status date | Release target |
 |---|---|---|
 | **Phase 04 · Evaluation & Release Rehearsal** | **Complete · 25 Nov 2026** | **24 Nov 2026** |
+| **VPS reviewer demo** | **Preparation complete; server rollout in progress · 26 Nov 2026** | **After VPS verification** |
+
+**VPS rollout status:** the repository has a dedicated [Ubuntu VPS deployment
+guide](docs/vps-deployment.md), and `fuel-demo.kubijatra.com` resolves to the
+VPS. A separate project directory and conflict-free local port plan are
+prepared. The latest code still needs to be pulled on the VPS, images built,
+containers started, and the isolated Nginx/HTTPS/Basic Auth route verified
+before the demo URL is considered live.
 
 The application turns simulator snapshots into station and depot risk, anomaly flags, forecasts, and constraint-checked shipment proposals. Operators review proposals and approve them through a persisted, idempotent command flow; reconciliation tracks the simulator's shipment state. Phase 03 adds a circuit breaker, bounded retries, an SSE refresh path with a REST polling fallback, refusal and recovery metrics, a resilience dashboard, and Prometheus alert rules as code.
 
@@ -303,13 +311,27 @@ Stop the services with `docker compose down`. Add `-v` only when you intend to r
 
 ## Deploy a reviewer demo on the VPS
 
-The VPS deployment uses a separate project directory and loopback-only ports so
-it can coexist with the server's existing applications. Follow the
-[Ubuntu VPS deployment guide](docs/vps-deployment.md) for unique credentials,
-memory-aware image builds, an isolated Nginx hostname, HTTPS, Basic Auth,
-backups and rollback. The app has no built-in user authentication, so the
-shared Basic Auth credential is only a temporary trusted-reviewer gate; it
-does not provide per-user identity or operator roles.
+The reviewer demo is planned on the existing Ubuntu 24.04 VPS, alongside its
+current sites and services. The measured host has 2 vCPU, 3.8 GiB RAM, 48 GiB
+disk (about 35 GiB free at inspection), and no swap. Nginx already owns public
+ports 80/443; an existing Java service uses host port 8080, and another
+project's PostgreSQL uses `127.0.0.1:5432`.
+
+The Fuel stack stays in `/opt/fuel-management-system`. Its six service ports
+are mapped to loopback only: frontend `15173`, backend `18080`, simulator
+`18000`, PostgreSQL `15432`, Prometheus `19090`, and Grafana `13000`. Nginx
+will route only `fuel-demo.kubijatra.com` to the frontend; it will not replace
+the existing `kubijatra.com` virtual hosts. Cloudflare DNS for the new
+subdomain is configured and resolves to the VPS. The remaining rollout steps
+are pull the pushed revision, build images sequentially, start/check the
+containers, add a separate password-protected Nginx site, issue TLS, and verify
+the URL. See the [step-by-step VPS configuration and operations guide](docs/vps-deployment.md).
+
+**Current deployment state:** DNS and repository checkout are prepared, but
+the VPS update/build/start and HTTPS access check are not yet confirmed. Do not
+share the hostname as a live demo until those checks pass. The application has
+no built-in user authentication; Nginx Basic Auth is a temporary shared gate
+for trusted reviewers, not per-user identity or role-based authorization.
 
 ## How the data flows
 
