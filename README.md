@@ -339,6 +339,54 @@ separate Basic Auth-protected Nginx sites and TLS certificates as described in
 the [VPS guide](docs/vps-deployment.md). Prometheus must remain behind Basic
 Auth because it does not provide its own login.
 
+## API reference and deployment addresses
+
+The backend exposes the operator REST API under `/api`. The VPS demo uses the
+same HTTPS hostname for the UI and API; Nginx forwards requests to the local
+Compose frontend, which proxies API paths to Spring Boot. The demo is protected
+by the shared Nginx Basic Auth login.
+
+| Method | Route | Purpose | Effect |
+|---|---|---|---|
+| `GET` | `/api/dashboard` | Latest validated network snapshot: stations, depots, routes, events, arrivals, and allocations. | Read only |
+| `GET` | `/api/risk` | Forecasts, station/depot risk, anomaly flags, proposal candidates, and unmet needs. | Read only |
+| `GET` | `/api/system-status` | Backend, database, simulator, freshness, latency, circuit breaker, and event-stream status. | Read only |
+| `GET` | `/api/proposals` | List proposals for the current run. | Read only |
+| `GET` | `/api/proposals/{id}` | Read one proposal by its UUID. | Read only |
+| `POST` | `/api/proposals` | Create a persisted proposal from the current plan; does not dispatch fuel. | Writes a proposal record |
+| `POST` | `/api/proposals/{id}/approve` | Approve reviewed quantities and start the durable command flow to the simulator. | **Dispatch capable** |
+| `GET` | `/api/shipments` | Read the application's command and shipment ledger. | Read only |
+| `POST` | `/api/shipments/reconcile` | Reconcile commands with simulator shipment state and retry eligible work. | **May change command state** |
+| `GET` | `/actuator/health` | Spring Boot aggregate health. | Read only |
+| `GET` | `/actuator/health/readiness` | Backend readiness probe used by Compose. | Read only |
+| `GET` | `/actuator/prometheus` | Prometheus exposition format for backend metrics. | Read only |
+
+> The `POST` routes can change persisted state; approval can dispatch shipments
+> to the simulator. Use the reviewer demo carefully. The API does not have its
+> own user login: the public demo hostname is guarded by shared Basic Auth.
+
+### Local and VPS URLs
+
+| Environment | Address | Availability |
+|---|---|---|
+| Local UI and proxied API | [http://localhost:5173](http://localhost:5173) | Available after `docker compose up --build -d` |
+| Local backend API | [http://localhost:8080](http://localhost:8080) | Local machine only |
+| Local simulator API | [http://localhost:8000](http://localhost:8000) | Local machine only; backend normally calls it over Compose networking |
+| Local Prometheus | [http://localhost:9090](http://localhost:9090) | Local machine only |
+| Local Grafana | [http://localhost:3000](http://localhost:3000) | Local machine only |
+| VPS public IP | `103.174.50.68` | VPS host address; application traffic should use its named HTTPS host |
+| VPS UI and REST API | [https://fuel-demo.kubijatra.com](https://fuel-demo.kubijatra.com) | Live; shared Basic Auth required |
+| VPS Grafana / Prometheus | `grafana-demo.kubijatra.com` / `prometheus-demo.kubijatra.com` | DNS points to the VPS, but Nginx sites and protected HTTPS access are not configured yet |
+
+On the VPS, Docker publishes the app ports on loopback only: frontend `127.0.0.1:15173`,
+backend `127.0.0.1:18080`, simulator `127.0.0.1:18000`, PostgreSQL
+`127.0.0.1:15432`, Prometheus `127.0.0.1:19090`, and Grafana
+`127.0.0.1:13000`. These are host-local proxy targets, not public URLs. The
+public IP by itself is not the application's URL; Nginx and TLS select the demo
+by hostname. Do not expose the database, simulator admin API, or Prometheus
+directly to the Internet. See the [VPS operations guide](docs/vps-deployment.md)
+for access configuration and deployment details.
+
 ## How the data flows
 
 1. The official simulator maintains the simulated fuel network and its state.
