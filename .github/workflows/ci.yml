@@ -35,7 +35,33 @@ jobs:
       # version locally and in CI. Invoke through bash so the runner does not
       # depend on the executable bit surviving a Windows-created commit.
       - name: Build and test
-        run: bash ./mvnw -B verify
+        shell: bash
+        run: |
+          set -uo pipefail
+
+          # GitHub-hosted runners occasionally fail to fetch the Maven
+          # distribution itself from Maven Central. Retry only that bootstrap
+          # download failure; compilation and test failures should fail once.
+          for attempt in 1 2 3; do
+            log_file=$(mktemp)
+            bash ./mvnw -B verify 2>&1 | tee "$log_file"
+            status=${PIPESTATUS[0]}
+
+            if [ "$status" -eq 0 ]; then
+              rm -f "$log_file"
+              exit 0
+            fi
+
+            if grep -Fq 'Failed to fetch https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.11/apache-maven-3.9.11-bin.zip' "$log_file" && [ "$attempt" -lt 3 ]; then
+              echo "Maven distribution download failed (attempt ${attempt}/3); retrying shortly."
+              rm -f "$log_file"
+              sleep $((attempt * 10))
+              continue
+            fi
+
+            rm -f "$log_file"
+            exit "$status"
+          done
         working-directory: backend
 
       - name: Upload test results
